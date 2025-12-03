@@ -1,10 +1,17 @@
 package com.mailapp.mailbackend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "user_folders")
-
+@Getter
+@Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserFolder {
 
     @Id
@@ -19,36 +26,4 @@ public class UserFolder {
     @Column(name = "folder_name", nullable = false)
     private String folderName;
 
-    public UserFolder() {
-    }
-
-    public UserFolder(Long folderId, String folderName, User user) {
-        this.folderId = folderId;
-        this.folderName = folderName;
-        this.folderOwner = user;
-    }
-
-    public Long getFolderId() {
-        return folderId;
-    }
-
-    public void setFolderId(Long folderId) {
-        this.folderId = folderId;
-    }
-
-    public String getFolderName() {
-        return folderName;
-    }
-
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
-    }
-
-    public User getFolderOwner() {
-        return folderOwner;
-    }
-
-    public void setFolderOwner(User user) {
-        this.folderOwner = user;
-    }
 }

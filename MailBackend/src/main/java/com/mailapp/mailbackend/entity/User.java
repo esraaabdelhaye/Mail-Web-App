@@ -1,7 +1,17 @@
 package com.mailapp.mailbackend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.Set;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -23,53 +33,10 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    public User() {
-    }
+    @OneToMany(mappedBy = "users")
+    private Set<UserFolder> userFolders;
 
-    public User(String email, String password, String username, String fullName) {
-        this.email = email;
-        this.password = password;
-        this.username = username;
-        this.fullName = fullName;
-    }
+    @OneToMany(mappedBy = "user",orphanRemoval = true)
+    private Set<Contact> contacts;
 
-    // --- 2. Getters and Setters (Essential for Spring Boot/Encapsulation) ---
-
-    public Long getId() {
-        return id;
-    }
-
-    // Note: Setter for ID is generally excluded as it's auto-generated
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 }
