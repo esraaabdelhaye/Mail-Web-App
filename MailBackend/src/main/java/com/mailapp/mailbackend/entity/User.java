@@ -33,8 +33,11 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @OneToMany(mappedBy = "sender")
+    private Set<Mail> sentMails;
+
     @OneToMany(mappedBy = "users")
-    private Set<UserFolder> userFolders;
+    private Set<Folder> userFolders;
 
     @OneToMany(mappedBy = "user",orphanRemoval = true)
     private Set<Contact> contacts;

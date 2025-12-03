@@ -16,16 +16,18 @@ import lombok.Setter;
 public class Contact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "contact_id")
     private Long id;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(referencedColumnName = "user_id")
     private User user;
 
-    @Column(name = "Name")
+    @Column(name = "contact_name")
     private String name;
 
-    @Column(name = "Mails")
-    private String mails;
+    @Column(name = "primary_email")
+    private String primaryEmail;
+
 
 }

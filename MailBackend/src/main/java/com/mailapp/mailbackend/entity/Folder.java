@@ -6,13 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Table(name = "user_folders")
+@Table(name = "folders")
 @Getter
 @Setter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserFolder {
+public class Folder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +25,8 @@ public class UserFolder {
 
     @Column(name = "folder_name", nullable = false)
     private String folderName;
+
+    @Column(name = "is_system_folder")
+    private Boolean isSystemFolder;
 
 }
