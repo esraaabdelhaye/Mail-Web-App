@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -33,13 +34,13 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @OneToMany(mappedBy = "sender")
-    private Set<Mail> sentMails;
+    @OneToMany(mappedBy = "sender" ,orphanRemoval = true)
+    private Set<Mail> sentMails = new HashSet<>();
 
-    @OneToMany(mappedBy = "users")
-    private Set<Folder> userFolders;
+    @OneToMany(mappedBy = "users", orphanRemoval = true)
+    private Set<Folder> userFolders = new HashSet<>();
 
     @OneToMany(mappedBy = "user",orphanRemoval = true)
-    private Set<Contact> contacts;
+    private Set<Contact> contacts = new HashSet<>();
 
 }

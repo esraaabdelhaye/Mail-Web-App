@@ -19,9 +19,9 @@ public class Folder {
     @Column(name = "folder_id")
     private Long folderId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User folderOwner;
+    private User user;
 
     @Column(name = "folder_name", nullable = false)
     private String folderName;
