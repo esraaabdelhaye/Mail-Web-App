@@ -1,0 +1,234 @@
+/* Main Layout */
+.sidebar {
+  width: 260px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: hsl(var(--background));
+  border-right: 1px solid hsl(var(--border));
+}
+
+/* Logo */
+.logo-section {
+  padding: 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-box {
+  width: 2rem;
+  height: 2rem;
+  background-color: hsl(var(--primary)); /* Uses Global Primary */
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--primary-foreground));
+}
+
+.app-name {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: hsl(var(--foreground));
+}
+
+/* Compose */
+.compose-section {
+  padding: 1rem;
+}
+
+.compose-btn {
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s;
+}
+
+.shadow-hover:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Navigation */
+.nav-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nav Items */
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  transition: background-color 0.15s, color 0.15s;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.nav-item.active {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  font-weight: 500;
+}
+
+.nav-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.nav-label {
+  flex: 1;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+.badge.active-badge {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Custom Folders Header */
+.custom-folders-section {
+  margin-top: 1.5rem;
+}
+
+.section-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.section-header:hover {
+  color: hsl(var(--foreground));
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s;
+}
+
+.chevron.rotated {
+  transform: rotate(-90deg);
+}
+
+/* Folder Actions */
+.folder-row-container {
+  position: relative;
+}
+
+.folder-actions {
+  display: none;
+  gap: 0.25rem;
+}
+
+.folder-row-container:hover .folder-actions {
+  display: flex;
+}
+
+.action-btn {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+}
+
+.action-btn:hover {
+  background-color: hsl(var(--muted));
+}
+
+.delete-btn:hover {
+  color: hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Edit Inputs */
+.edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.mini-input {
+  flex: 1;
+  height: 2rem;
+  font-size: 0.875rem;
+  padding: 0 0.5rem;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.mini-input:focus {
+  border-color: hsl(var(--ring));
+}
+
+.mini-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* Add Folder */
+.add-folder-row {
+  margin-top: 0.25rem;
+}
+
+.add-btn {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Contacts */
+.contacts-section {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+  margin-bottom: 0.5rem;
+}
+
+/* Animation */
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
