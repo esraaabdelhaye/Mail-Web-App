@@ -1,1 +1,184 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}
+
+:root {
+  --background: 210 20% 98%;
+  --foreground: 222 47% 11%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --primary: 239 84% 67%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 222 47% 11%;
+
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+
+  --accent: 239 84% 67%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 239 84% 67%;
+
+  --radius: 0.625rem;
+
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: 239 84% 67%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 14% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 239 84% 67%;
+
+  /* Custom email-specific tokens */
+  --email-unread: 222 47% 11%;
+  --email-read: 220 9% 46%;
+  --priority-high: 0 84% 60%;
+  --priority-medium: 38 92% 50%;
+  --priority-low: 142 76% 36%;
+  --hover-overlay: 220 14% 96%;
+}
+
+.dark {
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+
+  --card: 222 47% 9%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222 47% 9%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 239 84% 67%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 222 47% 14%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 222 47% 14%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 239 84% 67%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 210 40% 98%;
+
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
+  --border: 222 47% 16%;
+  --input: 222 47% 16%;
+  --ring: 239 84% 67%;
+
+  --sidebar-background: 222 47% 9%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 239 84% 67%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 47% 14%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 222 47% 16%;
+  --sidebar-ring: 239 84% 67%;
+
+  --email-unread: 210 40% 98%;
+  --email-read: 215 20% 65%;
+  --priority-high: 0 84% 60%;
+  --priority-medium: 38 92% 50%;
+  --priority-low: 142 76% 36%;
+  --hover-overlay: 222 47% 14%;
+
+}
+
+.email-row-unread {
+  font-weight: 600; /* font-semibold */
+  color: hsl(var(--email-unread));
+}
+
+.email-row-read {
+  font-weight: 400; /* font-normal */
+  color: hsl(var(--email-read));
+}
+
+.priority-high {
+  color: hsl(var(--priority-high));
+}
+
+.priority-medium {
+  color: hsl(var(--priority-medium));
+}
+
+.priority-low {
+  color: hsl(var(--priority-low));
+}
+
+/* --- Animations --- */
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+

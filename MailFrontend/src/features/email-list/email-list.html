@@ -1,0 +1,143 @@
+<div class="list-container">
+
+  <!-- Top Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+
+      <!-- Search -->
+      <div class="search-group">
+        <lucide-icon [img]="icons.Search" class="search-icon"></lucide-icon>
+        <input
+          type="text"
+          placeholder="Search emails..."
+          [(ngModel)]="searchQuery"
+          class="search-input"
+        >
+      </div>
+
+      <!-- Sort Dropdown (Native) -->
+      <select [(ngModel)]="sortBy" class="sort-select">
+        <option value="date">Date</option>
+        <option value="sender">Sender</option>
+        <option value="importance">Importance</option>
+        <option value="subject">Subject</option>
+      </select>
+
+      <!-- Refresh Button -->
+      <button app-button variant="outline" size="icon" (click)="handleRefresh()" [disabled]="isRefreshing">
+        <lucide-icon [img]="icons.RefreshCw" [class.spin]="isRefreshing"></lucide-icon>
+      </button>
+
+      <!-- View Mode Toggle -->
+      <div class="view-toggle">
+        <button
+          class="toggle-btn"
+          [class.active]="viewMode === 'default'"
+          (click)="viewMode = 'default'"
+          title="Default View">
+          <lucide-icon [img]="icons.LayoutList" size="16"></lucide-icon>
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="viewMode === 'priority'"
+          (click)="viewMode = 'priority'"
+          title="Priority View">
+          <lucide-icon [img]="icons.LayoutGrid" size="16"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk Actions (Conditional) -->
+    @if (selectedIds.size > 0) {
+      <div class="bulk-actions animate-fade-in">
+        <span class="selection-count">{{ selectedIds.size }} selected</span>
+
+        <!-- Move To Dropdown -->
+        <select class="action-select" (change)="handleMove($any($event.target).value); $any($event.target).value = ''">
+          <option value="" disabled selected>Move to...</option>
+          @for (folder of customFolders; track folder.id) {
+            <option [value]="folder.id">{{ folder.name }}</option>
+          }
+        </select>
+
+        <button app-button variant="destructive" size="sm" (click)="handleDelete()">
+          <lucide-icon [img]="icons.Trash2"></lucide-icon>
+          Delete
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Email List Area -->
+  <div class="email-scroll-area">
+
+    @if (paginatedEmails.length === 0) {
+      <div class="empty-state">
+        <lucide-icon [img]="icons.Search" size="48" class="empty-icon"></lucide-icon>
+        <h3>No emails found</h3>
+        <p>Try adjusting your search or filters</p>
+      </div>
+    } @else {
+
+      <!-- List Header (Select All) -->
+      <div class="list-header">
+        <input type="checkbox" (change)="toggleSelectAll($event)">
+        <span>Select all</span>
+      </div>
+
+      <!-- Rows -->
+      @for (email of paginatedEmails; track email.id) {
+        <div
+          class="email-row"
+          [class.unread]="!email.isRead"
+          [class.selected]="selectedEmailId === email.id"
+          (click)="emailSelect.emit(email)">
+
+          <div class="row-checkbox" (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              [checked]="selectedIds.has(email.id)"
+              (change)="toggleEmailSelection(email.id, $event)">
+          </div>
+
+          <div class="row-priority">
+            @if (email.priority === 1) {
+              <lucide-icon [img]="icons.AlertCircle" class="icon-high"></lucide-icon>
+            } @else if (email.priority === 2) {
+              <lucide-icon [img]="icons.Flag" class="icon-med"></lucide-icon>
+            }
+          </div>
+
+          <div class="row-content">
+            <div class="row-top">
+              <span class="sender-name">{{ email.sender }}</span>
+              @if (email.attachments?.length) {
+                <span class="attachment-badge">📎</span>
+              }
+            </div>
+            <div class="subject-line">{{ email.subject }}</div>
+          </div>
+
+          <div class="row-date">
+            {{ formatDate(email.date.toDateString()) }}
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (totalPages > 1) {
+    <div class="pagination">
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <div class="pagination-controls">
+        <button app-button variant="outline" size="sm" (click)="changePage(-1)" [disabled]="currentPage === 1">
+          <lucide-icon [img]="icons.ChevronLeft"></lucide-icon> Previous
+        </button>
+        <button app-button variant="outline" size="sm" (click)="changePage(1)" [disabled]="currentPage === totalPages">
+          Next <lucide-icon [img]="icons.ChevronRight"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  }
+</div>
