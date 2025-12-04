@@ -10,7 +10,7 @@
 
   <!-- Compose Button -->
   <div class="compose-section">
-    <button app-button class="compose-btn shadow-hover" (click)="composeClick.emit()">
+    <button app-button class="compose-btn shadow-hover" (click)="emailHandler.composeEmail()">
       <lucide-icon [img]="icons.Plus"></lucide-icon>
       Compose
     </button>
@@ -24,15 +24,15 @@
       @for (folder of defaultFolders; track folder.id) {
         <button
           class="nav-item"
-          [class.active]="activeFolder === folder.id"
-          (click)="folderSelect.emit(folder.id)">
+          [class.active]="emailHandler.currentFolderId() === folder.id"
+          (click)="emailHandler.selectFolder(folder.id)">
 
           <lucide-icon [img]="getIconForFolder(folder.id)" class="nav-icon"></lucide-icon>
           <span class="nav-label">{{ folder.name }}</span>
 
-          @if (emailCounts[folder.id] > 0) {
-            <span class="badge" [class.active-badge]="activeFolder === folder.id">
-              {{ emailCounts[folder.id] }}
+          @if (getCount(emailHandler.currentFolderId()) > 0) {
+            <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.id">
+              {{ getCount(folder.id) }}
             </span>
           }
         </button>
@@ -78,8 +78,8 @@
                 <!-- Normal Mode -->
                 <button
                   class="nav-item"
-                  [class.active]="activeFolder === folder.id"
-                  (click)="folderSelect.emit(folder.id)">
+                  [class.active]="emailHandler.currentFolderId() === folder.id"
+                  (click)="emailHandler.selectFolder(folder.id)">
 
                   <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
                   <span class="nav-label">{{ folder.name }}</span>
@@ -89,7 +89,7 @@
                     <button class="action-btn" (click)="startEditing(folder, $event)">
                       <lucide-icon [img]="icons.Pencil" size="14"></lucide-icon>
                     </button>
-                    <button class="action-btn delete-btn" (click)="$event.stopPropagation(); deleteFolder.emit(folder.id)">
+                    <button class="action-btn delete-btn" (click)="$event.stopPropagation(); emailHandler.deleteFolder(folder.id)">
                       <lucide-icon [img]="icons.X" size="14"></lucide-icon>
                     </button>
                   </div>
@@ -130,7 +130,7 @@
 
     <!-- Contacts Link -->
     <div class="contacts-section">
-      <button class="nav-item" (click)="contactsClick.emit()">
+      <button class="nav-item" (click)="emailHandler.contactsClick()">
         <lucide-icon [img]="icons.Users" class="nav-icon"></lucide-icon>
         <span>Contacts</span>
       </button>

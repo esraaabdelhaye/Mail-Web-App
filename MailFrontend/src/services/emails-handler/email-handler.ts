@@ -56,19 +56,19 @@ export class EmailHandler {
 
   // Sidebar actions
 
-  onFolderSelected(folderId: string) {
+  selectFolder(folderId: string) {
     this.currentFolderId.set(folderId);
     console.log('Load emails for:', folderId);
     // In real app: this.emailService.loadEmails(folderId);
   }
 
-  onCompose() {
+  composeEmail() {
     console.log('Open compose modal');
   }
 
-  addFolder(){}
+  addFolder(folderName: string){}
 
-  deleteFolder(){}
+  deleteFolder(folderId: string){}
 
   editFolder(){}
 

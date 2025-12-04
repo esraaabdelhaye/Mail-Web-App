@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -7,6 +7,7 @@ import {
 } from 'lucide-angular';
 import {ButtonComponent} from '../../shared/button/button';
 import {Folder as FolderModel} from '../../app/models/email.model'
+import {EmailHandler} from '../../services/emails-handler/email-handler';
 
 @Component({
   selector: 'app-email-sidebar',
@@ -16,20 +17,10 @@ import {Folder as FolderModel} from '../../app/models/email.model'
   styleUrls: ['./email-sidebar.css']
 })
 export class EmailSidebarComponent {
-  // --- Inputs (Props) ---
-  @Input() folders: FolderModel[] = [];
-  @Input() activeFolder = 'inbox';
-  @Input() emailCounts: Record<string, number> = {};
+  protected emailHandler = inject(EmailHandler);
 
-  // --- Outputs (Callbacks) ---
-  @Output() folderSelect = new EventEmitter<string>();
-  @Output() composeClick = new EventEmitter<void>();
-  @Output() contactsClick = new EventEmitter<void>();
-  @Output() addFolder = new EventEmitter<string>();
-  @Output() editFolder = new EventEmitter<{id: string, name: string}>();
-  @Output() deleteFolder = new EventEmitter<string>();
 
-  // --- State (useState) ---
+  // --- State ---
   isAddingFolder = false;
   newFolderName = '';
   editingFolderId: string | null = null;
@@ -39,13 +30,18 @@ export class EmailSidebarComponent {
   // --- Icons ---
   readonly icons = { Inbox, Send, FileText, Trash2, Plus, Pencil, X, Users, Folder, ChevronDown, Mail };
 
-  // --- Computed (Getters) ---
+  // default folders are the system default folders (not custom)
   get defaultFolders(): FolderModel[] {
-    return this.folders.filter(f => !f.isCustom);
+    return this.emailHandler.folders().filter(f => !f.isCustom);
   }
 
+  // Custom folders are the non default folders (user created, i.e. custom)
   get customFolders(): FolderModel[] {
-    return this.folders.filter(f => f.isCustom);
+    return this.emailHandler.folders().filter(f => f.isCustom);
+  }
+
+  getCount(folderId: string){
+    return this.emailHandler.counts()[folderId] || 0;
   }
 
   // Helper to map system IDs to Icons
@@ -62,7 +58,7 @@ export class EmailSidebarComponent {
   // --- Actions ---
   handleAddFolder() {
     if (this.newFolderName.trim()) {
-      this.addFolder.emit(this.newFolderName.trim());
+      this.emailHandler.addFolder(this.newFolderName.trim());
       this.newFolderName = '';
       this.isAddingFolder = false;
     }
@@ -70,7 +66,7 @@ export class EmailSidebarComponent {
 
   handleEditFolder(id: string) {
     if (this.editingFolderName.trim()) {
-      this.editFolder.emit({ id, name: this.editingFolderName.trim() });
+      // this.emailHandler.editFolder.emit({ id, name: this.editingFolderName.trim() });
       this.editingFolderId = null;
       this.editingFolderName = '';
     }

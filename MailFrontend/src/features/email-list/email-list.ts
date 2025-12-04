@@ -36,6 +36,7 @@ export class EmailListComponent {
 
 
   get processedEmails(): Email[] {
+    // filteredEmails are the emails in the current selected folder
     const baseList = this.emailHandler.filteredEmails();
 
     // 1. Filter
