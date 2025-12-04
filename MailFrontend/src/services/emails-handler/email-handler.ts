@@ -15,7 +15,7 @@ export class EmailHandler {
   readonly folders = signal<Folder[]>(this.backendController.getFolders());
 
 
-  // Mock Emails
+  // Emails in the selected folder
   readonly filteredEmails = computed(() => {
     const folderId = this.currentFolderId();
     return this.emails().filter(e => e.folder === folderId);
@@ -50,7 +50,7 @@ export class EmailHandler {
 
   moveToFolder(){}
 
-  onDeleteEmails(event: string[]){
+  deleteEmails(emailIds: string[]){
     // This should be used to delete the emails from the backend
   }
 

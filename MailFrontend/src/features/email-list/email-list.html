@@ -92,7 +92,7 @@
           class="email-row"
           [class.unread]="!email.isRead"
           [class.selected]="selectedEmailId === email.id"
-          (click)="emailSelect.emit(email)">
+          (click)="openEmailDetail()">
 
           <div class="row-checkbox" (click)="$event.stopPropagation()">
             <input

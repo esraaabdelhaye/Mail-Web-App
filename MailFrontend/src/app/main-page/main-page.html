@@ -16,12 +16,7 @@
   <!-- 2. The Main Content (Takes remaining space) -->
   <main class="main-content">
     <app-email-list
-      [emails]="emailHandler.filteredEmails()"
-      [folders]="emailHandler.folders()"
-      (refresh)="emailHandler.onRefresh()"
-      (deleteEmails)="emailHandler.onDeleteEmails($event)"
-      (emailSelect)="emailHandler.onEmailSelect()"
-      (moveToFolder)="emailHandler.moveToFolder()"
+
     ></app-email-list>
   </main>
 
