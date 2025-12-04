@@ -1,0 +1,316 @@
+<div class="auth-container">
+  <div class="auth-card-wrapper">
+    <div class="auth-card">
+      <!-- Header Section -->
+      <div class="card-header">
+        <div class="mail-icon-bg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="mail-icon"
+          >
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          <!-- </div>
+        <h1 class="card-title"><span>👋</span>Welcome to Nexus Mail!</h1>
+        <p class="card-description">
+          Your clean, modern, and AI-powered email experience starts here.
+        </p> -->
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="tab-controls">
+          <button
+            class="tab-button"
+            [class.active-tab]="activeTab() === 'login'"
+            (click)="switchTab('login')"
+          >
+            Log In
+          </button>
+          <button
+            class="tab-button"
+            [class.active-tab]="activeTab() === 'signup'"
+            (click)="switchTab('signup')"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Wrapper restored for CSS-based transition: fixed height + overflow hidden -->
+        <div class="form-transition-wrapper">
+          <!-- Login Form Content (Visibility managed by CSS class) -->
+          <form
+            class="form-content login-form"
+            [class.form-active]="activeTab() === 'login'"
+            (ngSubmit)="handleLogin($event)"
+          >
+            <div class="form-field">
+              <label class="form-label" for="login-email">Email Address</label>
+              <div class="input-wrapper">
+                <!-- Mail Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <input
+                  class="form-input"
+                  id="login-email"
+                  name="loginEmail"
+                  placeholder="you@example.com"
+                  type="email"
+                  [ngModel]="loginData().email"
+                  (ngModelChange)="updateLoginData('email', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <div class="label-row">
+                <label class="form-label" for="login-password">Password</label>
+                <button type="button" class="forgot-link">Forgot password?</button>
+              </div>
+              <div class="input-wrapper">
+                <!-- Lock Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  class="form-input"
+                  id="login-password"
+                  name="loginPassword"
+                  placeholder="••••••••"
+                  type="password"
+                  [ngModel]="loginData().password"
+                  (ngModelChange)="updateLoginData('password', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <button class="btn-primary" type="submit" [disabled]="isLoading()">
+              <span class="btn-content">
+                @if (!isLoading()) {
+                <span>Log In</span>
+                <!-- Arrow Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="arrow-icon"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+                } @if (isLoading()) {
+                <span class="spinner"></span>
+                <span>Logging In...</span>
+                }
+              </span>
+            </button>
+          </form>
+
+          <!-- Sign Up Form Content (Visibility managed by CSS class) -->
+          <form
+            class="form-content signup-form"
+            [class.form-active]="activeTab() === 'signup'"
+            (ngSubmit)="handleSignUp($event)"
+          >
+            <div class="form-field">
+              <label class="form-label" for="signup-name">Full Name</label>
+              <div class="input-wrapper">
+                <!-- User Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input
+                  class="form-input"
+                  id="signup-name"
+                  name="signupName"
+                  placeholder="John Doe"
+                  type="text"
+                  [ngModel]="signupData().name"
+                  (ngModelChange)="updateSignupData('name', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="signup-email">Email Address</label>
+              <div class="input-wrapper">
+                <!-- Mail Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <input
+                  class="form-input"
+                  id="signup-email"
+                  name="signupEmail"
+                  placeholder="you@example.com"
+                  type="email"
+                  [ngModel]="signupData().email"
+                  (ngModelChange)="updateSignupData('email', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="signup-password">Password</label>
+              <div class="input-wrapper">
+                <!-- Lock Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  class="form-input"
+                  id="signup-password"
+                  name="signupPassword"
+                  placeholder="••••••••"
+                  type="password"
+                  [ngModel]="signupData().password"
+                  (ngModelChange)="updateSignupData('password', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="signup-confirm">Confirm Password</label>
+              <div class="input-wrapper">
+                <!-- Lock Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="input-icon"
+                >
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  class="form-input"
+                  id="signup-confirm"
+                  name="signupConfirm"
+                  placeholder="••••••••"
+                  type="password"
+                  [ngModel]="signupData().confirmPassword"
+                  (ngModelChange)="updateSignupData('confirmPassword', $event)"
+                  required
+                />
+              </div>
+            </div>
+
+            <button class="btn-primary" type="submit" [disabled]="isLoading()">
+              <span class="btn-content">
+                @if (!isLoading()) {
+                <span>Create Account</span>
+                <!-- Arrow Icon SVG -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="arrow-icon"
+                >
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+                } @if (isLoading()) {
+                <span class="spinner"></span>
+                <span>Creating account...</span>
+                }
+              </span>
+            </button>
+          </form>
+        </div>
+        <!-- End form-transition-wrapper -->
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,337 @@
+/* ------------------------------------------- */
+/* 1. Base Variables & Typography (Tailwind Config Simulation) */
+/* ------------------------------------------- */
+/* FIX: Universal Box-Sizing Reset for correct width calculation */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  /* Colors */
+  --color-primary: #6366f1; /* indigo-500 */
+  --color-background-light: #f8fafc; /* slate-50 */
+  --color-background-dark: #181820; /* Custom dark color */
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-400: #94a3b8;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #e2e8f0;
+  --color-slate-100: #f1f5f9;
+  --color-white: #ffffff;
+  --color-red: #ef4444; /* for general error/accent */
+
+  /* Radius & Spacing */
+  --radius-lg: 0.75rem; /* 12px */
+  --spacing-p: 2rem;
+  --spacing-gap: 1.5rem;
+}
+
+/* Base Body Styles (simulating global font and dark mode) */
+:host {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------------------- */
+/* 2. Layout */
+/* ------------------------------------------- */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(
+    to bottom right,
+    var(--color-slate-100),
+    var(--color-white),
+    var(--color-white)
+  );
+}
+
+/* Dark mode simulation for background */
+/* .auth-container:host-context(.dark) {
+  background: linear-gradient(to bottom right, 
+    rgba(25, 25, 45, 0.1), 
+    var(--color-background-dark), 
+    var(--color-background-dark));
+} */
+
+.auth-card-wrapper {
+  width: 100%;
+  max-width: 28rem; /* max-w-md */
+  margin: auto; /* mx-auto */
+}
+
+/* ------------------------------------------- */
+/* 3. Card & Header */
+/* ------------------------------------------- */
+.auth-card {
+  background-color: var(--color-white);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-p);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-p);
+}
+
+.card-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mail-icon-bg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(99, 102, 241, 0.1);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  margin: 0 auto 1.5rem auto;
+}
+
+.mail-icon {
+  color: var(--color-primary);
+  width: 2rem;
+  height: 2rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-slate-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.card-description {
+  margin-top: 0.5rem;
+  color: var(--color-slate-600);
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------- */
+/* 4. Tabs/Controls */
+/* ------------------------------------------- */
+.tab-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  background-color: var(--color-slate-100);
+  padding: 0.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.tab-button {
+  all: unset;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  text-align: center;
+  transition: all 0.15s ease-in-out;
+  color: var(--color-slate-600);
+}
+
+.tab-button.active-tab {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.tab-button:hover:not(.active-tab) {
+  background-color: var(--color-slate-200);
+}
+
+/* ------------------------------------------- */
+/* 5. Forms & Transitions (CSS Slide Effect Restored) */
+/* ------------------------------------------- */
+
+/* Wrapper for the fixed height and overflow clip */
+.form-transition-wrapper {
+  position: relative;
+  /* Fixed height is necessary to prevent vertical jumping when swapping forms */
+  min-height: 30rem;
+  overflow: hidden;
+}
+
+.form-content {
+  position: absolute; /* Allows both forms to overlap */
+  top: 0;
+  left: 0;
+  width: 100%;
+
+  /* Transition on transform and opacity */
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+
+  /* Initial state: Hidden and off-screen right */
+  opacity: 0;
+  transform: translateX(100%);
+
+  /* Form layout */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* --- Active Form State (Appears) --- */
+.form-content.form-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* --- Inactive Form State (Slides Off) --- */
+.login-form:not(.form-active) {
+  transform: translateX(-100%); /* Login slides left */
+  pointer-events: none;
+}
+
+.signup-form:not(.form-active) {
+  transform: translateX(100%); /* Signup waits/slides right */
+  pointer-events: none;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-slate-700);
+  margin-bottom: 0.5rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forgot-link {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-slate-400);
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-slate-100);
+  color: var(--color-slate-800);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.form-input::placeholder {
+  color: var(--color-slate-400);
+}
+
+/* ------------------------------------------- */
+/* 6. Buttons & Loading */
+/* ------------------------------------------- */
+.btn-primary {
+  all: unset;
+  cursor: pointer;
+  /* width: 100%; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  transition: background-color 0.15s, opacity 0.15s;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2), 0 2px 4px -2px rgba(99, 102, 241, 0.1);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #4f46e5;
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-background-light), 0 0 0 5px var(--color-primary);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.arrow-icon {
+  color: var(--color-white);
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 2px solid var(--color-white);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
