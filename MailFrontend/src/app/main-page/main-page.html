@@ -2,19 +2,26 @@
 
   <!-- 1. The Sidebar (Fixed Width) -->
   <app-email-sidebar
-    [folders]="folders"
-    [activeFolder]="currentFolderId"
-    [emailCounts]="counts"
-    (folderSelect)="onFolderSelected($event)"
-    (composeClick)="onCompose()"
+    [folders]="emailHandler.folders()"
+    [activeFolder]="emailHandler.currentFolderId()"
+    [emailCounts]="emailHandler.counts()"
+    (folderSelect)="emailHandler.onFolderSelected($event)"
+    (composeClick)="emailHandler.onCompose()"
+    (contactsClick)="emailHandler.contactsClick()"
+    (addFolder)="emailHandler.addFolder()"
+    (deleteFolder)="emailHandler.deleteFolder()"
+    (editFolder)="emailHandler.editFolder()"
   ></app-email-sidebar>
 
   <!-- 2. The Main Content (Takes remaining space) -->
   <main class="main-content">
     <app-email-list
-      [emails]="filteredEmails"
-      [folders]="folders"
-      (refresh)="onRefresh()"
+      [emails]="emailHandler.filteredEmails()"
+      [folders]="emailHandler.folders()"
+      (refresh)="emailHandler.onRefresh()"
+      (deleteEmails)="emailHandler.onDeleteEmails($event)"
+      (emailSelect)="emailHandler.onEmailSelect()"
+      (moveToFolder)="emailHandler.moveToFolder()"
     ></app-email-list>
   </main>
 

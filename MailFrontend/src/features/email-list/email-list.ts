@@ -87,6 +87,9 @@ export class EmailListComponent {
 
   handleRefresh() {
     this.isRefreshing = true;
+    // This signal is sent to the parent component (main-page)
+    // When calling this component in the main-page.html, we defined a parameter (refresh)="onRefresh"
+    // This means that the onRefresh() in the main-page is called when we do this.refresh.emit()
     this.refresh.emit();
     setTimeout(() => this.isRefreshing = false, 1000); // Fake spinner duration
   }
@@ -122,7 +125,7 @@ export class EmailListComponent {
     this.currentPage = Math.max(1, Math.min(this.totalPages, this.currentPage + delta));
   }
 
-  // Helper for date formatting (React's formatEmailDate)
+  // Helper for date formatting
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();
