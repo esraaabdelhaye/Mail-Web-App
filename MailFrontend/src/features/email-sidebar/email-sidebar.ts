@@ -40,8 +40,8 @@ export class EmailSidebarComponent {
     return this.emailHandler.folders().filter(f => f.isCustom);
   }
 
-  getCount(folderId: string){
-    return this.emailHandler.counts()[folderId] || 0;
+  getFolderCount(folderId: string){
+    return this.emailHandler.folderCounts()[folderId] || 0;
   }
 
   // Helper to map system IDs to Icons

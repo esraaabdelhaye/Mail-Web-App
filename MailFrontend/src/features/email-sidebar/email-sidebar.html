@@ -30,9 +30,9 @@
           <lucide-icon [img]="getIconForFolder(folder.id)" class="nav-icon"></lucide-icon>
           <span class="nav-label">{{ folder.name }}</span>
 
-          @if (getCount(emailHandler.currentFolderId()) > 0) {
+          @if (getFolderCount(emailHandler.currentFolderId()) > 0) {
             <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.id">
-              {{ getCount(folder.id) }}
+              {{ getFolderCount(folder.id) }}
             </span>
           }
         </button>

@@ -23,7 +23,7 @@ export class EmailHandler {
 
   // --- Actions ---
 
-  readonly counts = computed(() => {
+  readonly folderCounts = computed(() => {
     const counts: Record<string, number> = {};
     const allEmails = this.emails();
 
