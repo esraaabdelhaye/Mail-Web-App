@@ -54,16 +54,16 @@ export class EmailHandler {
     // This should be used to delete the emails from the backend
   }
 
-  // Sidebar actions
+  composeEmail() {
+    console.log('Open compose modal');
+  }
+
+  // Folder actions
 
   selectFolder(folderId: string) {
     this.currentFolderId.set(folderId);
     console.log('Load emails for:', folderId);
     // In real app: this.emailService.loadEmails(folderId);
-  }
-
-  composeEmail() {
-    console.log('Open compose modal');
   }
 
   addFolder(folderName: string){}

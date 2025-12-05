@@ -72,6 +72,8 @@ export class EmailSidebarComponent {
     }
   }
 
+  openComposeEmailModal(){}
+
   startEditing(folder: FolderModel, event: Event) {
     event.stopPropagation();
     this.editingFolderId = folder.id;
