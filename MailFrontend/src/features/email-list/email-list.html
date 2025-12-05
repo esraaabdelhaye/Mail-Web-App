@@ -7,6 +7,7 @@
       <!-- Search -->
       <div class="search-group">
         <lucide-icon [img]="icons.Search" class="search-icon"></lucide-icon>
+        <!--[(ngModel)]="searchQuery" this updates the searchQuery variable with the current text in the input-->
         <input
           type="text"
           placeholder="Search emails..."
@@ -91,7 +92,7 @@
           class="email-row"
           [class.unread]="!email.isRead"
           [class.selected]="selectedEmailId === email.id"
-          (click)="emailSelect.emit(email)">
+          (click)="openEmailDetail()">
 
           <div class="row-checkbox" (click)="$event.stopPropagation()">
             <input
@@ -110,8 +111,8 @@
 
           <div class="row-content">
             <div class="row-top">
-              <span class="sender-name">{{ email.sender }}</span>
-              @if (email.attachments?.length) {
+              <span class="sender-name">{{ email.sender.name }}</span>
+              @if (email.attachments.length) {
                 <span class="attachment-badge">📎</span>
               }
             </div>

@@ -18,14 +18,15 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
 }
 
 /* Search */
 .search-group {
   position: relative;
   flex: 1;
-  min-width: 200px;
+  min-width: 150px;
 }
 
 .search-icon {
@@ -65,6 +66,8 @@
   color: hsl(var(--foreground));
   font-size: 0.875rem;
   cursor: pointer;
+  min-width: 200px;
+  text-align: center;
 }
 
 /* View Toggle */

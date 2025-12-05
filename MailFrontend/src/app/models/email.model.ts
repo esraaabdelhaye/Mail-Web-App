@@ -17,7 +17,7 @@ export interface Email {
 export interface Attachment {
   id: string;
   name: string;
-  size: number;
+  size: string;
   type: string;
 }
 

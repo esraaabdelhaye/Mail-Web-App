@@ -2,19 +2,12 @@
 
   <!-- 1. The Sidebar (Fixed Width) -->
   <app-email-sidebar
-    [folders]="folders"
-    [activeFolder]="currentFolderId"
-    [emailCounts]="counts"
-    (folderSelect)="onFolderSelected($event)"
-    (composeClick)="onCompose()"
   ></app-email-sidebar>
 
   <!-- 2. The Main Content (Takes remaining space) -->
   <main class="main-content">
     <app-email-list
-      [emails]="filteredEmails"
-      [folders]="folders"
-      (refresh)="onRefresh()"
+
     ></app-email-list>
   </main>
 
