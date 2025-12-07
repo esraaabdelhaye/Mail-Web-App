@@ -7,6 +7,7 @@
       <!-- Search -->
       <div class="search-group">
         <lucide-icon [img]="icons.Search" class="search-icon"></lucide-icon>
+        <!--[(ngModel)]="searchQuery" this updates the searchQuery variable with the current text in the input-->
         <input
           type="text"
           placeholder="Search emails..."
@@ -24,7 +25,7 @@
       </select>
 
       <!-- Refresh Button -->
-      <button app-button variant="outline" size="icon" (click)="handleRefresh()" [disabled]="isRefreshing">
+      <button app-button variant="outline" size="icon" (click)="emailHandler.onRefresh()" [disabled]="isRefreshing">
         <lucide-icon [img]="icons.RefreshCw" [class.spin]="isRefreshing"></lucide-icon>
       </button>
 
@@ -81,8 +82,25 @@
 
       <!-- List Header (Select All) -->
       <div class="list-header">
-        <input type="checkbox" (change)="toggleSelectAll($event)">
-        <span>Select all</span>
+        <div class="list-header-left">
+          <input type="checkbox" (change)="toggleSelectAll($event)">
+          <span>Select all</span>
+        </div>
+
+        <div class="list-header-right">
+          <span class="page-info">
+            {{ (currentPage-1) * itemsPerPage + 1}} - {{math.min(currentPage * itemsPerPage, processedEmails.length)}} of {{processedEmails.length}}
+          </span>
+
+          <div class="pagination-buttons">
+            <button app-button variant="ghost" size="icon" (click)="changePage(-1)" [disabled] = "currentPage===1" >
+              <lucide-icon [img]="icons.ChevronLeft"></lucide-icon>
+            </button>
+            <button app-button variant="ghost" size="icon" (click)="changePage(1)" [disabled] = "currentPage===totalPages" >
+              <lucide-icon [img]="icons.ChevronRight"></lucide-icon>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Rows -->
@@ -91,7 +109,7 @@
           class="email-row"
           [class.unread]="!email.isRead"
           [class.selected]="selectedEmailId === email.id"
-          (click)="emailSelect.emit(email)">
+          (click)="emailHandler.openEmail(email)">
 
           <div class="row-checkbox" (click)="$event.stopPropagation()">
             <input
@@ -102,16 +120,25 @@
 
           <div class="row-priority">
             @if (email.priority === 1) {
-              <lucide-icon [img]="icons.AlertCircle" class="icon-high"></lucide-icon>
+              <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
+<!--              😨-->
             } @else if (email.priority === 2) {
-              <lucide-icon [img]="icons.Flag" class="icon-med"></lucide-icon>
+              <lucide-icon [img]="icons.ChevronsUp" class="priority-medium"></lucide-icon>
+<!--              😧-->
+            } @else if (email.priority === 3) {
+              <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
+<!--              🥱-->
             }
+            @else if (email.priority === 4) {
+              😴
+            }
+
           </div>
 
           <div class="row-content">
             <div class="row-top">
-              <span class="sender-name">{{ email.sender }}</span>
-              @if (email.attachments?.length) {
+              <span class="sender-name">{{ email.sender.name }}</span>
+              @if (email.attachments.length) {
                 <span class="attachment-badge">📎</span>
               }
             </div>

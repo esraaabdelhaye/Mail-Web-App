@@ -1,21 +1,17 @@
 <div class="app-container">
 
-  <!-- 1. The Sidebar (Fixed Width) -->
-  <app-email-sidebar
-    [folders]="folders"
-    [activeFolder]="currentFolderId"
-    [emailCounts]="counts"
-    (folderSelect)="onFolderSelected($event)"
-    (composeClick)="onCompose()"
-  ></app-email-sidebar>
+  <!-- The left side bar-->
+  <app-email-sidebar></app-email-sidebar>
 
-  <!-- 2. The Main Content (Takes remaining space) -->
+
   <main class="main-content">
-    <app-email-list
-      [emails]="filteredEmails"
-      [folders]="folders"
-      (refresh)="onRefresh()"
-    ></app-email-list>
+    @if (emailHandler.openedEmail() != null){
+      <app-email-detail [email]="emailHandler.openedEmail()!" (back)="emailHandler.closeEmail()"></app-email-detail>
+    }
+    @else{
+      <app-email-list></app-email-list>
+    }
+
   </main>
 
 </div>

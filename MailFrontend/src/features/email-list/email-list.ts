@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid } from 'lucide-angular';
+import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, ChevronsUp,ChevronsDown ,LayoutList, LayoutGrid } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button'
-import { Email, Folder } from '../../app/models/email.model'; // Ensure this path matches yours
+import { Email, Folder } from '../../app/models/email.model';
+import {EmailHandler} from '../../services/emails-handler/email-handler';
+import {disabled} from '@angular/forms/signals'; // Ensure this path matches yours
 
 @Component({
   selector: 'app-email-list',
@@ -14,33 +16,32 @@ import { Email, Folder } from '../../app/models/email.model'; // Ensure this pat
 })
 export class EmailListComponent {
 
-  @Input() emails: Email[] = [];
-  @Input() folders: Folder[] = [];
-  @Input() selectedEmailId: string | null = null;
 
-  @Output() emailSelect = new EventEmitter<Email>();
-  @Output() refresh = new EventEmitter<void>();
-  @Output() moveToFolder = new EventEmitter<{ids: string[], folderId: string}>();
-  @Output() deleteEmails = new EventEmitter<string[]>();
+  protected emailHandler = inject(EmailHandler);
+
 
   // --- State ---
   searchQuery = '';
   sortBy: 'date' | 'sender' | 'importance' | 'subject' = 'date';
   viewMode: 'default' | 'priority' = 'default';
+  itemsPerPage = 5;
   currentPage = 1;
-  itemsPerPage = 10;
   isRefreshing = false;
+  selectedEmailId: string | null = null;
 
   // Set to track selected IDs
   selectedIds = new Set<string>();
 
   // --- Icons for Template ---
-  readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid };
-
+  readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid, ChevronsUp, ChevronsDown };
+  protected readonly math = Math
 
   get processedEmails(): Email[] {
+    // filteredEmails are the emails in the current selected folder
+    const baseList = this.emailHandler.filteredEmails();
+
     // 1. Filter
-    let result = this.emails.filter(email => {
+    let result = baseList.filter(email => {
       const query = this.searchQuery.toLowerCase();
       return (
         email.subject.toLowerCase().includes(query) ||
@@ -80,15 +81,14 @@ export class EmailListComponent {
   }
 
   get customFolders(): Folder[] {
-    return this.folders.filter(f => f.isCustom || f.id === 'trash');
+    return this.emailHandler.folders().filter(f => f.isCustom || f.id === 'trash');
   }
 
   // --- Actions ---
 
-  handleRefresh() {
-    this.isRefreshing = true;
-    this.refresh.emit();
-    setTimeout(() => this.isRefreshing = false, 1000); // Fake spinner duration
+  handleDelete() {
+    this.emailHandler.deleteEmails(Array.from(this.selectedIds));
+    this.selectedIds.clear();
   }
 
   toggleSelectAll(event: any) {
@@ -109,12 +109,7 @@ export class EmailListComponent {
   }
 
   handleMove(folderId: string) {
-    this.moveToFolder.emit({ ids: Array.from(this.selectedIds), folderId });
-    this.selectedIds.clear();
-  }
-
-  handleDelete() {
-    this.deleteEmails.emit(Array.from(this.selectedIds));
+    // this.emailHandler.moveToFolder(Array.from(this.selectedIds), folderId )
     this.selectedIds.clear();
   }
 
@@ -122,7 +117,7 @@ export class EmailListComponent {
     this.currentPage = Math.max(1, Math.min(this.totalPages, this.currentPage + delta));
   }
 
-  // Helper for date formatting (React's formatEmailDate)
+  // Helper for date formatting
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();
@@ -131,4 +126,6 @@ export class EmailListComponent {
     if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
+
+  protected readonly disabled = disabled;
 }
