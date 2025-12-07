@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, ChevronsUp,ChevronsDown ,LayoutList, LayoutGrid } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button'
 import { Email, Folder } from '../../app/models/email.model';
-import {EmailHandler} from '../../services/emails-handler/email-handler'; // Ensure this path matches yours
+import {EmailHandler} from '../../services/emails-handler/email-handler';
+import {disabled} from '@angular/forms/signals'; // Ensure this path matches yours
 
 @Component({
   selector: 'app-email-list',
@@ -33,7 +34,7 @@ export class EmailListComponent {
 
   // --- Icons for Template ---
   readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid, ChevronsUp, ChevronsDown };
-
+  protected readonly math = Math
 
   get processedEmails(): Email[] {
     // filteredEmails are the emails in the current selected folder
@@ -125,4 +126,6 @@ export class EmailListComponent {
     if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
+
+  protected readonly disabled = disabled;
 }

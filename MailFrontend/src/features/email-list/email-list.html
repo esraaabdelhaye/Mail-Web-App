@@ -82,8 +82,25 @@
 
       <!-- List Header (Select All) -->
       <div class="list-header">
-        <input type="checkbox" (change)="toggleSelectAll($event)">
-        <span>Select all</span>
+        <div class="list-header-left">
+          <input type="checkbox" (change)="toggleSelectAll($event)">
+          <span>Select all</span>
+        </div>
+
+        <div class="list-header-right">
+          <span class="page-info">
+            {{ (currentPage-1) * itemsPerPage + 1}} - {{math.min(currentPage * itemsPerPage, processedEmails.length)}} of {{processedEmails.length}}
+          </span>
+
+          <div class="pagination-buttons">
+            <button app-button variant="ghost" size="icon" (click)="changePage(-1)" [disabled] = "currentPage===1" >
+              <lucide-icon [img]="icons.ChevronLeft"></lucide-icon>
+            </button>
+            <button app-button variant="ghost" size="icon" (click)="changePage(1)" [disabled] = "currentPage===totalPages" >
+              <lucide-icon [img]="icons.ChevronRight"></lucide-icon>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Rows -->
