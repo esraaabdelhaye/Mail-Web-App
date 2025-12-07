@@ -104,10 +104,16 @@
           <div class="row-priority">
             @if (email.priority === 1) {
               <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
+<!--              😨-->
             } @else if (email.priority === 2) {
               <lucide-icon [img]="icons.ChevronsUp" class="priority-medium"></lucide-icon>
+<!--              😧-->
             } @else if (email.priority === 3) {
               <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
+<!--              🥱-->
+            }
+            @else if (email.priority === 4) {
+              😴
             }
 
           </div>

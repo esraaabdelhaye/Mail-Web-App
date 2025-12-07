@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {Component, EventEmitter, inject, Input, Output, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Sparkles, Download, Trash2, FileText, Image as ImageIcon, File, Loader2 } from 'lucide-angular';
-import {Email} from '../../app/models/email.model';
+import {Attachment, Email} from '../../app/models/email.model';
 import {ButtonComponent} from '../../shared/button/button';
+import {BackendController} from '../../services/backend-controller/backend-controller';
 
 
 
@@ -18,6 +19,8 @@ export class EmailDetailComponent {
   @Output() back = new EventEmitter<void>();
   @Output() deleteAttachment = new EventEmitter<string>();
 
+  private backendController = inject(BackendController);
+
   // --- State ---
   isSummarizing = signal(false);
   summary = signal<string | null>(null);
@@ -25,6 +28,13 @@ export class EmailDetailComponent {
   readonly icons = { ArrowLeft, Sparkles, Download, Trash2, FileText, ImageIcon, File, Loader2 };
 
   // --- Actions ---
+
+
+  downloadAttachment(file: Attachment){
+    const id = file.id;
+    const blob = this.backendController.getFileContentFromEmail(this.email, id);
+    this.download(blob, file.name);
+  }
 
   async handleSummarize() {
     this.isSummarizing.set(true);
@@ -59,5 +69,25 @@ export class EmailDetailComponent {
   // Helper to split body into paragraphs
   get paragraphs(): string[] {
     return this.email.body.split('\n');
+  }
+
+  // Creates a downloadable link
+  private download(blob: Blob, fileName: string){
+    // 1. Create a URL for the Blob (like a temporary file path in memory)
+    const url = window.URL.createObjectURL(blob);
+
+    // 2. Create an invisible anchor tag <a>
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName; // Tells browser: "Don't open this, SAVE it as..."
+    link.style.display = 'none'; // Hide it from the user
+
+    // 3. Add to the page, click it, and remove it
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 4. Free up the memory (Important!)
+    window.URL.revokeObjectURL(url);
   }
 }
