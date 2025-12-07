@@ -14,6 +14,7 @@ export class EmailHandler {
   // Mock Folders
   readonly folders = signal<Folder[]>(this.backendController.getFolders());
 
+  readonly openedEmail = signal<Email | null>(null);
 
   // Emails in the selected folder
   readonly filteredEmails = computed(() => {
@@ -46,7 +47,14 @@ export class EmailHandler {
     console.log('Refreshing...');
   }
 
-  onEmailSelect(){}
+  openEmail(email: Email){
+    this.openedEmail.set(email);
+    this.markAsRead(email.id);
+  }
+
+  closeEmail(){
+    this.openedEmail.set(null);
+  }
 
   moveToFolder(){}
 
@@ -73,4 +81,10 @@ export class EmailHandler {
   editFolder(){}
 
   contactsClick(){}
+
+  markAsRead(id: string) {
+    this.emails.update(list =>
+      list.map(e => e.id === id ? { ...e, isRead: true } : e)
+    );
+  }
 }

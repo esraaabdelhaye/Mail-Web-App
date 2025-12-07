@@ -1,1 +1,106 @@
-<p>email-detail works!</p>
+<div class="detail-container">
+
+  <!-- Header Section -->
+  <div class="header">
+
+    <!-- Top Bar: Back Button, Subject, AI Button -->
+    <div class="top-bar">
+      <!-- Back Button -->
+      <button app-button variant="ghost" size="icon" (click)="back.emit()">
+        <lucide-icon [img]="icons.ArrowLeft"></lucide-icon>
+      </button>
+
+      <h1 class="subject">{{ email.subject }}</h1>
+
+      <!-- AI Summarize Button -->
+      <button app-button (click)="handleSummarize()" [disabled]="isSummarizing()">
+        @if (isSummarizing()) {
+          <lucide-icon [img]="icons.Loader2" class="spin mr-2"></lucide-icon>
+          Summarizing...
+        } @else {
+          <lucide-icon [img]="icons.Sparkles" class="mr-2"></lucide-icon>
+          Summarize with AI
+        }
+      </button>
+    </div>
+
+    <!-- Sender Info -->
+    <div class="sender-info">
+      <div class="avatar-group">
+        <div class="avatar">
+          {{ email.sender.name.charAt(0) }}
+        </div>
+        <div class="meta">
+          <div class="sender-name">{{ email.sender.name }}</div>
+          <div class="sender-email">{{ email.sender.email }}</div>
+        </div>
+      </div>
+      <div class="date">
+        {{ formatDate(email.date.toDateString()) }}
+      </div>
+    </div>
+
+    <div class="to-line">
+      To: {{ email.to.join(', ') }}
+    </div>
+  </div>
+
+  <!-- Content Section (Scrollable) -->
+  <div class="content">
+
+    <!-- AI Summary Box (Shows only if summary exists) -->
+    @if (summary()) {
+      <div class="summary-box animate-slide-up">
+        <div class="summary-header">
+          <lucide-icon [img]="icons.Sparkles" class="sparkle-icon"></lucide-icon>
+          <span>AI Summary</span>
+        </div>
+        <p>{{ summary() }}</p>
+      </div>
+    }
+
+    <!-- Email Body -->
+    <div class="body-text">
+      @for (para of paragraphs; track $index) {
+        <!-- Add spacer class if paragraph is just a newline -->
+        <p [class.spacer]="para.trim() === ''">{{ para }}</p>
+      }
+    </div>
+
+    <!-- Attachments Section -->
+    @if (email.attachments.length > 0) {
+      <div class="attachments-section">
+        <h3>Attachments ({{ email.attachments.length }})</h3>
+
+        <div class="attachments-list">
+          @for (file of email.attachments; track file.id) {
+            <div class="attachment-card group">
+
+              <!-- File Icon -->
+              <div class="file-icon-box">
+                <lucide-icon [img]="getAttachmentIcon(file.type)"></lucide-icon>
+              </div>
+
+              <!-- File Info -->
+              <div class="file-info">
+                <div class="file-name">{{ file.name }}</div>
+                <div class="file-size">{{ file.size }}</div>
+              </div>
+
+              <!-- Actions (Download/Delete) -->
+              <div class="file-actions">
+                <button app-button variant="ghost" size="icon">
+                  <lucide-icon [img]="icons.Download"></lucide-icon>
+                </button>
+                <button app-button variant="ghost" size="icon" class="delete-btn" (click)="deleteAttachment.emit(file.id)">
+                  <lucide-icon [img]="icons.Trash2"></lucide-icon>
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

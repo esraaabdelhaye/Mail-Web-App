@@ -1,7 +1,7 @@
-import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid } from 'lucide-angular';
+import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, ChevronsUp,ChevronsDown ,LayoutList, LayoutGrid } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button'
 import { Email, Folder } from '../../app/models/email.model';
 import {EmailHandler} from '../../services/emails-handler/email-handler'; // Ensure this path matches yours
@@ -32,7 +32,7 @@ export class EmailListComponent {
   selectedIds = new Set<string>();
 
   // --- Icons for Template ---
-  readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid };
+  readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid, ChevronsUp, ChevronsDown };
 
 
   get processedEmails(): Email[] {
@@ -85,9 +85,6 @@ export class EmailListComponent {
 
   // --- Actions ---
 
-  handleRefresh() {
-     this.emailHandler.onRefresh();
-  }
   handleDelete() {
     this.emailHandler.deleteEmails(Array.from(this.selectedIds));
     this.selectedIds.clear();
@@ -114,8 +111,6 @@ export class EmailListComponent {
     // this.emailHandler.moveToFolder(Array.from(this.selectedIds), folderId )
     this.selectedIds.clear();
   }
-
-  openEmailDetail(){}
 
   changePage(delta: number) {
     this.currentPage = Math.max(1, Math.min(this.totalPages, this.currentPage + delta));

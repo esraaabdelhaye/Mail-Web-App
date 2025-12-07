@@ -25,7 +25,7 @@
       </select>
 
       <!-- Refresh Button -->
-      <button app-button variant="outline" size="icon" (click)="handleRefresh()" [disabled]="isRefreshing">
+      <button app-button variant="outline" size="icon" (click)="emailHandler.onRefresh()" [disabled]="isRefreshing">
         <lucide-icon [img]="icons.RefreshCw" [class.spin]="isRefreshing"></lucide-icon>
       </button>
 
@@ -92,7 +92,7 @@
           class="email-row"
           [class.unread]="!email.isRead"
           [class.selected]="selectedEmailId === email.id"
-          (click)="openEmailDetail()">
+          (click)="emailHandler.openEmail(email)">
 
           <div class="row-checkbox" (click)="$event.stopPropagation()">
             <input
@@ -103,10 +103,13 @@
 
           <div class="row-priority">
             @if (email.priority === 1) {
-              <lucide-icon [img]="icons.AlertCircle" class="icon-high"></lucide-icon>
+              <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
             } @else if (email.priority === 2) {
-              <lucide-icon [img]="icons.Flag" class="icon-med"></lucide-icon>
+              <lucide-icon [img]="icons.ChevronsUp" class="priority-medium"></lucide-icon>
+            } @else if (email.priority === 3) {
+              <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
             }
+
           </div>
 
           <div class="row-content">

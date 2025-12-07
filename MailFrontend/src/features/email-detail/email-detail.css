@@ -1,0 +1,213 @@
+/* Main Layout */
+.detail-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: hsl(var(--background));
+}
+
+/* --- Header Area --- */
+.header {
+  padding: 1.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.subject {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+  /* Truncate if too long */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sender Info */
+.sender-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.avatar-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  border-radius: 9999px; /* Circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.sender-name {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.sender-email {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.date, .to-line {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.to-line { margin-top: 0.5rem; }
+
+/* --- Content Area --- */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* AI Summary Box */
+.summary-box {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: hsl(var(--primary) / 0.05);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: 0.5rem;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: hsl(var(--primary));
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.sparkle-icon { width: 1rem; height: 1rem; }
+
+.summary-box p {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Body Text */
+.body-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+  max-width: 70ch; /* Optimal reading width */
+}
+
+.spacer { height: 1rem; }
+
+/* Attachments */
+.attachments-section {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.attachments-section h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: hsl(var(--foreground));
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Attachment Card */
+.attachment-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  border: 1px solid transparent;
+}
+
+.attachment-card:hover {
+  background-color: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--border));
+}
+
+.file-icon-box {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: hsl(var(--background));
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* File Actions (Visible on Hover) */
+.file-actions {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.2s;
+}
+
+/* Group hover trick: when card is hovered, show actions */
+.attachment-card:hover .file-actions {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Utilities */
+.mr-2 { margin-right: 0.5rem; }
+.spin { animation: spin 1s linear infinite; }
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
