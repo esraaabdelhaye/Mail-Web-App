@@ -100,18 +100,13 @@ export class ComposeEmail {
     if (currentState !== this.lastAutoSavedState) {
       console.log("saving..");
       this.lastAutoSavedState = currentState;
-      this.saveDraft.emit();
+
     }
+
+          // this.saveDraft.emit();
   }
 
-  // showDraftSavedToast() {
-  //   this.showSavedToast = true;
-  //   this.cdr.detectChanges();
-  //   setTimeout(() => {
-  //   this.showSavedToast = false;
-  //   this.cdr.detectChanges();
-  // }, 2000);
-  // }
+
 
   // --- Handlers ---
 
@@ -224,7 +219,6 @@ export class ComposeEmail {
 
   handleSaveDraft() {
     this.saveDraft.emit();
-    // this.showDraftSavedToast();
     this.resetForm();
   }
 
