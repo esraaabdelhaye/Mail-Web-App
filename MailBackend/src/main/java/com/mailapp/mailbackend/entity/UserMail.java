@@ -3,8 +3,15 @@ package com.mailapp.mailbackend.entity;
 
 import com.mailapp.mailbackend.enums.Priority;
 import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.Date;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "user_mails")
 public class UserMail {
 
@@ -24,6 +31,9 @@ public class UserMail {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id")
     private Folder folder;
+
+    @Column(name = "sent_at")
+    private Date sentAt;
 
     @Column(name = "is_read")
     private Boolean isRead;

@@ -18,7 +18,7 @@ public class UserService {
     ChainFactory chainFactory;
 
 
-    private MainMapper userMapper = Mappers.getMapper(MainMapper.class);
+    private final MainMapper userMapper = Mappers.getMapper(MainMapper.class);
 
     public UserDTO register(UserDTO userDTO) throws Exception {
         if(chainFactory.getChain(ChainType.Register).handle(userDTO)) {
