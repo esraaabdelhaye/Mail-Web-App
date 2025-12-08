@@ -125,6 +125,7 @@ export class BackendController {
       { id: 'inbox', name: 'Inbox', isCustom: false },
       { id: 'sent', name: 'Sent', isCustom: false },
       { id: 'trash', name: 'Trash', isCustom: false },
+      { id: 'draft', name: 'Drafts', isCustom: false },
       { id: 'project', name: 'CSE 223 Project', isCustom: true }
     ];
   }
