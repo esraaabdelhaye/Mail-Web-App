@@ -1,5 +1,4 @@
 <aside class="sidebar">
-
   <!-- Logo Section -->
   <div class="logo-section">
     <div class="logo-box">
@@ -18,9 +17,7 @@
 
   <!-- Navigation -->
   <nav class="nav-content">
-
-    <!-- Default Folders (Inbox, Sent, etc) -->
-    <div class="folder-group">
+    <!-- <div class="folder-group">
       @for (folder of defaultFolders; track folder.id) {
         <button
           class="nav-item"
@@ -39,7 +36,7 @@
       }
     </div>
 
-    <!-- Custom Folders Section -->
+
     <div class="custom-folders-section">
       <button class="section-header" (click)="isFoldersOpen = !isFoldersOpen">
         <span>FOLDERS</span>
@@ -56,7 +53,7 @@
           @for (folder of customFolders; track folder.id) {
             <div class="folder-row-container group">
 
-              <!-- Editing Mode -->
+            
               @if (editingFolderId === folder.id) {
                 <div class="edit-row">
                   <input
@@ -75,7 +72,7 @@
               }
 
               @else {
-                <!-- Normal Mode -->
+            
                 <button
                   class="nav-item"
                   [class.active]="emailHandler.currentFolderId() === folder.id"
@@ -84,7 +81,6 @@
                   <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
                   <span class="nav-label">{{ folder.name }}</span>
 
-                  <!-- Hover Actions -->
                   <div class="folder-actions">
                     <button class="action-btn" (click)="startEditing(folder, $event)">
                       <lucide-icon [img]="icons.Pencil" size="14"></lucide-icon>
@@ -98,7 +94,6 @@
             </div>
           }
 
-          <!-- Add Folder Row -->
           <div class="add-folder-row">
             @if (isAddingFolder) {
               <div class="edit-row">
@@ -126,7 +121,7 @@
 
         </div>
       }
-    </div>
+    </div> -->
 
     <!-- Contacts Link -->
     <div class="contacts-section">
@@ -135,7 +130,6 @@
         <span>Contacts</span>
       </button>
     </div>
-
   </nav>
 </aside>
 

@@ -28,19 +28,16 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "username", unique = true, nullable = false)
-    private String username;
-
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @OneToMany(mappedBy = "sender" ,orphanRemoval = true)
+    @OneToMany(mappedBy = "sender" ,orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Mail> sentMails = new HashSet<>();
 
-    @OneToMany(mappedBy = "users", orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true,cascade = CascadeType.ALL)
     private Set<Folder> userFolders = new HashSet<>();
 
-    @OneToMany(mappedBy = "user",orphanRemoval = true)
+    @OneToMany(mappedBy = "user",orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Contact> contacts = new HashSet<>();
 
 }

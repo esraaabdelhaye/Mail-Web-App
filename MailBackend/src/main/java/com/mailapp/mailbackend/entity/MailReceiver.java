@@ -1,8 +1,16 @@
 package com.mailapp.mailbackend.entity;
 import com.mailapp.mailbackend.enums.ReceiverType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "mail_receivers")
 public class MailReceiver {
     @Id

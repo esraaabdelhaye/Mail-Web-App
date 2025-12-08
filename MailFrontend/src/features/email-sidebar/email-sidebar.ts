@@ -56,18 +56,18 @@ export class EmailSidebarComponent {
   };
 
   // default folders are the system default folders (not custom)
-  get defaultFolders(): FolderModel[] {
-    return this.emailHandler.folders().filter((f) => !f.isCustom);
-  }
+  // get defaultFolders(): FolderModel[] {
+  //   return this.emailHandler.folders().filter(f => !f.isCustom);
+  // }
 
-  // Custom folders are the non default folders (user created, i.e. custom)
-  get customFolders(): FolderModel[] {
-    return this.emailHandler.folders().filter((f) => f.isCustom);
-  }
+  // // Custom folders are the non default folders (user created, i.e. custom)
+  // get customFolders(): FolderModel[] {
+  //   return this.emailHandler.folders().filter(f => f.isCustom);
+  // }
 
-  getFolderCount(folderId: string) {
-    return this.emailHandler.folderCounts()[folderId] || 0;
-  }
+  // getFolderCount(folderId: string){
+  //   return this.emailHandler.folderCounts()[folderId] || 0;
+  // }
 
   // Helper to map system IDs to Icons
   getIconForFolder(id: string): any {
