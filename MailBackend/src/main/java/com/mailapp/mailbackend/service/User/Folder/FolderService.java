@@ -8,6 +8,7 @@ import com.mailapp.mailbackend.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,19 @@ public class FolderService {
 
         Folder saved = folderRepo.save(folder);
         return new UserFolderDTO(saved.getFolderId(), saved.getFolderName(), true);
+    }
+
+    // Create System folders
+    public void createSystemFolders(User user){
+        List<String> systemFolderNames = Arrays.asList("Inbox", "Sent", "Trash", "Drafts");
+
+        for (String name: systemFolderNames){
+            Folder folder = new Folder();
+            folder.setFolderName(name);
+            folder.setUser(user);
+            folder.setIsSystemFolder(true);
+            folderRepo.save(folder);
+        }
     }
 
 }
