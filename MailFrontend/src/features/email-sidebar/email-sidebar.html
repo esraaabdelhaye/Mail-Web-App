@@ -132,4 +132,9 @@
       </button>
     </div>
   </nav>
+
+  <app-compose-modal
+    [isOpen]="isComposeOpen"
+    (close)="isComposeOpen = false">
+  </app-compose-modal>
 </aside>

@@ -18,11 +18,12 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { FolderDTO as FolderModel } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
+import {ComposeModalComponent} from '../compose-model/compose-model';
 
 @Component({
   selector: 'app-email-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ComposeModalComponent],
   templateUrl: './email-sidebar.html',
   styleUrls: ['./email-sidebar.css'],
 })
@@ -40,6 +41,7 @@ export class EmailSidebarComponent implements OnInit{
   editingFolderId: string | null = null;
   editingFolderName = '';
   isFoldersOpen = true;
+  isComposeOpen = false;
 
   // --- Icons ---
   readonly icons = {
@@ -103,7 +105,9 @@ export class EmailSidebarComponent implements OnInit{
     }
   }
 
-  openComposeEmailModal() {}
+  openComposeEmailModal() {
+    this.isComposeOpen = true;
+  }
 
   startEditing(folder: FolderModel, event: Event) {
     event.stopPropagation();
