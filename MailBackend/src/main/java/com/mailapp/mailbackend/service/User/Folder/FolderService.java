@@ -57,4 +57,27 @@ public class FolderService {
         }
     }
 
+    // Rename a folder
+    public void renameFolder(Long folderId, String newName){
+        Folder folder = folderRepo.findById(folderId).orElseThrow(() -> new RuntimeException("Folder not found"));
+
+        if (Boolean.TRUE.equals(folder.getIsSystemFolder())){
+            throw new RuntimeException("Can't delete " + folder.getFolderName() + " as it is a system folder!");
+        }
+
+        folder.setFolderName(newName);
+        folderRepo.save(folder);
+    }
+
+    // Delete a folder
+    public void deleteFolder(Long folderId){
+        Folder folder = folderRepo.findById(folderId).orElseThrow(() -> new RuntimeException("Folder with id: "+ folderId.toString() +" not found"));
+
+        if (Boolean.TRUE.equals(folder.getIsSystemFolder())){
+            throw new RuntimeException("Can't delete " + folder.getFolderName() + " as it is a system folder!");
+        }
+
+        folderRepo.delete(folder);
+    }
+
 }

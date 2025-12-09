@@ -26,4 +26,10 @@ public class FolderController {
     public UserFolderDTO createFolder(@RequestParam Long userId, @RequestBody UserFolderDTO dto){
         return folderService.createFolder(userId, dto.folderName);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFolder(@PathVariable Long id){
+        folderService.deleteFolder(id);
+        return ResponseEntity.ok().build();
+    }
 }

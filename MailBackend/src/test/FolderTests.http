@@ -1,5 +1,30 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+### 1. Get All Folders for User 1
+GET http://localhost:8080/folders?userId=2
+Accept: application/json
 
-###
+### 2. Create a New Custom Folder for User 1
+POST http://localhost:8080/folders?userId=1
+Content-Type: application/json
+
+{
+  "folderName": "Project Alpha"
+}
+
+### 3. Create Another Folder (to verify list updates)
+POST http://localhost:8080/folders?userId=3
+Content-Type: application/json
+
+{
+  "folderName": "Personal"
+}
+
+### 4. Verify: Get All Folders Again (Should show 2 new folders)
+GET http://localhost:8080/folders?userId=3
+Accept: application/json
+
+### Verify can't delete system folder
+
+DELETE http://localhost:8080/folders/7
+
+### Verify delete non system folder
+DELETE http://localhost:8080/folders/9
