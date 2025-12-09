@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,7 +16,7 @@ import {
   Mail,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-import { Folder as FolderModel } from '../../app/models/email.model';
+import { FolderDTO as FolderModel } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 
 @Component({
@@ -26,8 +26,13 @@ import { EmailHandler } from '../../services/emails-handler/email-handler';
   templateUrl: './email-sidebar.html',
   styleUrls: ['./email-sidebar.css'],
 })
-export class EmailSidebarComponent {
+export class EmailSidebarComponent implements OnInit{
   protected emailHandler = inject(EmailHandler);
+
+  // Runs when the component is loaded
+  ngOnInit(): void {
+      this.emailHandler.loadFolders(); // We load the folders
+  }
 
   // --- State ---
   isAddingFolder = false;
@@ -52,14 +57,14 @@ export class EmailSidebarComponent {
   };
 
   // default folders are the system default folders (not custom)
-  // get defaultFolders(): FolderModel[] {
-  //   return this.emailHandler.folders().filter(f => !f.isCustom);
-  // }
+  get defaultFolders(): FolderModel[] {
+    return this.emailHandler.folders()!.filter(f => !f.isCustom);
+  }
 
   // // Custom folders are the non default folders (user created, i.e. custom)
-  // get customFolders(): FolderModel[] {
-  //   return this.emailHandler.folders().filter(f => f.isCustom);
-  // }
+  get customFolders(): FolderModel[] {
+    return this.emailHandler.folders()!.filter(f => f.isCustom);
+  }
 
   // getFolderCount(folderId: string){
   //   return this.emailHandler.folderCounts()[folderId] || 0;
@@ -92,7 +97,7 @@ export class EmailSidebarComponent {
 
   handleEditFolder(id: string) {
     if (this.editingFolderName.trim()) {
-      // this.emailHandler.editFolder.emit({ id, name: this.editingFolderName.trim() });
+      this.emailHandler.editFolder(id, this.editingFolderName);
       this.editingFolderId = null;
       this.editingFolderName = '';
     }
@@ -102,7 +107,7 @@ export class EmailSidebarComponent {
 
   startEditing(folder: FolderModel, event: Event) {
     event.stopPropagation();
-    this.editingFolderId = folder.id;
-    this.editingFolderName = folder.name;
+    this.editingFolderId = folder.folderID;
+    this.editingFolderName = folder.folderName;
   }
 }
