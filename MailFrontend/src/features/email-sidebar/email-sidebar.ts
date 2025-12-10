@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,24 +16,21 @@ import {
   Mail,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-import { FolderDTO as FolderModel } from '../../app/models/FolderDTO';
+import { Folder as FolderModel } from '../../app/models/email.model';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
-import {ComposeModalComponent} from '../compose-model/compose-model';
+import { ComposeEmail, EmailData } from '../compose-email/compose-email';
 
 @Component({
   selector: 'app-email-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ComposeModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ComposeEmail],
   templateUrl: './email-sidebar.html',
   styleUrls: ['./email-sidebar.css'],
 })
-export class EmailSidebarComponent implements OnInit{
+export class EmailSidebarComponent {
   protected emailHandler = inject(EmailHandler);
 
-  // Runs when the component is loaded
-  ngOnInit(): void {
-      this.emailHandler.loadFolders(); // We load the folders
-  }
+  showComposeEmailDialog = false;
 
   // --- State ---
   isAddingFolder = false;
@@ -41,7 +38,7 @@ export class EmailSidebarComponent implements OnInit{
   editingFolderId: string | null = null;
   editingFolderName = '';
   isFoldersOpen = true;
-  isComposeOpen = false;
+  showDraftSavedToast: boolean = false;
 
   // --- Icons ---
   readonly icons = {
@@ -59,14 +56,14 @@ export class EmailSidebarComponent implements OnInit{
   };
 
   // default folders are the system default folders (not custom)
-  get defaultFolders(): FolderModel[] {
-    return this.emailHandler.folders()!.filter(f => !f.isCustom);
-  }
+  // get defaultFolders(): FolderModel[] {
+  //   return this.emailHandler.folders().filter(f => !f.isCustom);
+  // }
 
   // // Custom folders are the non default folders (user created, i.e. custom)
-  get customFolders(): FolderModel[] {
-    return this.emailHandler.folders()!.filter(f => f.isCustom);
-  }
+  // get customFolders(): FolderModel[] {
+  //   return this.emailHandler.folders().filter(f => f.isCustom);
+  // }
 
   // getFolderCount(folderId: string){
   //   return this.emailHandler.folderCounts()[folderId] || 0;
@@ -99,19 +96,32 @@ export class EmailSidebarComponent implements OnInit{
 
   handleEditFolder(id: string) {
     if (this.editingFolderName.trim()) {
-      this.emailHandler.editFolder(id, this.editingFolderName);
+      // this.emailHandler.editFolder.emit({ id, name: this.editingFolderName.trim() });
       this.editingFolderId = null;
       this.editingFolderName = '';
     }
   }
 
-  openComposeEmailModal() {
-    this.isComposeOpen = true;
+  openComposeEmailDialog() {
+    this.showComposeEmailDialog = true;
+  }
+
+  closeComposeEmailDialog() {
+    this.showComposeEmailDialog = false;
+  }
+
+  onDraftSaved() {
+    // Here you can also call backend to save the draft
+    this.showDraftSavedToast = true;
+
+    setTimeout(() => {
+      this.showDraftSavedToast = false;
+    }, 2000);
   }
 
   startEditing(folder: FolderModel, event: Event) {
     event.stopPropagation();
-    this.editingFolderId = folder.folderID;
-    this.editingFolderName = folder.folderName;
+    this.editingFolderId = folder.id;
+    this.editingFolderName = folder.name;
   }
 }

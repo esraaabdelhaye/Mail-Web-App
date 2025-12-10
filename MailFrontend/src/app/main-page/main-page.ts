@@ -13,7 +13,7 @@ import { EmailDetailComponent } from '../../features/email-detail/email-detail';
   standalone: true,
   imports: [CommonModule, EmailSidebarComponent, EmailListComponent, EmailDetailComponent],
   templateUrl: './main-page.html',
-  styleUrls: ['./main-page.css'],
+  styleUrls: ['./main-page.css']
 })
 export class MainPage {
   @ViewChild(EmailListComponent) emailList!: EmailListComponent;
