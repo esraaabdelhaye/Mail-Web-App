@@ -17,7 +17,7 @@
 
   <!-- Navigation -->
   <nav class="nav-content">
-    <div class="folder-group">
+    <!-- <div class="folder-group">
       @for (folder of defaultFolders; track folder.folderID) {
         <button
           class="nav-item"
@@ -27,27 +27,23 @@
           <lucide-icon [img]="getIconForFolder(folder.folderID)" class="nav-icon"></lucide-icon>
           <span class="nav-label">{{ folder.folderName }}</span>
 
-<!--          @if (getFolderCount(emailHandler.currentFolderId()) > 0) {-->
-<!--            <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.folderID">-->
-<!--              {{ getFolderCount(folder.folderID) }}-->
-<!--            </span>-->
-<!--          }-->
+         @if (getFolderCount(emailHandler.currentFolderId()) > 0) {
+           <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.folderID">
+             {{ getFolderCount(folder.folderID) }}
+           </span>
+                    }
         </button>
       }
-    </div>
-
+    </div> -->
 
     <div class="custom-folders-section">
       <button class="section-header" (click)="isFoldersOpen = !isFoldersOpen">
         <span>FOLDERS</span>
-        <lucide-icon
-          [img]="icons.ChevronDown"
-          class="chevron"
-          [class.rotated]="!isFoldersOpen">
+        <lucide-icon [img]="icons.ChevronDown" class="chevron" [class.rotated]="!isFoldersOpen">
         </lucide-icon>
       </button>
 
-      @if (isFoldersOpen) {
+      <!-- @if (isFoldersOpen) {
         <div class="folder-list fade-in">
 
           @for (folder of customFolders; track folder.folderID) {
@@ -121,7 +117,7 @@
           </div>
 
         </div>
-      }
+      }-->
     </div>
 
     <!-- Contacts Link -->
@@ -132,22 +128,17 @@
       </button>
     </div>
   </nav>
-
-  <app-compose-modal
-    [isOpen]="isComposeOpen"
-    (close)="isComposeOpen = false">
-  </app-compose-modal>
+  @if (showComposeEmailDialog) {
+  <app-compose-email (close)="closeComposeEmailDialog()"> </app-compose-email>
+  }
 </aside>
 
-
 @if(showComposeEmailDialog){
-  <app-compose-email
+<app-compose-email
   (saveDraft)="onDraftSaved()"
   (close)="closeComposeEmailDialog()"
-  ></app-compose-email>
-  
-}
+></app-compose-email>
 
-  @if (showDraftSavedToast) {
+} @if (showDraftSavedToast) {
 <div class="toast">Draft saved</div>
 }
