@@ -17,24 +17,27 @@
 
   <!-- Navigation -->
   <nav class="nav-content">
-    <!-- <div class="folder-group">
-      @for (folder of defaultFolders; track folder.folderID) {
-        <button
-          class="nav-item"
-          [class.active]="emailHandler.currentFolderId() === folder.folderID"
-          (click)="emailHandler.selectFolder(folder.folderID)">
+    <div class="folder-group">
+      @for (folder of defaultFolders(); track folder.folderID) {
+      <button
+        class="nav-item"
+        [class.active]="emailHandler.currentFolderId() === folder.folderID.toString()"
+        (click)="emailHandler.selectFolder(folder.folderID.toString())"
+      >
+        <lucide-icon
+          [img]="getIconForFolder(folder.folderID.toString())"
+          class="nav-icon"
+        ></lucide-icon>
+        <span class="nav-label">{{ folder.folderName }}</span>
 
-          <lucide-icon [img]="getIconForFolder(folder.folderID)" class="nav-icon"></lucide-icon>
-          <span class="nav-label">{{ folder.folderName }}</span>
-
-         @if (getFolderCount(emailHandler.currentFolderId()) > 0) {
+        <!-- @if (getFolderCount(emailHandler.currentFolderId()) > 0) {
            <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.folderID">
              {{ getFolderCount(folder.folderID) }}
            </span>
-                    }
-        </button>
+                    } -->
+      </button>
       }
-    </div> -->
+    </div>
 
     <div class="custom-folders-section">
       <button class="section-header" (click)="isFoldersOpen = !isFoldersOpen">
@@ -43,81 +46,106 @@
         </lucide-icon>
       </button>
 
-      <!-- @if (isFoldersOpen) {
-        <div class="folder-list fade-in">
+      @if (isFoldersOpen) {
+      <div class="folder-list fade-in">
+        @for (folder of customFolders(); track folder.folderID) {
 
-          @for (folder of customFolders; track folder.folderID) {
-
-            <div class="folder-row-container group">
-
-
-              @if (editingFolderId === folder.folderID) {
-                <div class="edit-row">
-                  <input
-                    type="text"
-                    [(ngModel)]="editingFolderName"
-                    (keydown.enter)="handleEditFolder(folder.folderID)"
-                    class="mini-input"
-                    autoFocus>
-                  <button app-button variant="ghost" size="icon" class="mini-btn" (click)="handleEditFolder(folder.folderID)">
-                    <lucide-icon [img]="icons.Plus"></lucide-icon>
-                  </button>
-                  <button app-button variant="ghost" size="icon" class="mini-btn" (click)="editingFolderId = null">
-                    <lucide-icon [img]="icons.X"></lucide-icon>
-                  </button>
-                </div>
-              }
-
-              @else {
-
-                <button
-                  class="nav-item"
-                  [class.active]="emailHandler.currentFolderId() === folder.folderID"
-                  (click)="emailHandler.selectFolder(folder.folderID)">
-
-                  <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
-                  <span class="nav-label">{{ folder.folderName }}</span>
-
-                  <div class="folder-actions">
-                    <button class="action-btn" (click)="startEditing(folder, $event)">
-                      <lucide-icon [img]="icons.Pencil" size="14"></lucide-icon>
-                    </button>
-                    <button class="action-btn delete-btn" (click)="$event.stopPropagation(); emailHandler.deleteFolder(folder.folderID)">
-                      <lucide-icon [img]="icons.X" size="14"></lucide-icon>
-                    </button>
-                  </div>
-                </button>
-              }
-            </div>
-          }
-
-          <div class="add-folder-row">
-            @if (isAddingFolder) {
-              <div class="edit-row">
-                <input
-                  type="text"
-                  [(ngModel)]="newFolderName"
-                  (keydown.enter)="handleAddFolder()"
-                  placeholder="Name..."
-                  class="mini-input"
-                  autoFocus>
-                <button app-button variant="ghost" size="icon" class="mini-btn" (click)="handleAddFolder()">
-                  <lucide-icon [img]="icons.Plus"></lucide-icon>
-                </button>
-                <button app-button variant="ghost" size="icon" class="mini-btn" (click)="isAddingFolder = false">
-                  <lucide-icon [img]="icons.X"></lucide-icon>
-                </button>
-              </div>
-            } @else {
-              <button class="nav-item add-btn" (click)="isAddingFolder = true">
-                <lucide-icon [img]="icons.Plus" class="nav-icon"></lucide-icon>
-                <span>Add folder</span>
-              </button>
-            }
+        <div class="folder-row-container group">
+          @if (editingFolderId === folder.folderID.toString()) {
+          <div class="edit-row">
+            <input
+              type="text"
+              [(ngModel)]="editingFolderName"
+              (keydown.enter)="handleEditFolder(folder.folderID.toString())"
+              class="mini-input"
+              autoFocus
+            />
+            <button
+              app-button
+              variant="ghost"
+              size="icon"
+              class="mini-btn"
+              (click)="handleEditFolder(folder.folderID.toString())"
+            >
+              <lucide-icon [img]="icons.Plus"></lucide-icon>
+            </button>
+            <button
+              app-button
+              variant="ghost"
+              size="icon"
+              class="mini-btn"
+              (click)="editingFolderId = null"
+            >
+              <lucide-icon [img]="icons.X"></lucide-icon>
+            </button>
           </div>
+          } @else {
 
+          <button
+            class="nav-item"
+            [class.active]="emailHandler.currentFolderId() === folder.folderID.toString()"
+            (click)="emailHandler.selectFolder(folder.folderID.toString())"
+          >
+            <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
+            <span class="nav-label">{{ folder.folderName }}</span>
+
+            <div class="folder-actions">
+              <button class="action-btn" (click)="startEditing(folder, $event)">
+                <lucide-icon [img]="icons.Pencil" size="14"></lucide-icon>
+              </button>
+              <button
+                class="action-btn delete-btn"
+                (click)="
+                  $event.stopPropagation(); emailHandler.deleteFolder(folder.folderID.toString())
+                "
+              >
+                <lucide-icon [img]="icons.X" size="14"></lucide-icon>
+              </button>
+            </div>
+          </button>
+          }
         </div>
-      }-->
+        }
+
+        <div class="add-folder-row">
+          @if (isAddingFolder) {
+          <div class="edit-row">
+            <input
+              type="text"
+              [(ngModel)]="newFolderName"
+              (keydown.enter)="handleAddFolder()"
+              placeholder="Name..."
+              class="mini-input"
+              autoFocus
+            />
+            <button
+              app-button
+              variant="ghost"
+              size="icon"
+              class="mini-btn"
+              (click)="handleAddFolder()"
+            >
+              <lucide-icon [img]="icons.Plus"></lucide-icon>
+            </button>
+            <button
+              app-button
+              variant="ghost"
+              size="icon"
+              class="mini-btn"
+              (click)="isAddingFolder = false"
+            >
+              <lucide-icon [img]="icons.X"></lucide-icon>
+            </button>
+          </div>
+          } @else {
+          <button class="nav-item add-btn" (click)="isAddingFolder = true">
+            <lucide-icon [img]="icons.Plus" class="nav-icon"></lucide-icon>
+            <span>Add folder</span>
+          </button>
+          }
+        </div>
+      </div>
+      }
     </div>
 
     <!-- Contacts Link -->
@@ -129,7 +157,8 @@
     </div>
   </nav>
   @if (showComposeEmailDialog) {
-  <app-compose-email (close)="closeComposeEmailDialog()"> </app-compose-email>
+  <app-compose-email (close)="closeComposeEmailDialog()" (saveDraft)="onDraftSaved()">
+  </app-compose-email>
   }
 </aside>
 

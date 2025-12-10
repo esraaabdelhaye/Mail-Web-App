@@ -134,7 +134,7 @@ export class EmailListComponent implements OnInit {
       next: (data) => {
         // Set the main page data
         this.emailPage.set(data);
-        console.log('emails size: ', data.content.length);
+        console.log('emails: ', data.content);
         this.paginatedEmails.set(data.content);
         this.currentPage.set(data.currentPage + 1);
 

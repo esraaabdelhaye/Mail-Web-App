@@ -27,11 +27,5 @@ export interface Contact {
   emails: string[];
 }
 
-export interface Folder {
-  id: string;
-  name: string;
-  isCustom: boolean; // If false then this folder was created by our app and can't be edited by the user, if true then this folder was created by the user
-}
-
 export type SortOption = 'date' | 'sender' | 'importance' | 'subject';
 export type ViewMode = 'default' | 'priority';

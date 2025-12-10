@@ -1,7 +1,5 @@
-
-
 export interface FolderDTO {
-    folderID: string;
-    folderName: string;
-    isCustom: boolean;
+  folderID: number;
+  folderName: string;
+  isCustom: boolean;
 }

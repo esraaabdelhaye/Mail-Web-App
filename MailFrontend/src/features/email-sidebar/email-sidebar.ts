@@ -1,4 +1,13 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  signal,
+  computed,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,7 +25,7 @@ import {
   Mail,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-import { Folder as FolderModel } from '../../app/models/email.model';
+import { FolderDTO } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 import { ComposeEmail, EmailData } from '../compose-email/compose-email';
 
@@ -27,10 +36,14 @@ import { ComposeEmail, EmailData } from '../compose-email/compose-email';
   templateUrl: './email-sidebar.html',
   styleUrls: ['./email-sidebar.css'],
 })
-export class EmailSidebarComponent {
+export class EmailSidebarComponent implements OnInit {
   protected emailHandler = inject(EmailHandler);
 
   showComposeEmailDialog = false;
+
+  ngOnInit() {
+    this.emailHandler.loadFolders();
+  }
 
   // --- State ---
   isAddingFolder = false;
@@ -55,17 +68,15 @@ export class EmailSidebarComponent {
     Mail,
   };
 
-  // default folders are the system default folders (not custom)
-  // get defaultFolders(): FolderModel[] {
-  //   return this.emailHandler.folders().filter(f => !f.isCustom);
-  // }
+  public readonly defaultFolders = computed(() => {
+    return this.emailHandler.folders().filter((f) => !f.isCustom);
+  });
 
-  // // Custom folders are the non default folders (user created, i.e. custom)
-  // get customFolders(): FolderModel[] {
-  //   return this.emailHandler.folders().filter(f => f.isCustom);
-  // }
+  public readonly customFolders = computed(() => {
+    return this.emailHandler.folders().filter((f) => f.isCustom);
+  });
 
-  // getFolderCount(folderId: string){
+  // getFolderCount(folderId: string) {
   //   return this.emailHandler.folderCounts()[folderId] || 0;
   // }
 
@@ -119,9 +130,9 @@ export class EmailSidebarComponent {
     }, 2000);
   }
 
-  startEditing(folder: FolderModel, event: Event) {
+  startEditing(folder: FolderDTO, event: Event) {
     event.stopPropagation();
-    this.editingFolderId = folder.id;
-    this.editingFolderName = folder.name;
+    this.editingFolderId = folder.folderID.toString();
+    this.editingFolderName = folder.folderName;
   }
 }
