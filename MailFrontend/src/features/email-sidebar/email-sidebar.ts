@@ -1,13 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  inject,
-  Input,
-  Output,
-  signal,
-  computed,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -27,7 +18,7 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { FolderDTO } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
-import { ComposeEmail, EmailData } from '../compose-email/compose-email';
+import { ComposeEmail } from '../compose-email/compose-email';
 
 @Component({
   selector: 'app-email-sidebar',
@@ -52,6 +43,7 @@ export class EmailSidebarComponent implements OnInit {
   editingFolderName = '';
   isFoldersOpen = true;
   showDraftSavedToast: boolean = false;
+  userMessage = '';
 
   // --- Icons ---
   readonly icons = {
@@ -100,6 +92,7 @@ export class EmailSidebarComponent implements OnInit {
   handleAddFolder() {
     if (this.newFolderName.trim()) {
       this.emailHandler.addFolder(this.newFolderName.trim());
+
       this.newFolderName = '';
       this.isAddingFolder = false;
     }
@@ -107,7 +100,7 @@ export class EmailSidebarComponent implements OnInit {
 
   handleEditFolder(id: string) {
     if (this.editingFolderName.trim()) {
-      // this.emailHandler.editFolder.emit({ id, name: this.editingFolderName.trim() });
+      this.emailHandler.editFolder(id, this.editingFolderName.trim());
       this.editingFolderId = null;
       this.editingFolderName = '';
     }
