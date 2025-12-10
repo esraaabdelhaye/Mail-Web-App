@@ -1,9 +1,12 @@
 package com.mailapp.mailbackend.dto;
 import com.mailapp.mailbackend.entity.Folder;
+import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.entity.UserMail;
 import com.mailapp.mailbackend.enums.Priority;
 import org.mapstruct.*;
+
+import java.util.List;
 
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
