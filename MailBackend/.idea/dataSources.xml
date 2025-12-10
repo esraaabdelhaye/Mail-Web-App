@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="MailApp" uuid="9ca675d1-d06e-4ac1-a9d8-280a798b0f3c">
+    <data-source source="LOCAL" name="mail" uuid="9ca675d1-d06e-4ac1-a9d8-280a798b0f3c">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
