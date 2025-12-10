@@ -18,6 +18,7 @@ import {
 } from '@angular/forms';
 import { PopupMessage } from '../../shared/popup-message/popup-message';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth/auth-service';
 
 interface LoginFormGroup {
   email: FormControl<string>;
@@ -43,6 +44,7 @@ export class LoginPage {
   public activeTab = signal<'login' | 'signup'>('login');
   public isLoading = signal(false);
   public userService: UserService = inject(UserService);
+  public authService: AuthService = inject(AuthService);
   public validLogin: boolean = false;
   public validSignUp: boolean = false;
 
@@ -200,9 +202,7 @@ export class LoginPage {
     const message = 'User Logged In Successfully: ' + mess;
     this.displaySuccess(message);
 
-    // 1. Persist Authentication State (Simulated)
-    // In a real app, save the returned JWT token to localStorage/sessionStorage
-    sessionStorage.setItem('current_user_token', id.toString());
+    this.authService.saveAuthData(id);
 
     // 2. Navigate away from the login page to the application dashboard
     this.router.navigate(['/home']);

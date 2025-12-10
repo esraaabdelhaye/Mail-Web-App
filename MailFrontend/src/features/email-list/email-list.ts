@@ -1,131 +1,214 @@
-import {Component, inject} from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, ChevronsUp,ChevronsDown ,LayoutList, LayoutGrid } from 'lucide-angular';
-import { ButtonComponent } from '../../shared/button/button'
-import { Email, Folder } from '../../app/models/email.model';
-import {EmailHandler} from '../../services/emails-handler/email-handler';
-import {disabled} from '@angular/forms/signals'; // Ensure this path matches yours
+import { EmailHandler } from '../../services/emails-handler/email-handler';
+import { AuthService } from '../../services/auth/auth-service';
+import { EmailPageDTO } from '../../app/models/EmailPageDTO';
+import { Email } from '../../app/models/email.model';
+import { Observable, Subscription } from 'rxjs';
+import { PaginationRequest } from '../../app/models/PaginationRequest';
+import {
+  LucideAngularModule,
+  Search,
+  RefreshCw,
+  Trash2,
+  FolderInput,
+  ArrowUpDown,
+  Flag,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUp,
+  ChevronsDown,
+  LayoutList,
+  LayoutGrid,
+} from 'lucide-angular';
+import { ButtonComponent } from '../../shared/button/button';
+
+enum Priority {
+  HIGH = 1,
+  MEDIUM = 2,
+  LOW = 3,
+  NONE = 4,
+}
+
+interface Sender {
+  name: string;
+  email: string;
+}
+
+interface CustomFolder {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent],
   templateUrl: './email-list.html',
-  styleUrls: ['./email-list.css']
+  styleUrls: ['./email-list.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmailListComponent {
-
-
-  protected emailHandler = inject(EmailHandler);
-
-
-  // --- State ---
-  searchQuery = '';
-  sortBy: 'date' | 'sender' | 'importance' | 'subject' = 'date';
-  viewMode: 'default' | 'priority' = 'default';
-  itemsPerPage = 5;
-  currentPage = 1;
-  isRefreshing = false;
-  selectedEmailId: string | null = null;
-
-  // Set to track selected IDs
-  selectedIds = new Set<string>();
-
+export class EmailListComponent implements OnInit {
   // --- Icons for Template ---
-  readonly icons = { Search, RefreshCw, Trash2, FolderInput, ArrowUpDown, Flag, AlertCircle, ChevronLeft, ChevronRight, LayoutList, LayoutGrid, ChevronsUp, ChevronsDown };
-  protected readonly math = Math
+  readonly icons = {
+    Search,
+    RefreshCw,
+    Trash2,
+    FolderInput,
+    ArrowUpDown,
+    Flag,
+    AlertCircle,
+    ChevronLeft,
+    ChevronRight,
+    LayoutList,
+    LayoutGrid,
+    ChevronsUp,
+    ChevronsDown,
+  };
 
-  get processedEmails(): Email[] {
-    // filteredEmails are the emails in the current selected folder
-    const baseList = this.emailHandler.filteredEmails();
+  public emailPage = signal<EmailPageDTO | null>(null);
+  public paginatedEmails = signal<Email[]>([]);
+  public processedEmails = signal<Email[]>([]);
 
-    // 1. Filter
-    let result = baseList.filter(email => {
-      const query = this.searchQuery.toLowerCase();
-      return (
-        email.subject.toLowerCase().includes(query) ||
-        email.sender.name.toLowerCase().includes(query) ||
-        email.sender.email.toLowerCase().includes(query) ||
-        email.body.toLowerCase().includes(query)
-      );
+  public searchQuery = signal('');
+  public sortBy = signal('sentAt');
+  public viewMode = signal<'default' | 'priority'>('default');
+
+  public selectedIds = signal(new Set<Number>());
+  public currentFolder = signal('Inbox');
+  public isLoading = signal(false);
+  public isRefreshing = signal<boolean>(false);
+  public selectedEmailId = signal<number | null>(null);
+  public currentlyOpened = signal<Email | null>(null);
+
+  public currentPage = signal(1);
+  public itemsPerPage = signal(10);
+
+  public totalPages = computed(() => this.emailPage()?.totalPages || 1);
+  public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
+
+  public customFolders: CustomFolder[] = [
+    { id: 101, name: 'Work' },
+    { id: 102, name: 'Personal' },
+  ];
+
+  public onRefresh(): void {
+    this.fetchMail(true);
+  }
+  public openEmail(email: any): void {
+    this.selectedEmailId = email.id;
+    this.currentlyOpened = email;
+  }
+
+  public closeOpenedEmail() {
+    this.selectedEmailId.set(null);
+    this.currentlyOpened.set(null);
+  }
+
+  public math = Math;
+
+  constructor(private emailHandler: EmailHandler, private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.fetchMail();
+  }
+
+  fetchMail(isRefresh: boolean = false): void {
+    this.isLoading.set(true);
+    if (isRefresh) this.isRefreshing.set(true);
+
+    const apiPage = this.currentPage() - 1;
+    const userId = this.authService.getCurrentUserId();
+    const request: PaginationRequest = {
+      userId: Number(userId),
+      folderName: this.currentFolder(),
+      page: apiPage,
+      size: this.itemsPerPage(),
+      sortBy: this.sortBy(),
+      sortDirection: 'desc',
+    };
+
+    this.emailHandler.getMailPage(request).subscribe({
+      next: (data) => {
+        // Set the main page data
+        this.emailPage.set(data);
+        console.log('emails size: ', data.content.length);
+        this.paginatedEmails.set(data.content);
+        this.currentPage.set(data.currentPage + 1);
+
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load emails:', err);
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
+      },
     });
-
-    // 2. Sort
-    result.sort((a, b) => {
-      // Priority View Logic
-      if (this.viewMode === 'priority') {
-        if (a.priority !== b.priority) return a.priority - b.priority; // Lower number = Higher priority
-      }
-
-      // Standard Sort Logic
-      switch (this.sortBy) {
-        case 'date': return new Date(b.date).getTime() - new Date(a.date).getTime();
-        case 'sender': return a.sender.name.localeCompare(b.sender.name);
-        case 'importance': return a.priority - b.priority;
-        case 'subject': return a.subject.localeCompare(b.subject);
-        default: return 0;
-      }
-    });
-
-    return result;
   }
 
-  get paginatedEmails(): Email[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.processedEmails.slice(startIndex, startIndex + this.itemsPerPage);
-  }
+  changePage(delta: number): void {
+    const newPage = this.currentPage() + delta;
 
-  get totalPages(): number {
-    return Math.ceil(this.processedEmails.length / this.itemsPerPage);
-  }
-
-  get customFolders(): Folder[] {
-    return this.emailHandler.folders().filter(f => f.isCustom || f.id === 'trash');
-  }
-
-  // --- Actions ---
-
-  handleDelete() {
-    this.emailHandler.deleteEmails(Array.from(this.selectedIds));
-    this.selectedIds.clear();
-  }
-
-  toggleSelectAll(event: any) {
-    if (event.target.checked) {
-      this.paginatedEmails.forEach(e => this.selectedIds.add(e.id));
-    } else {
-      this.selectedIds.clear();
+    if (newPage >= 1 && newPage <= this.totalPages()) {
+      this.currentPage.set(newPage);
+      this.fetchMail();
     }
   }
 
-  toggleEmailSelection(id: string, event: any) {
-    if (event.target.checked) {
-      this.selectedIds.add(id);
-    } else {
-      this.selectedIds.delete(id);
+  toggleEmailSelection(id: Number, event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.selectedIds.update((set) => {
+      if (isChecked) {
+        set.add(id);
+      } else {
+        set.delete(id);
+      }
+      return new Set(set); // Return a new set instance for change detection (since Set is mutable)
+    });
+  }
+
+  toggleSelectAll(event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+
+    this.selectedIds.update((set) => {
+      if (isChecked) {
+        // Select all currently loaded emails
+        this.paginatedEmails().forEach((email) => set.add(email.id));
+      } else {
+        // Deselect all
+        set.clear();
+      }
+      return new Set(set);
+    });
+  }
+
+  // --- BULK ACTION HANDLERS ---
+
+  handleMove(folderId: number): void {
+    console.log(`Moving ${this.selectedIds().size} emails to folder ID: ${folderId}`);
+    this.selectedIds.set(new Set());
+    this.fetchMail();
+  }
+
+  handleDelete(): void {
+    if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
+      console.log(`Deleting ${this.selectedIds().size} emails...`);
+      this.selectedIds.set(new Set());
+      this.fetchMail();
     }
-    event.stopPropagation(); // Prevent row click
   }
 
-  handleMove(folderId: string) {
-    // this.emailHandler.moveToFolder(Array.from(this.selectedIds), folderId )
-    this.selectedIds.clear();
+  // --- UTILITIES (Referenced in HTML) ---
+
+  formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return dateString;
+    }
   }
-
-  changePage(delta: number) {
-    this.currentPage = Math.max(1, Math.min(this.totalPages, this.currentPage + delta));
-  }
-
-  // Helper for date formatting
-  formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  }
-
-  protected readonly disabled = disabled;
 }

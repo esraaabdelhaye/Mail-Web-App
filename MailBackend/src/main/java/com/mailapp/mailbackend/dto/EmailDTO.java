@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 public class EmailDTO {
-    public String id;
+    public Long id;
 
     // Nested object for { name, email }
     public SenderDTO sender;
@@ -16,7 +16,7 @@ public class EmailDTO {
 
     // Formats Date to ISO String for the frontend
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-    public Date date;
+    public Date sentAt;
 
     public boolean isRead;
     public int priority; // 1, 2, 3, 4

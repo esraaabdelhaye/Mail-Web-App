@@ -1,0 +1,119 @@
+<!-- Overlay (Backdrop) -->
+@if (isOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+
+    <!-- Modal Content -->
+    <div class="modal-content"
+         [class.minimized]="isMinimized"
+         (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h3 class="modal-title">New Message</h3>
+        <div class="header-actions">
+          <button app-button variant="ghost" size="icon" class="icon-btn" (click)="isMinimized = !isMinimized">
+            <lucide-icon [img]="icons.Minus" size="16"></lucide-icon>
+          </button>
+          <button app-button variant="ghost" size="icon" class="icon-btn" (click)="closeModal()">
+            <lucide-icon [img]="icons.X" size="16"></lucide-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body (Hidden if minimized) -->
+      @if (!isMinimized) {
+        <div class="modal-body">
+
+          <!-- To Field -->
+          <div class="form-group">
+            <label>To</label>
+            <div class="recipients-container">
+              @for (email of to; track email) {
+                <span class="recipient-badge">
+                  {{ email }}
+                  <button (click)="removeRecipient(email)" class="remove-recipient">
+                    <lucide-icon [img]="icons.X" size="12"></lucide-icon>
+                  </button>
+                </span>
+              }
+              <input
+                type="text"
+                [(ngModel)]="toInput"
+                (keydown)="handleAddRecipient($event)"
+                placeholder="Add recipients..."
+                class="invisible-input">
+            </div>
+          </div>
+
+          <!-- Subject & Priority -->
+          <div class="row-group">
+            <div class="form-group flex-1">
+              <label>Subject</label>
+              <input type="text" [(ngModel)]="subject" placeholder="Enter subject..." class="form-input">
+            </div>
+
+            <div class="form-group w-32">
+              <label>Priority</label>
+              <select [(ngModel)]="priority" class="form-select">
+                <option value="1">Highest 🔴</option>
+                <option value="2">High 🟠</option>
+                <option value="3">Normal</option>
+                <option value="4">Low 🔵</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Message Body -->
+          <div class="form-group flex-1">
+            <label>Message</label>
+            <textarea [(ngModel)]="body" placeholder="Write your message..." class="form-textarea"></textarea>
+          </div>
+
+          <!-- Attachments List -->
+          @if (attachments.length > 0) {
+            <div class="attachments-list">
+              <label>Attachments</label>
+              @for (file of attachments; track $index) {
+                <div class="attachment-item">
+                  <span class="file-name">{{ file.name }}</span>
+                  <div class="file-meta">
+                    <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                    <button (click)="removeAttachment($index)" class="remove-btn">
+                      <lucide-icon [img]="icons.X" size="14"></lucide-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Footer Actions -->
+          <div class="modal-footer">
+            <div class="left-actions">
+              <input type="file" id="fileInput" multiple (change)="handleFileChange($event)" hidden>
+              <button app-button variant="ghost" size="sm" (click)="fileInput.click()">
+                <lucide-icon [img]="icons.Paperclip" class="mr-2" size="16"></lucide-icon>
+                Attach
+              </button>
+            </div>
+
+            <div class="right-actions">
+              <button app-button variant="outline" (click)="handleSaveDraft()">
+                <lucide-icon [img]="icons.Save" class="mr-2" size="16"></lucide-icon>
+                Save Draft
+              </button>
+              <button app-button (click)="handleSend()" [disabled]="to.length === 0 || !subject">
+                <lucide-icon [img]="icons.Send" class="mr-2" size="16"></lucide-icon>
+                Send
+              </button>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- Hidden file input reference -->
+<input #fileInput type="file" multiple (change)="handleFileChange($event)" style="display: none;">

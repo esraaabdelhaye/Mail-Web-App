@@ -1,17 +1,15 @@
 <div class="app-container">
-
   <!-- The left side bar-->
   <app-email-sidebar></app-email-sidebar>
 
-
   <main class="main-content">
-    @if (emailHandler.openedEmail() != null){
-      <app-email-detail [email]="emailHandler.openedEmail()!" (back)="emailHandler.closeEmail()"></app-email-detail>
+    @if (emailList?.selectedEmailId() !== null){
+    <app-email-detail
+      [email]="emailList.currentlyOpened()!"
+      (back)="emailList.closeOpenedEmail()"
+    ></app-email-detail>
+    } @else{
+    <app-email-list></app-email-list>
     }
-    @else{
-      <app-email-list></app-email-list>
-    }
-
   </main>
-
 </div>
