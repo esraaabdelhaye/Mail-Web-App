@@ -3,7 +3,6 @@ import com.mailapp.mailbackend.entity.Folder;
 import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.entity.UserMail;
-import com.mailapp.mailbackend.enums.Priority;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public interface MainMapper {
 
     UserDTO updateUserDTOFromEntity(User user, @MappingTarget UserDTO targetDTO);
     EmailDTO toUserMailDTO(UserMail userMail);
-    EmailDTO toEmailDTO(UserMail userMail);
+
     default String map(Folder folder) {
         if (folder == null) {
             return null;
@@ -29,6 +28,7 @@ public interface MainMapper {
 
     // Email methods
     EmailDTO toEmailDTO(Mail mail);
+    EmailDTO toEmailDTO(UserMail userMail);
     Mail toMailEntity(EmailDTO emailDTO);
 
     // List Mappings

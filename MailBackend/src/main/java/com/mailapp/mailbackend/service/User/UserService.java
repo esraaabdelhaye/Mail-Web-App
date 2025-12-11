@@ -42,6 +42,7 @@ public class UserService {
         if(chainFactory.getChain(ChainType.Login).handle(userDTO)) {
             User user = userRepo.findByEmail(userDTO.email);
             userDTO.id = user.getId();
+
             return userDTO;
         }
         return userDTO;

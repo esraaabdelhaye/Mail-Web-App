@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-10T16:42:06+0200",
+    date = "2025-12-10T17:39:22+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
@@ -81,6 +81,23 @@ public class MainMapperImpl implements MainMapper {
     }
 
     @Override
+    public EmailDTO toEmailDTO(Mail mail) {
+        if ( mail == null ) {
+            return null;
+        }
+
+        EmailDTO emailDTO = new EmailDTO();
+
+        emailDTO.id = mail.getId();
+        emailDTO.sender = userToSenderDTO( mail.getSender() );
+        emailDTO.subject = mail.getSubject();
+        emailDTO.body = mail.getBody();
+        emailDTO.sentAt = mail.getSentAt();
+
+        return emailDTO;
+    }
+
+    @Override
     public EmailDTO toEmailDTO(UserMail userMail) {
         if ( userMail == null ) {
             return null;
@@ -94,23 +111,6 @@ public class MainMapperImpl implements MainMapper {
             emailDTO.isRead = userMail.getIsRead();
         }
         emailDTO.folder = map( userMail.getFolder() );
-
-        return emailDTO;
-    }
-
-    @Override
-    public EmailDTO toEmailDTO(Mail mail) {
-        if ( mail == null ) {
-            return null;
-        }
-
-        EmailDTO emailDTO = new EmailDTO();
-
-        emailDTO.id = mail.getId();
-        emailDTO.sender = userToSenderDTO( mail.getSender() );
-        emailDTO.subject = mail.getSubject();
-        emailDTO.body = mail.getBody();
-        emailDTO.sentAt = mail.getSentAt();
 
         return emailDTO;
     }

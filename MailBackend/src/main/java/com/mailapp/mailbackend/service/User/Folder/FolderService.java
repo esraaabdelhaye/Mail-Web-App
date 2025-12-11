@@ -59,6 +59,9 @@ public class FolderService {
 
     // Rename a folder
     public void renameFolder(Long folderId, String newName){
+        if (folderRepo.existsByFolderName(newName)){
+            throw new RuntimeException("Folder " + newName + "already exists!");
+        }
         Folder folder = folderRepo.findById(folderId).orElseThrow(() -> new RuntimeException("Folder not found"));
 
         if (Boolean.TRUE.equals(folder.getIsSystemFolder())){

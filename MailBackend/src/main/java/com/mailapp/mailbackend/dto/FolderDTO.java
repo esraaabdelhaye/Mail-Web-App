@@ -1,5 +1,10 @@
 package com.mailapp.mailbackend.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class FolderDTO {
     public String id;
     public String name;

@@ -44,12 +44,12 @@ public class MailService {
     }
 
     public MailPageDTO getPaginatedMail(Long userId, String folderName, Pageable pageable) {
-        User user = userRepo.getById(userId);
+        User user = userRepo.getReferenceById(userId);
         Folder folder = folderRepo.findByUserAndFolderName(user, folderName);
         Page<UserMail> mailPage = userMailRepo.findByUserAndFolder(user, folder, pageable);
 
         List<EmailDTO> mailDTOs = mailPage.getContent().stream()
-                .map(mainMapper::toEmailDTO)
+                .map(userMail -> getEmailDTO(userMail.getId()))
                 .collect(Collectors.toList());
 
         // Construct and return the Pagination DTO
@@ -65,4 +65,40 @@ public class MailService {
         return pageDTO;
     }
 
+    public EmailDTO getEmailDTO(Long mailId) {
+        UserMail userMail = userMailRepo.getReferenceById(mailId);
+        Mail mail = userMail.getMail();
+
+        EmailDTO dto = new EmailDTO();
+
+        // Basic mail data
+        dto.id = mail.getId();
+        dto.subject = mail.getSubject();
+        dto.body = mail.getBody();
+
+        // Sender
+        dto.sender = new EmailDTO.SenderDTO(
+                mail.getSender().getFullName(),
+                mail.getSender().getEmail()
+        );
+
+        // Sent at – prefer the one from Mail
+        dto.sentAt = mail.getSentAt();
+
+        // User-specific fields
+        dto.isRead = userMail.getIsRead() != null && userMail.getIsRead();
+        dto.priority = userMail.getImportance() != null
+                ? userMail.getImportance().getValue()    // convert enum → int, see below
+                : 1;
+
+        dto.folder = userMail.getFolder().getFolderName();
+
+        // Attachments (if you have an entity)
+        // dto.attachments = mail.getAttachments()
+        //      .stream()
+        //      .map(a -> new AttachmentDTO(a.getName(), a.getUrl()))
+        //      .toList();
+
+        return dto;
+    }
 }

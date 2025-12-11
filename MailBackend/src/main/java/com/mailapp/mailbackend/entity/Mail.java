@@ -27,7 +27,6 @@ public class Mail {
     @Column(name = "subject")
     private String subject;
 
-
     @Lob
     @Column(name = "body")
     private String body;
