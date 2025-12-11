@@ -19,6 +19,7 @@ import { ButtonComponent } from '../../shared/button/button';
 import { FolderDTO } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 import { ComposeEmail } from '../compose-email/compose-email';
+import { NotificationService } from '../../services/notification/notification-service';
 
 @Component({
   selector: 'app-email-sidebar',
@@ -29,7 +30,7 @@ import { ComposeEmail } from '../compose-email/compose-email';
 })
 export class EmailSidebarComponent implements OnInit {
   protected emailHandler = inject(EmailHandler);
-
+  protected notificationService = inject(NotificationService);
   showComposeEmailDialog = false;
 
   ngOnInit() {
@@ -90,17 +91,22 @@ export class EmailSidebarComponent implements OnInit {
 
   // --- Actions ---
   handleAddFolder() {
-    if (this.newFolderName.trim()) {
-      this.emailHandler.addFolder(this.newFolderName.trim());
+    let name = this.newFolderName.trim();
+    if (!name) this.notificationService.showError("Can't have an empty name!");
+    else {
+      this.emailHandler.addFolder(name);
 
       this.newFolderName = '';
       this.isAddingFolder = false;
     }
   }
 
-  handleEditFolder(id: string) {
-    if (this.editingFolderName.trim()) {
-      this.emailHandler.editFolder(id, this.editingFolderName.trim());
+  handleEditFolder(id: string, oldName: string) {
+    let newName = this.editingFolderName.trim();
+    if (newName == oldName) this.notificationService.showError('Same Name');
+    else if (!newName) this.notificationService.showError("Can't have an empty name");
+    else {
+      this.emailHandler.editFolder(id, newName);
       this.editingFolderId = null;
       this.editingFolderName = '';
     }
