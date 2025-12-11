@@ -21,11 +21,5 @@ export interface Attachment {
   type: string;
 }
 
-export interface Contact {
-  id: string;
-  name: string;
-  emails: string[];
-}
-
 export type SortOption = 'date' | 'sender' | 'importance' | 'subject';
 export type ViewMode = 'default' | 'priority';

@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {Component, EventEmitter, inject, Input, OnInit, Output, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Search, Plus, Pencil, Trash2, X, User, Mail, ArrowLeft } from 'lucide-angular';
-import {Contact} from '../../app/models/email.model';
+import {Contact} from '../../app/models/ContactDTO';
 import {ButtonComponent} from '../../shared/button/button';
+import {ContactsHandler} from '../../services/contacts-handler/contacts-handler';
 
 
 @Component({
@@ -13,9 +14,15 @@ import {ButtonComponent} from '../../shared/button/button';
   templateUrl: './contacts-view.html',
   styleUrls: ['./contacts-view.css']
 })
-export class ContactsComponent {
-  // Inputs/Outputs
-  @Input() contacts: Contact[] = [];
+export class ContactsComponent implements OnInit{
+  protected contactsHandler = inject(ContactsHandler);
+
+
+  ngOnInit(): void {
+    this.contactsHandler.loadContacts();
+  }
+
+  // Outputs
   @Output() back = new EventEmitter<void>();
 
   // Note: For Add/Edit/Delete, you might want to call a Service directly
@@ -41,7 +48,7 @@ export class ContactsComponent {
   // Computed Filter
   get filteredContacts(): Contact[] {
     const query = this.searchQuery.toLowerCase();
-    return this.contacts.filter(contact =>
+    return this.contactsHandler.contacts().filter(contact =>
       contact.name.toLowerCase().includes(query) ||
       contact.emails.some(e => e.toLowerCase().includes(query))
     );
@@ -50,11 +57,14 @@ export class ContactsComponent {
   // --- Modal Actions ---
 
   openModal(contact?: Contact) {
+    // When editing a contact
     if (contact) {
       this.editingContact = contact;
       this.name = contact.name;
       this.emails = [...contact.emails]; // Copy array
-    } else {
+    }
+    // When making a new contact
+    else {
       this.editingContact = null;
       this.name = '';
       this.emails = [];
@@ -72,6 +82,8 @@ export class ContactsComponent {
 
   // --- Form Actions ---
 
+
+  // This probably still needs validation before accepting the email
   addEmail(event: Event) {
     const e = event as KeyboardEvent;
     if (e.key === 'Enter' || e.key === ',') {

@@ -2,9 +2,11 @@ package com.mailapp.mailbackend.entity;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "contact_emails")
+@Data // For easy access to setters and getters
 public class ContactEmail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
