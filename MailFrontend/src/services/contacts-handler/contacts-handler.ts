@@ -1,5 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import {Contact} from '../../app/models/ContactDTO';
+import {AuthService} from '../auth/auth-service';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {NotificationService} from '../notification/notification-service';
 
 
 
@@ -92,6 +95,11 @@ export class ContactsHandler {
      }
   ];
 
+  private auth: AuthService = inject(AuthService);
+  private http: HttpClient = inject(HttpClient);
+  public notificationService = inject(NotificationService);
+
+  readonly baseURL: string = "http://localhost:8080/contacts";
 
   // --- STATE ---
   readonly contacts = signal<Contact[]>([]);
@@ -116,33 +124,69 @@ export class ContactsHandler {
 
   loadContacts() {
     console.log("Loading contacts...");
-    this.contacts.set(this.mockContacts);
-    // this.backend.getContacts().subscribe({
-    //   next: (data) => this.contacts.set(data),
-    //   error: (err) => console.error(err)
-    // });
+    const userId = this.auth.getCurrentUserId();
+
+    const params = new HttpParams().set('userId', userId!);
+
+
+    this.http.get<Contact[]>(this.baseURL, {params}).subscribe({
+      next: (data) => this.contacts.set(data),
+      error: (err) => console.error(err)
+    });
+
+    console.log("Loaded contacts: ", this.contacts());
   }
 
-  addContact(contact: Omit<Contact, 'id'>) {
+  addContact(contactName: string, contactEmails: string[]) {
     // Call backend
-    // this.backend.createContact(contact).subscribe({
-    //   next: (newContact) => {
-    //     this.contacts.update(list => [...list, newContact]);
-    //   }
-    // });
+    console.log("Added contact");
+    const userId = this.auth.getCurrentUserId();
+
+    const dto: Omit<Contact, 'id'> = {
+      'name': contactName,
+      'emails': contactEmails,
+    };
+
+    const params = new HttpParams().set('userId', userId!);
+
+
+    this.http.post<Contact>(this.baseURL, dto, {params}).subscribe({
+      next: (newContact) => {
+        this.contacts.update(list => [...list, newContact])
+      },
+      error: (err) => console.error(err)
+    });
   }
 
-  editContact(updatedContact: Contact) {
-    // this.backend.updateContact(updatedContact).subscribe({
-    //   next: () => {
-    //     this.contacts.update(list =>
-    //       list.map(c => c.id === updatedContact.id ? updatedContact : c)
-    //     );
-    //   }
-    // });
+  editContact(contact: Contact,newName: string) {
+    const userId = this.auth.getCurrentUserId();
+
+    const dto: Omit<Contact, 'id'> = {
+      'name': newName,
+      'emails': contact.emails,
+    };
+
+    const params = new HttpParams().set('userId', userId!);
+
+
+    this.http.put<Contact>(this.baseURL + `/${contact.id}`, dto, {params}).subscribe({
+      next: (updatedContact) => {
+        this.contacts.update(list =>
+            list.map(c => c.id === updatedContact.id ? updatedContact : c)
+        );
+      },
+      error: (err) => console.error(err)
+    });
   }
 
   deleteContact(id: string) {
+    this.http.delete(this.baseURL + `/${id}`).subscribe({
+      next: () => {
+        this.contacts.update(list => list.filter(c => c.id !== id))
+        this.notificationService.showSuccess(`Successfully Deleted`);
+      },
+      error: (err) => console.error(err)
+    });
     // this.backend.deleteContact(id).subscribe({
     //   next: () => {
     //     this.contacts.update(list => list.filter(c => c.id !== id));

@@ -62,7 +62,7 @@
               <button app-button variant="ghost" size="icon" (click)="openModal(contact)">
                 <lucide-icon [img]="icons.Pencil"></lucide-icon>
               </button>
-              <button app-button variant="ghost" size="icon" class="delete-btn" (click)="deleteContact.emit(contact.id)">
+              <button app-button variant="ghost" size="icon" class="delete-btn" (click)="this.contactsHandler.deleteContact(contact.id)">
                 <lucide-icon [img]="icons.Trash2"></lucide-icon>
               </button>
             </div>
