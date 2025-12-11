@@ -1,0 +1,79 @@
+### Configuration
+@baseUrl = http://localhost:8080
+@userId = 3
+@contentType = application/json
+
+# -------------------------------------------------------
+# 1. GET ALL CONTACTS
+# Fetch the address book for User 1
+# -------------------------------------------------------
+GET {{baseUrl}}/contacts?userId={{userId}}
+Accept: application/json
+
+###
+
+# -------------------------------------------------------
+# 2. ADD NEW CONTACT
+# Create a contact with multiple emails
+# -------------------------------------------------------
+POST {{baseUrl}}/contacts?userId={{userId}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Dr. Khaled Nagy",
+  "emails": [
+    "khaled.nagy@alex.edu.eg",
+    "knagy.csed@gmail.com"
+  ]
+}
+
+###
+
+# -------------------------------------------------------
+# 3. ADD ANOTHER CONTACT (For testing list)
+# -------------------------------------------------------
+POST {{baseUrl}}/contacts?userId={{userId}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Library Support",
+  "emails": [
+    "support@lib.alex.edu"
+  ]
+}
+
+###
+
+# -------------------------------------------------------
+# 4. EDIT CONTACT
+# Update name and replace email list
+# Replace '1' in the URL with the actual ID returned from the POST request above!
+# -------------------------------------------------------
+PUT {{baseUrl}}/contacts/1
+Content-Type: {{contentType}}
+
+{
+  "name": "Prof. Khaled Nagy (Dean)",
+  "emails": [
+    "dean@alex.edu.eg",
+    "khaled.nagy@alex.edu.eg"
+  ]
+}
+
+###
+
+# -------------------------------------------------------
+# 5. DELETE CONTACT
+# Remove the contact entirely.
+# Replace '1' with the actual ID you want to delete.
+# -------------------------------------------------------
+DELETE {{baseUrl}}/contacts/1
+
+###
+
+# -------------------------------------------------------
+# 6. VERIFY DELETE
+# Run GET again to make sure it's gone
+# -------------------------------------------------------
+GET {{baseUrl}}/contacts?userId={{userId}}
+Accept: application/json

@@ -1,6 +1,6 @@
 <div class="app-container">
   <!-- The left side bar-->
-  <app-email-sidebar></app-email-sidebar>
+  <app-email-sidebar (contactsClick)="isContactsOpen.set(true)"></app-email-sidebar>
 
   <main class="main-content">
     @if (emailList?.selectedEmailId() !== null){
@@ -8,7 +8,11 @@
       [email]="emailList.currentlyOpened()!"
       (back)="emailList.closeOpenedEmail()"
     ></app-email-detail>
-    } @else{
+    }
+    @else if (isContactsOpen()){
+      <app-contacts (back)="isContactsOpen.set(false)"/>
+    }
+    @else{
     <app-email-list></app-email-list>
     }
   </main>

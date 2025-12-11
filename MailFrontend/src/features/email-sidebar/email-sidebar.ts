@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
+import {Component, inject, computed, OnInit, EventEmitter, Output} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -29,6 +29,8 @@ import { NotificationService } from '../../services/notification/notification-se
   styleUrls: ['./email-sidebar.css'],
 })
 export class EmailSidebarComponent implements OnInit {
+  @Output() contactsClick = new EventEmitter<void>(); // Used to open the contacts-view from the main-page
+
   protected emailHandler = inject(EmailHandler);
   protected notificationService = inject(NotificationService);
   showComposeEmailDialog = false;
