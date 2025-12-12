@@ -235,7 +235,7 @@ export class ComposeEmail {
       form.append('files', file);
     });
 
-    this.http.post(`${this.apiUrl}/mail/send`, form).subscribe({
+    this.http.post(`${this.apiUrl}/email/send`, form, {responseType: 'text' as 'json'}).subscribe({
       next: (res) => console.log('sent', res),
       error: (err) => console.error('ERR', err),
     });
