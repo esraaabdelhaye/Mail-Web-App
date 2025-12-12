@@ -1,9 +1,8 @@
 package com.mailapp.mailbackend.controller;
 
-import com.mailapp.mailbackend.dto.EmailDTO;
+
 import com.mailapp.mailbackend.dto.EmailRequest;
 import com.mailapp.mailbackend.dto.MailPageDTO;
-import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.service.Mail.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

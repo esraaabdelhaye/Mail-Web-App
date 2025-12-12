@@ -1,5 +1,6 @@
 package com.mailapp.mailbackend.dto;
 
+import com.mailapp.mailbackend.entity.Folder;
 import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.entity.UserMail;
@@ -10,11 +11,11 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-12T14:23:48+0200",
+    date = "2025-12-12T13:30:41+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
-public class MainMapperImpl implements MainMapper {
+public class MainMapperImpl extends MainMapper {
 
     @Override
     public User toUserEntity(UserDTO userDTO) {
@@ -63,84 +64,108 @@ public class MainMapperImpl implements MainMapper {
     }
 
     @Override
-    public EmailDTO toUserMailDTO(UserMail userMail) {
+    public MailSummaryDTO toMailSummaryDTO(UserMail userMail) {
         if ( userMail == null ) {
             return null;
         }
 
-        EmailDTO emailDTO = new EmailDTO();
+        MailSummaryDTO mailSummaryDTO = new MailSummaryDTO();
 
-        emailDTO.id = userMail.getId();
-        emailDTO.sentAt = userMail.getSentAt();
+        mailSummaryDTO.id = userMail.getId();
+        mailSummaryDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
+        mailSummaryDTO.subject = userMailMailSubject( userMail );
+        mailSummaryDTO.sentAt = userMail.getSentAt();
         if ( userMail.getIsRead() != null ) {
-            emailDTO.isRead = userMail.getIsRead();
+            mailSummaryDTO.isRead = userMail.getIsRead();
         }
-        emailDTO.folder = map( userMail.getFolder() );
+        mailSummaryDTO.priority = map( userMail.getImportance() );
 
-        return emailDTO;
+        mailSummaryDTO.to = mapReceivers(userMail.getMail());
+        mailSummaryDTO.hasAttachments = hasAttachments(userMail.getMail());
+
+        return mailSummaryDTO;
     }
 
     @Override
-    public EmailDTO toEmailDTO(Mail mail) {
+    public MailDetailsDTO toEmailDTO(UserMail userMail) {
+        if ( userMail == null ) {
+            return null;
+        }
+
+        MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
+
+        mailDetailsDTO.id = userMail.getId();
+        mailDetailsDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
+        mailDetailsDTO.subject = userMailMailSubject( userMail );
+        mailDetailsDTO.body = userMailMailBody( userMail );
+        mailDetailsDTO.sentAt = userMail.getSentAt();
+        if ( userMail.getIsRead() != null ) {
+            mailDetailsDTO.isRead = userMail.getIsRead();
+        }
+        mailDetailsDTO.priority = map( userMail.getImportance() );
+        mailDetailsDTO.folder = userMailFolderFolderName( userMail );
+
+        mailDetailsDTO.to = mapReceivers(userMail.getMail());
+        mailDetailsDTO.attachments = mapAttachments(userMail.getMail());
+
+        return mailDetailsDTO;
+    }
+
+    @Override
+    public MailDetailsDTO.SenderDTO toSenderDTO(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        MailDetailsDTO.SenderDTO senderDTO = new MailDetailsDTO.SenderDTO();
+
+        senderDTO.name = user.getFullName();
+        senderDTO.email = user.getEmail();
+
+        return senderDTO;
+    }
+
+    @Override
+    public MailDetailsDTO toEmailDTO(Mail mail) {
         if ( mail == null ) {
             return null;
         }
 
-        EmailDTO emailDTO = new EmailDTO();
+        MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
 
-        emailDTO.id = mail.getId();
-        emailDTO.sender = userToSenderDTO( mail.getSender() );
-        emailDTO.subject = mail.getSubject();
-        emailDTO.body = mail.getBody();
-        emailDTO.sentAt = mail.getSentAt();
-        emailDTO.priority = mail.getPriority();
+        mailDetailsDTO.id = mail.getId();
+        mailDetailsDTO.sender = toSenderDTO( mail.getSender() );
+        mailDetailsDTO.subject = mail.getSubject();
+        mailDetailsDTO.body = mail.getBody();
+        mailDetailsDTO.sentAt = mail.getSentAt();
 
-        return emailDTO;
+        return mailDetailsDTO;
     }
 
     @Override
-    public EmailDTO toEmailDTO(UserMail userMail) {
-        if ( userMail == null ) {
-            return null;
-        }
-
-        EmailDTO emailDTO = new EmailDTO();
-
-        emailDTO.id = userMail.getId();
-        emailDTO.sentAt = userMail.getSentAt();
-        if ( userMail.getIsRead() != null ) {
-            emailDTO.isRead = userMail.getIsRead();
-        }
-        emailDTO.folder = map( userMail.getFolder() );
-
-        return emailDTO;
-    }
-
-    @Override
-    public Mail toMailEntity(EmailDTO emailDTO) {
+    public Mail toMailEntity(MailDetailsDTO emailDTO) {
         if ( emailDTO == null ) {
             return null;
         }
 
-        Mail.MailBuilder mail = Mail.builder();
+        Mail mail = new Mail();
 
-        mail.id( emailDTO.id );
-        mail.sender( senderDTOToUser( emailDTO.sender ) );
-        mail.subject( emailDTO.subject );
-        mail.body( emailDTO.body );
-        mail.sentAt( emailDTO.sentAt );
-        mail.priority( emailDTO.priority );
+        mail.setId( emailDTO.id );
+        mail.setSender( senderDTOToUser( emailDTO.sender ) );
+        mail.setSubject( emailDTO.subject );
+        mail.setBody( emailDTO.body );
+        mail.setSentAt( emailDTO.sentAt );
 
-        return mail.build();
+        return mail;
     }
 
     @Override
-    public List<EmailDTO> toEmailDTOs(List<Mail> mails) {
+    public List<MailDetailsDTO> toEmailDTOs(List<Mail> mails) {
         if ( mails == null ) {
             return null;
         }
 
-        List<EmailDTO> list = new ArrayList<EmailDTO>( mails.size() );
+        List<MailDetailsDTO> list = new ArrayList<MailDetailsDTO>( mails.size() );
         for ( Mail mail : mails ) {
             list.add( toEmailDTO( mail ) );
         }
@@ -148,19 +173,67 @@ public class MainMapperImpl implements MainMapper {
         return list;
     }
 
-    protected EmailDTO.SenderDTO userToSenderDTO(User user) {
-        if ( user == null ) {
+    private User userMailMailSender(UserMail userMail) {
+        if ( userMail == null ) {
             return null;
         }
-
-        EmailDTO.SenderDTO senderDTO = new EmailDTO.SenderDTO();
-
-        senderDTO.email = user.getEmail();
-
-        return senderDTO;
+        Mail mail = userMail.getMail();
+        if ( mail == null ) {
+            return null;
+        }
+        User sender = mail.getSender();
+        if ( sender == null ) {
+            return null;
+        }
+        return sender;
     }
 
-    protected User senderDTOToUser(EmailDTO.SenderDTO senderDTO) {
+    private String userMailMailSubject(UserMail userMail) {
+        if ( userMail == null ) {
+            return null;
+        }
+        Mail mail = userMail.getMail();
+        if ( mail == null ) {
+            return null;
+        }
+        String subject = mail.getSubject();
+        if ( subject == null ) {
+            return null;
+        }
+        return subject;
+    }
+
+    private String userMailMailBody(UserMail userMail) {
+        if ( userMail == null ) {
+            return null;
+        }
+        Mail mail = userMail.getMail();
+        if ( mail == null ) {
+            return null;
+        }
+        String body = mail.getBody();
+        if ( body == null ) {
+            return null;
+        }
+        return body;
+    }
+
+    private String userMailFolderFolderName(UserMail userMail) {
+        if ( userMail == null ) {
+            return null;
+        }
+        Folder folder = userMail.getFolder();
+        if ( folder == null ) {
+            return null;
+        }
+        String folderName = folder.getFolderName();
+        if ( folderName == null ) {
+            return null;
+        }
+        return folderName;
+    }
+
+    protected User senderDTOToUser(MailDetailsDTO.SenderDTO senderDTO) {
         if ( senderDTO == null ) {
             return null;
         }

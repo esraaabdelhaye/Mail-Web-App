@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import java.util.List;
 
-public class EmailDTO {
+public class MailDetailsDTO {
     public Long id;
 
     // Nested object for { name, email }

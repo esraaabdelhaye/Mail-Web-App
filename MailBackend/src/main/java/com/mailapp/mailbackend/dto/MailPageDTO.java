@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MailPageDTO {
     // List of emails for the current page
-    private List<EmailDTO> content;
+    private List<MailSummaryDTO> content;
 
     // Pagination metadata
     private int totalPages;
