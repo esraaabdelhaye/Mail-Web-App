@@ -1,7 +1,5 @@
 package com.mailapp.mailbackend.service.Mail;
 
-import com.mailapp.mailbackend.SearchSpecifications.GlobalSearchSpecification;
-import com.mailapp.mailbackend.SearchSpecifications.Specification;
 import com.mailapp.mailbackend.dto.EmailDTO;
 import com.mailapp.mailbackend.dto.SearchCriteriaDTO;
 import com.mailapp.mailbackend.entity.Mail;

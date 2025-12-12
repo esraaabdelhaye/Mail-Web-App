@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-11T19:54:11+0200",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
+    date = "2025-12-12T14:23:48+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
 public class MainMapperImpl implements MainMapper {
@@ -81,24 +81,6 @@ public class MainMapperImpl implements MainMapper {
     }
 
     @Override
-    public EmailDTO toEmailDTO(UserMail userMail) {
-        if ( userMail == null ) {
-            return null;
-        }
-
-        EmailDTO emailDTO = new EmailDTO();
-
-        emailDTO.id = userMail.getId();
-        emailDTO.sentAt = userMail.getSentAt();
-        if ( userMail.getIsRead() != null ) {
-            emailDTO.isRead = userMail.getIsRead();
-        }
-        emailDTO.folder = map( userMail.getFolder() );
-
-        return emailDTO;
-    }
-
-    @Override
     public EmailDTO toEmailDTO(Mail mail) {
         if ( mail == null ) {
             return null;
@@ -112,6 +94,24 @@ public class MainMapperImpl implements MainMapper {
         emailDTO.body = mail.getBody();
         emailDTO.sentAt = mail.getSentAt();
         emailDTO.priority = mail.getPriority();
+
+        return emailDTO;
+    }
+
+    @Override
+    public EmailDTO toEmailDTO(UserMail userMail) {
+        if ( userMail == null ) {
+            return null;
+        }
+
+        EmailDTO emailDTO = new EmailDTO();
+
+        emailDTO.id = userMail.getId();
+        emailDTO.sentAt = userMail.getSentAt();
+        if ( userMail.getIsRead() != null ) {
+            emailDTO.isRead = userMail.getIsRead();
+        }
+        emailDTO.folder = map( userMail.getFolder() );
 
         return emailDTO;
     }
