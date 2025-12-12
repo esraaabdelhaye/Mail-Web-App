@@ -4,8 +4,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { EmailPageDTO } from '../../app/models/EmailPageDTO';
 import { PaginationRequest } from '../../app/models/PaginationRequest';
-
 import { AuthService } from '../auth/auth-service';
+import { NotificationService } from '../notification/notification-service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +17,10 @@ export class EmailHandler {
   private readonly apiUrl: string = 'http://localhost:8080';
   constructor(private http: HttpClient, private auth: AuthService) {}
   readonly currentFolderId = signal<string>('inbox');
+
+  public opStatus = signal(false);
+  public opMessage = signal('');
+  public notificationService = inject(NotificationService);
 
   getMailPage(request: PaginationRequest): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
@@ -137,13 +141,13 @@ export class EmailHandler {
       next: (newFolder) => {
         console.log('Folder created successfully:', newFolder);
 
-        // 4. Update the Signal (Optimistic UI Update)
-        // We append the new folder to the existing list
         this.folderSignal.update((currentList) => [...currentList, newFolder]);
+
+        this.notificationService.showSuccess(`Folder "${folderName}" was added successfully`);
       },
       error: (err) => {
         console.error('Failed to create folder:', err);
-        // Bonus: You could show a toast notification here
+        this.notificationService.showError(`Failed to add folder named "${folderName}"!`);
       },
     });
   }
@@ -152,19 +156,21 @@ export class EmailHandler {
     this.http.delete(`${this.apiUrl}/folders/${folderId}`).subscribe({
       next: () => {
         console.log('Deleted folder with id: ' + folderId);
-
+        this.notificationService.showSuccess(`Successfully Deleted`);
         // Refresh the List (Remove it from the screen)
         this.loadFolders();
       },
 
       error: (err) => {
         console.error('Failed to delete folder:', err);
+        this.notificationService.showError('Failed to delete folder');
       },
     });
   }
 
   editFolder(folderId: string, newName: string) {
     // 1. Guard: Check if user is logged in
+
     const userId = this.auth.getCurrentUserId();
     if (!userId) {
       console.error('Cannot edit folder: User not logged in');
@@ -172,15 +178,7 @@ export class EmailHandler {
     }
 
     console.log(`Renaming folder ${folderId} to ${newName}...`);
-
-    // 2. Prepare Request Data
-    // NOTE: Your backend expects the new name in the BODY inside a DTO
-    // DTO field name depends on your backend (likely 'name' or 'folderName')
-    // Based on previous chats, your DTO uses 'name'.
     const body = { folderName: newName };
-
-    // 3. Make the HTTP Call
-    // URL: PUT /api/folders/{id}
     this.http.put<void>(`${this.apiUrl}/folders/${folderId}`, body).subscribe({
       next: () => {
         console.log('Folder renamed successfully');
@@ -192,10 +190,13 @@ export class EmailHandler {
             f.folderID.toString() === folderId ? { ...f, folderName: newName } : f
           )
         );
+        this.notificationService.showSuccess(`Folder successfully renamed to "${newName}"!`);
       },
       error: (err) => {
         console.error('Failed to rename folder:', err);
-        // Bonus: Revert logic or show error message
+        this.opStatus.set(true);
+        this.opMessage.set('Failed to Rename Folder');
+        this.notificationService.showError(`Failed to Rename Folder to "${newName}"!`);
       },
     });
   }
