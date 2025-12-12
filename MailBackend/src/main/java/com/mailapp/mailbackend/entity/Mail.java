@@ -1,10 +1,7 @@
 package com.mailapp.mailbackend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter; // <-- Import Lombok Getter
-import lombok.Setter; // <-- Import Lombok Setter
-import lombok.NoArgsConstructor; // Recommended for JPA
-import lombok.AllArgsConstructor; // Recommended for JPA
+import lombok.*;
 
 import java.util.Date;
 
@@ -14,6 +11,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Mail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,5 +40,8 @@ public class Mail {
 
     @Column(name = "deleted_at")
     private Date deletedAt;
+
+    @Column(name = "priority")
+    private int priority;
 
 }

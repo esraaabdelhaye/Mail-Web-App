@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-10T17:39:22+0200",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
+    date = "2025-12-11T19:54:11+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
 )
 @Component
 public class MainMapperImpl implements MainMapper {
@@ -81,23 +81,6 @@ public class MainMapperImpl implements MainMapper {
     }
 
     @Override
-    public EmailDTO toEmailDTO(Mail mail) {
-        if ( mail == null ) {
-            return null;
-        }
-
-        EmailDTO emailDTO = new EmailDTO();
-
-        emailDTO.id = mail.getId();
-        emailDTO.sender = userToSenderDTO( mail.getSender() );
-        emailDTO.subject = mail.getSubject();
-        emailDTO.body = mail.getBody();
-        emailDTO.sentAt = mail.getSentAt();
-
-        return emailDTO;
-    }
-
-    @Override
     public EmailDTO toEmailDTO(UserMail userMail) {
         if ( userMail == null ) {
             return null;
@@ -116,20 +99,39 @@ public class MainMapperImpl implements MainMapper {
     }
 
     @Override
+    public EmailDTO toEmailDTO(Mail mail) {
+        if ( mail == null ) {
+            return null;
+        }
+
+        EmailDTO emailDTO = new EmailDTO();
+
+        emailDTO.id = mail.getId();
+        emailDTO.sender = userToSenderDTO( mail.getSender() );
+        emailDTO.subject = mail.getSubject();
+        emailDTO.body = mail.getBody();
+        emailDTO.sentAt = mail.getSentAt();
+        emailDTO.priority = mail.getPriority();
+
+        return emailDTO;
+    }
+
+    @Override
     public Mail toMailEntity(EmailDTO emailDTO) {
         if ( emailDTO == null ) {
             return null;
         }
 
-        Mail mail = new Mail();
+        Mail.MailBuilder mail = Mail.builder();
 
-        mail.setId( emailDTO.id );
-        mail.setSender( senderDTOToUser( emailDTO.sender ) );
-        mail.setSubject( emailDTO.subject );
-        mail.setBody( emailDTO.body );
-        mail.setSentAt( emailDTO.sentAt );
+        mail.id( emailDTO.id );
+        mail.sender( senderDTOToUser( emailDTO.sender ) );
+        mail.subject( emailDTO.subject );
+        mail.body( emailDTO.body );
+        mail.sentAt( emailDTO.sentAt );
+        mail.priority( emailDTO.priority );
 
-        return mail;
+        return mail.build();
     }
 
     @Override

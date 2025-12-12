@@ -2,8 +2,7 @@ package com.mailapp.mailbackend.controller;
 
 
 import com.mailapp.mailbackend.dto.UserFolderDTO;
-import com.mailapp.mailbackend.entity.User;
-import com.mailapp.mailbackend.service.User.Folder.FolderService;
+import com.mailapp.mailbackend.service.Folder.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

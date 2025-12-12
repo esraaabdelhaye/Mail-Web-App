@@ -1,17 +1,18 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 // import { MatIcon } from '@angular/material/icon';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../shared/button/button';
+import { AuthService } from './../../services/auth/auth-service';
 
 export interface EmailData {
+  senderId: number;
   to: string[];
   cc: string[];
   bcc: string[];
   subject: string;
   body: string;
   priority: number;
-  // Note: Angular typically handles file uploads through a service,
-  // but we'll keep the File[] structure for consistency.
   attachments: File[];
 }
 
@@ -37,6 +38,7 @@ export class ComposeEmail {
   @Output() saveDraft = new EventEmitter<void>();
 
   // --- Component State ---
+  senderId = 0;
   to: string[] = [];
   toInput: string = '';
   cc: string[] = [];
@@ -55,8 +57,13 @@ export class ComposeEmail {
   autoSaveInterval: any;
   lastAutoSavedState: string = '';
   showSavedToast = false;
+  private readonly apiUrl: string = 'http://localhost:8080';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient,
+    private auth: AuthService
+  ) {}
 
   // Map the priority values (1-4) to their details
   priorityMap: Record<string, Omit<PriorityOption, 'value'>> = {
@@ -98,15 +105,12 @@ export class ComposeEmail {
 
     // Only save if something changed
     if (currentState !== this.lastAutoSavedState) {
-      console.log("saving..");
+      console.log('saving..');
       this.lastAutoSavedState = currentState;
-
     }
 
-          // this.saveDraft.emit();
+    // this.saveDraft.emit();
   }
-
-
 
   // --- Handlers ---
 
@@ -202,6 +206,7 @@ export class ComposeEmail {
 
   get emailData(): EmailData {
     return {
+      senderId: this.senderId,
       to: this.to,
       cc: this.cc,
       bcc: this.bcc,
@@ -214,6 +219,26 @@ export class ComposeEmail {
 
   handleSend() {
     this.send.emit(this.emailData);
+    const id = this.auth.getCurrentUserId();
+    if (!id) {
+      console.error('No logged-in user');
+      return;
+    }
+    this.senderId = id; 
+
+    const data = this.emailData;
+
+    const form = new FormData();
+    form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+
+    data.attachments.forEach((file) => {
+      form.append('files', file);
+    });
+
+    this.http.post(`${this.apiUrl}/email/send`, form, {responseType: 'text' as 'json'}).subscribe({
+      next: (res) => console.log('sent', res),
+      error: (err) => console.error('ERR', err),
+    });
     this.resetForm();
   }
 
