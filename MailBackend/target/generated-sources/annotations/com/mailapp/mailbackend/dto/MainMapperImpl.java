@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-10T17:55:06+0200",
+    date = "2025-12-11T19:54:11+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
 )
 @Component
@@ -111,6 +111,7 @@ public class MainMapperImpl implements MainMapper {
         emailDTO.subject = mail.getSubject();
         emailDTO.body = mail.getBody();
         emailDTO.sentAt = mail.getSentAt();
+        emailDTO.priority = mail.getPriority();
 
         return emailDTO;
     }
@@ -121,15 +122,16 @@ public class MainMapperImpl implements MainMapper {
             return null;
         }
 
-        Mail mail = new Mail();
+        Mail.MailBuilder mail = Mail.builder();
 
-        mail.setId( emailDTO.id );
-        mail.setSender( senderDTOToUser( emailDTO.sender ) );
-        mail.setSubject( emailDTO.subject );
-        mail.setBody( emailDTO.body );
-        mail.setSentAt( emailDTO.sentAt );
+        mail.id( emailDTO.id );
+        mail.sender( senderDTOToUser( emailDTO.sender ) );
+        mail.subject( emailDTO.subject );
+        mail.body( emailDTO.body );
+        mail.sentAt( emailDTO.sentAt );
+        mail.priority( emailDTO.priority );
 
-        return mail;
+        return mail.build();
     }
 
     @Override

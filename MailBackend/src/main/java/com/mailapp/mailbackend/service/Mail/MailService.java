@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,13 @@ public class MailService {
 
     @Autowired
     private AttachmentRepo attachmentRepo;
+
+    @Autowired
+    private SingleReceiverSend singleReceiverSend;
+
+    @Autowired
+    private MultiReceiverSend multiReceiverSend;
+
 
     public List<EmailDTO> getEmails(String folderId) {
         // Fetch from DB
@@ -74,6 +82,7 @@ public class MailService {
 
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
         Mail mail = buildMail(emailRequest);
+        mailRepository.save(mail);
         if (files != null && !files.isEmpty())
         {
             try {
@@ -86,7 +95,8 @@ public class MailService {
             }
         }
 
-//        sendStrategy.send(mail);
+        SendStrategy strategy = selectStrategy(emailRequest);
+        strategy.sendMail(mail, emailRequest);
 
 
 
@@ -109,21 +119,44 @@ public class MailService {
     }
 
     private void saveAttachments(Mail mail, List<MultipartFile> files) throws IOException {
-        String folder = "/uploads/";
 
-        for(MultipartFile file : files) {
+        // Use relative folder without leading slash to avoid root path issues on Windows
+        Path uploadDir = Paths.get("uploads");
+
+        // Create folder if missing
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        for (MultipartFile file : files) {
+            // Generate unique file name
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path path = Paths.get(folder + filename);
-            Files.copy(file.getInputStream(), path);
 
+            // Build full path
+            Path path = uploadDir.resolve(filename);
+
+            // Save file to disk (overwrite if needed)
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+            // Save metadata to DB
             Attachment att = new Attachment();
             att.setMail(mail);
             att.setFileName(file.getOriginalFilename());
             att.setStoragePath(path.toString());
             att.setFileType(file.getContentType());
             att.setFileSize(file.getSize());
+
             attachmentRepo.save(att);
         }
+    }
+
+
+    private SendStrategy selectStrategy(EmailRequest req) {
+        int total = req.getTo().size() +
+                    req.getCc().size() +
+                    req.getBcc().size();
+        if (total > 1) return multiReceiverSend;
+        return singleReceiverSend;
     }
 }
 

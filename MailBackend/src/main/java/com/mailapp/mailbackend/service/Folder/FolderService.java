@@ -1,4 +1,4 @@
-package com.mailapp.mailbackend.service.User.Folder;
+package com.mailapp.mailbackend.service.Folder;
 
 import com.mailapp.mailbackend.dto.UserFolderDTO;
 import com.mailapp.mailbackend.entity.Folder;
@@ -78,6 +78,14 @@ public class FolderService {
         }
 
         folderRepo.delete(folder);
+    }
+
+    public Folder getInbox(User user) {
+        return folderRepo.findByUserAndFolderName(user, "Inbox");
+    }
+
+    public Folder getSent(User user) {
+        return folderRepo.findByUserAndFolderName(user, "Sent");
     }
 
 }

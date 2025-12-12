@@ -5,7 +5,7 @@ import com.mailapp.mailbackend.dto.UserDTO;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.enums.ChainType;
 import com.mailapp.mailbackend.repository.UserRepo;
-import com.mailapp.mailbackend.service.User.Folder.FolderService;
+import com.mailapp.mailbackend.service.Folder.FolderService;
 import com.mailapp.mailbackend.service.User.auth.ChainFactory;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;

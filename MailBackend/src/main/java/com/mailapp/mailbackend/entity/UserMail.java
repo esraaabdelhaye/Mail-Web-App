@@ -12,6 +12,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "user_mails")
 public class UserMail {
 

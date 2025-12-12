@@ -42,7 +42,7 @@ public class MailController {
                                             @RequestPart(value = "files", required = false) List<MultipartFile> files) throws Exception {
 
         mailService.sendEmail(emailRequest, files);
-        return ResponseEntity.ok("Email processed successfully");
+        return ResponseEntity.ok(("Email processed successfully"));
     }
 
 
