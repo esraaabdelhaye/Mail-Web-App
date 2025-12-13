@@ -164,7 +164,7 @@ public abstract class MainMapper {
             case LOW -> 1;
             case NORMAL -> 2;
             case HIGH -> 3;
-            case CRITICAL -> 4;
+            case URGENT -> 4;
         };
     }
 

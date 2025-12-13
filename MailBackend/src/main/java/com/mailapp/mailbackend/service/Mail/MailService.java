@@ -65,7 +65,7 @@ public class MailService {
         return getPageDTO(mailPage);
     }
 
-    public MailPageDTO getPageDTO(Page<UserMail> mailPage){
+    public MailPageDTO getPageDTO(Page<UserMail> mailPage) {
         List<MailSummaryDTO> mailSummaryDTOS = mailPage.getContent().stream()
                 .map(userMail -> mainMapper.toMailSummaryDTO(userMail))
                 .collect(Collectors.toList());
@@ -82,19 +82,15 @@ public class MailService {
 
         return pageDTO;
     }
-}
 
 
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
         Mail mail = buildMail(emailRequest);
         mailRepository.save(mail);
-        if (files != null && !files.isEmpty())
-        {
+        if (files != null && !files.isEmpty()) {
             try {
                 saveAttachments(mail, files);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Failed to save attachments", e);
             }
@@ -102,7 +98,6 @@ public class MailService {
 
         SendStrategy strategy = selectStrategy(emailRequest);
         strategy.sendMail(mail, emailRequest);
-
 
 
     }
@@ -158,12 +153,12 @@ public class MailService {
 
     private SendStrategy selectStrategy(EmailRequest req) {
         int total = req.getTo().size() +
-                    req.getCc().size() +
-                    req.getBcc().size();
+                req.getCc().size() +
+                req.getBcc().size();
         if (total > 1) return multiReceiverSend;
         return singleReceiverSend;
     }
-
+}
 //
 //    public MailDetailsDTO getEmailDTO(Long mailId) {
 //        UserMail userMail = userMailRepo.getReferenceById(mailId);
