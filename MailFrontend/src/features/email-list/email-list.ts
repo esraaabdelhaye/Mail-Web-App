@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 import { AuthService } from '../../services/auth/auth-service';
 import { EmailPageDTO } from '../../app/models/EmailPageDTO';
-import { Email } from '../../app/models/email.model';
 import { Observable, Subscription } from 'rxjs';
 import { PaginationRequest } from '../../app/models/PaginationRequest';
 import {
@@ -24,18 +23,8 @@ import {
   LayoutGrid,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-
-enum Priority {
-  HIGH = 1,
-  MEDIUM = 2,
-  LOW = 3,
-  NONE = 4,
-}
-
-interface Sender {
-  name: string;
-  email: string;
-}
+import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
+import { MailDetailsDTO } from '../../app/models/DetailedMail';
 
 interface CustomFolder {
   id: number;
@@ -69,8 +58,8 @@ export class EmailListComponent implements OnInit {
   };
 
   public emailPage = signal<EmailPageDTO | null>(null);
-  public paginatedEmails = signal<Email[]>([]);
-  public processedEmails = signal<Email[]>([]);
+  public paginatedEmails = signal<MailSummaryDTO[]>([]);
+  public processedEmails = signal<MailSummaryDTO[]>([]);
 
   public searchQuery = signal('');
   public sortBy = signal('sentAt');
@@ -81,7 +70,7 @@ export class EmailListComponent implements OnInit {
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
-  public currentlyOpened = signal<Email | null>(null);
+  public currentlyOpened = signal<MailDetailsDTO | null>(null);
 
   public currentPage = signal(1);
   public itemsPerPage = signal(10);
@@ -97,9 +86,19 @@ export class EmailListComponent implements OnInit {
   public onRefresh(): void {
     this.fetchMail(true);
   }
-  public openEmail(email: any): void {
-    this.selectedEmailId = email.id;
-    this.currentlyOpened = email;
+  public openEmail(emailId: number): void {
+    this.selectedEmailId.set(emailId);
+    const userId = this.authService.getCurrentUserId();
+    this.emailHandler.getMailDetails(Number(userId), emailId).subscribe({
+      next: (data) => {
+        this.currentlyOpened.set(data);
+        console.log(data);
+        console.log('from email List: ', this.currentlyOpened);
+      },
+      error: (err) => {
+        console.log('failed to open email', err);
+      },
+    });
   }
 
   public closeOpenedEmail() {
@@ -134,8 +133,9 @@ export class EmailListComponent implements OnInit {
       next: (data) => {
         // Set the main page data
         this.emailPage.set(data);
-        console.log('emails: ', data.content);
+        console.log('here emails: ', data.content);
         this.paginatedEmails.set(data.content);
+
         this.currentPage.set(data.currentPage + 1);
 
         this.isLoading.set(false);

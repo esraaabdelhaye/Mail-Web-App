@@ -1,0 +1,26 @@
+import { SenderDTO } from './SenderDTO';
+export interface AttachmentDTO {
+  id: number;
+  fileName: string;
+  fileSize: number; // Size in bytes
+  fileType: string; // MIME type
+}
+
+export interface MailDetailsDTO {
+  id: number;
+  sender: SenderDTO;
+
+  // Java List<String> maps to string array
+  to: string[];
+
+  subject: string;
+  body: string;
+
+  sentAt: string;
+  isRead: boolean;
+  priority: number;
+  folder: string;
+
+  // List of nested attachments
+  attachments: AttachmentDTO[];
+}

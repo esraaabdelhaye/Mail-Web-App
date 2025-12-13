@@ -1,10 +1,6 @@
 package com.mailapp.mailbackend.service.Mail;
 
-import com.mailapp.mailbackend.dto.MailDetailsDTO;
-import com.mailapp.mailbackend.dto.EmailRequest;
-import com.mailapp.mailbackend.dto.MailPageDTO;
-import com.mailapp.mailbackend.dto.MailSummaryDTO;
-import com.mailapp.mailbackend.dto.MainMapper;
+import com.mailapp.mailbackend.dto.*;
 import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +61,7 @@ public class MailService {
         return getPageDTO(mailPage);
     }
 
-    public MailPageDTO getPageDTO(Page<UserMail> mailPage){
+    public MailPageDTO getPageDTO(Page<UserMail> mailPage) {
         List<MailSummaryDTO> mailSummaryDTOS = mailPage.getContent().stream()
                 .map(userMail -> mainMapper.toMailSummaryDTO(userMail))
                 .collect(Collectors.toList());
@@ -82,7 +78,6 @@ public class MailService {
 
         return pageDTO;
     }
-}
 
 
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
@@ -158,46 +153,10 @@ public class MailService {
 
     private SendStrategy selectStrategy(EmailRequest req) {
         int total = req.getTo().size() +
-                    req.getCc().size() +
-                    req.getBcc().size();
+                req.getCc().size() +
+                req.getBcc().size();
         if (total > 1) return multiReceiverSend;
         return singleReceiverSend;
     }
 
-//
-//    public MailDetailsDTO getEmailDTO(Long mailId) {
-//        UserMail userMail = userMailRepo.getReferenceById(mailId);
-//        Mail mail = userMail.getMail();
-//
-//        MailDetailsDTO dto = new MailDetailsDTO();
-//
-//        // Basic mail data
-//        dto.id = mail.getId();
-//        dto.subject = mail.getSubject();
-//        dto.body = mail.getBody();
-//
-//        // Sender
-//        dto.sender = new MailDetailsDTO.SenderDTO(
-//                mail.getSender().getFullName(),
-//                mail.getSender().getEmail()
-//        );
-//
-//        // Sent at – prefer the one from Mail
-//        dto.sentAt = mail.getSentAt();
-//
-//        // User-specific fields
-//        dto.isRead = userMail.getIsRead() != null && userMail.getIsRead();
-//        dto.priority = userMail.getImportance() != null
-//                ? userMail.getImportance().getValue()    // convert enum → int, see below
-//                : 1;
-//
-//        dto.folder = userMail.getFolder().getFolderName();
-//
-//        // Attachments (if you have an entity)
-//        // dto.attachments = mail.getAttachments()
-//        //      .stream()
-//        //      .map(a -> new AttachmentDTO(a.getName(), a.getUrl()))
-//        //      .toList();
-//
-//        return dto;
-//    }
+}
