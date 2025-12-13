@@ -14,6 +14,5 @@ public class SearchCriteriaDTO {
     private String folder;
     private Date sentAt;
     private Priority priority;
-    private boolean HasAttachment;
     private String attachmentName;
 }

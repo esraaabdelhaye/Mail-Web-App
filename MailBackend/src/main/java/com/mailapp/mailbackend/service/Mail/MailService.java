@@ -66,6 +66,7 @@ public class MailService {
                 .map(userMail -> mainMapper.toMailSummaryDTO(userMail))
                 .collect(Collectors.toList());
 
+        System.out.println("Num of emails: " + mailSummaryDTOS.size());
         // Construct and return the Pagination DTO
         MailPageDTO pageDTO = new MailPageDTO();
         pageDTO.setContent(mailSummaryDTOS);
@@ -77,6 +78,12 @@ public class MailService {
         pageDTO.setPageSize(mailPage.getSize());
 
         return pageDTO;
+    }
+
+    public MailDetailsDTO getMailDetails(Long userId, Long mailId) {
+        User user = userRepo.getReferenceById(userId);
+        UserMail userMail = userMailRepo.findByUserAndId(user, mailId);
+        return mainMapper.toDetailedEmailDTO(userMail);
     }
 
 

@@ -14,6 +14,8 @@ public class MailSummaryDTO {
     public List<String> to;
     public String subject;
 
+    public String preview;
+
     // Formats Date to ISO String for the frontend
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     public Date sentAt;
