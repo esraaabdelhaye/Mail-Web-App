@@ -91,4 +91,7 @@ public class FolderService {
         return folderRepo.findByUserAndFolderName(user, "Sent");
     }
 
+    public Folder getDrafts(User user) {
+        return folderRepo.findByUserAndFolderName(user, "Drafts");
+    }
 }

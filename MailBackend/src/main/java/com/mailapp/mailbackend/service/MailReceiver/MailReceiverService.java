@@ -18,7 +18,7 @@ public class MailReceiverService {
     @Autowired
     private MailReceiverRepo mailReceiverRepo;
 
-    public void save(Mail mail, ReceiverEntry entry){
+    public Long save(Mail mail, ReceiverEntry entry){
         User receiver = userRepo.findByEmail(entry.getReceiverEmail());
         if (receiver == null) {
             throw new RuntimeException("User not found with email: " + entry.getReceiverEmail());
@@ -29,6 +29,7 @@ public class MailReceiverService {
                 .receiverType(entry.getReceiverType())
                 .build();
         mailReceiverRepo.save(mailReceiver);
+        return mailReceiver.getId();
 
     }
 }
