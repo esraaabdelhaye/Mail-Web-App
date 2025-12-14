@@ -18,7 +18,8 @@ export class EmailHandler {
 
   private readonly apiUrl: string = 'http://localhost:8080';
   constructor(private http: HttpClient, private auth: AuthService) {}
-  readonly currentFolderId = signal<string>('inbox');
+  readonly currentFolderName = signal<string>('Inbox');
+  // readonly currentFolderName = signal<string>()
 
   public opStatus = signal(false);
   public opMessage = signal('');
@@ -73,28 +74,6 @@ export class EmailHandler {
   //   return counts;
   // });
 
-  //   onRefresh() {
-  //     console.log('Refreshing...');
-  //   }
-
-  //   openEmail(email: Email) {
-  //     this.openedEmail.set(email);
-  //     this.markAsRead(email.id);
-  //   }
-
-  //   closeEmail() {
-  //     this.openedEmail.set(null);
-  //   }
-
-  //   moveToFolder() {}
-
-  //   deleteEmails(emailIds: string[]) {
-  //     // This should be used to delete the emails from the backend
-  //   }
-
-  //   composeEmail() {
-  //     console.log('Open compose modal');
-  //   }
 
   // --------------------- Folder actions ----------------------
 
@@ -126,9 +105,18 @@ export class EmailHandler {
     });
   }
 
-  selectFolder(folderId: string) {
-    this.currentFolderId.set(folderId);
-    console.log('Load emails for:', folderId);
+  private emailListComp : any;
+
+  regList(component: any){
+    this.emailListComp = component;
+  }
+
+  selectFolder(folderName: string) {
+    this.currentFolderName.set(folderName);
+    if (this.emailListComp != null){
+      this.emailListComp.fetchMail();
+    }
+    console.log('Load emails for:', folderName);
     // In real app: this.emailService.loadEmails(folderId);
   }
 

@@ -78,13 +78,13 @@ export class EmailSidebarComponent implements OnInit {
   // Helper to map system IDs to Icons
   getIconForFolder(id: string): any {
     switch (id) {
-      case 'inbox':
+      case 'Inbox':
         return this.icons.Inbox;
-      case 'sent':
+      case 'Sent':
         return this.icons.Send;
-      case 'drafts':
+      case 'Drafts':
         return this.icons.FileText;
-      case 'trash':
+      case 'Trash':
         return this.icons.Trash2;
       default:
         return this.icons.Folder;
