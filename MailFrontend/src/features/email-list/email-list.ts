@@ -113,10 +113,14 @@ export class EmailListComponent implements OnInit {
   constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
+    // this is very very very very very very very very very very bad design, this should be changed but i'll leave cause I only want to test the concept
+    // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
+    this.emailHandler.regList(this);
+
     this.fetchMail();
   }
 
-  fetchMail(isRefresh: boolean = false): void {
+  public fetchMail(isRefresh: boolean = false): void {
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
 
@@ -124,7 +128,7 @@ export class EmailListComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     const request: PaginationRequest = {
       userId: Number(userId),
-      folderName: this.currentFolder(),
+      folderName: this.emailHandler.currentFolderName(),
       page: apiPage,
       size: this.itemsPerPage(),
       sortBy: this.sortBy(),

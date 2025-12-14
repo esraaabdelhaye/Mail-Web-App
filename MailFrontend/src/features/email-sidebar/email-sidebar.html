@@ -21,11 +21,11 @@
       @for (folder of defaultFolders(); track folder.folderID) {
       <button
         class="nav-item"
-        [class.active]="emailHandler.currentFolderId() === folder.folderID.toString()"
-        (click)="emailHandler.selectFolder(folder.folderID.toString())"
+        [class.active]="emailHandler.currentFolderName() === folder.folderName.toString()"
+        (click)="emailHandler.selectFolder(folder.folderName.toString())"
       >
         <lucide-icon
-          [img]="getIconForFolder(folder.folderID.toString())"
+          [img]="getIconForFolder(folder.folderName.toString())"
           class="nav-icon"
         ></lucide-icon>
         <span class="nav-label">{{ folder.folderName }}</span>
@@ -83,8 +83,8 @@
 
           <button
             class="nav-item"
-            [class.active]="emailHandler.currentFolderId() === folder.folderID.toString()"
-            (click)="emailHandler.selectFolder(folder.folderID.toString())"
+            [class.active]="emailHandler.currentFolderName() === folder.folderName.toString()"
+            (click)="emailHandler.selectFolder(folder.folderName.toString())"
           >
             <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
             <span class="nav-label">{{ folder.folderName }}</span>
