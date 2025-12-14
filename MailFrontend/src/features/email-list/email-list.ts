@@ -25,6 +25,7 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import {SearchOptionsModalComponent} from '../search-options-modal/search-options-modal';
 
 interface CustomFolder {
   id: number;
@@ -34,7 +35,7 @@ interface CustomFolder {
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent],
+  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent, SearchOptionsModalComponent],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -108,7 +109,7 @@ export class EmailListComponent implements OnInit {
 
   public math = Math;
 
-  constructor(private emailHandler: EmailHandler, private authService: AuthService) {}
+  constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.fetchMail();
