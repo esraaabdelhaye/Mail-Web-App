@@ -61,7 +61,7 @@ public class ContactService {
 
         // Set primary email as the first one in the list (if it exists)
         if (emailAddresses != null && !emailAddresses.isEmpty()) {
-            contact.setPrimaryEmail(emailAddresses.getFirst());
+            contact.setPrimaryEmail(emailAddresses.get(0));
         }
 
         // Save contact first to generate ID
@@ -99,7 +99,7 @@ public class ContactService {
 
         // Update primary email
         if (newEmails != null && !newEmails.isEmpty()){
-            contact.setPrimaryEmail(newEmails.getFirst());
+            contact.setPrimaryEmail(newEmails.get(0));
         }
 
         // Update emails list in the db
