@@ -93,6 +93,7 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.importance", target = "priority")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
     @Mapping(target = "hasAttachments", expression = "java(hasAttachments(userMail.getMail()))")
+    @Mapping(target = "preview", expression = "java(userMail.getMail().getBody().split(\"\\\\n\")[0])")
     public abstract MailSummaryDTO toMailSummaryDTO(UserMail userMail);
 
 
@@ -106,7 +107,7 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.folder.folderName", target = "folder")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
     @Mapping(target = "attachments", expression = "java(mapAttachments(userMail.getMail()))")
-    public abstract MailDetailsDTO toEmailDTO(UserMail userMail);
+    public abstract MailDetailsDTO toDetailedEmailDTO(UserMail userMail);
 
 
     @Mapping(source = "fullName", target = "name")
@@ -150,23 +151,21 @@ public abstract class MainMapper {
         if (mail == null) {
             return false;
         }
-
-        // Fetch attachments from database
         List<Attachment> attachments = attachmentRepo.findByMailId(mail.getId());
-
-        return attachments.stream().count()==0;
+        return !attachments.isEmpty();
     }
 
     protected int map(Priority value) {
         if (value == null) return 0;
 
         return switch (value) {
-            case LOW -> 1;
-            case NORMAL -> 2;
-            case HIGH -> 3;
-            case CRITICAL -> 4;
+            case URGENT -> 1;
+            case HIGH -> 2;
+            case NORMAL -> 3;
+            case LOW -> 4;
         };
     }
+
 
 
     private String formatFileSize(Long bytes) {

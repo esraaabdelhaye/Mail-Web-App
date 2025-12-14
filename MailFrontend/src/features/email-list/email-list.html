@@ -80,7 +80,7 @@
 
   <!-- Email List Area -->
   <div class="email-scroll-area">
-    @if (paginatedEmails.length === 0) {
+    @if (paginatedEmails().length === 0) {
     <div class="empty-state">
       <lucide-icon [img]="icons.Search" size="48" class="empty-icon"></lucide-icon>
       <h3>No emails found</h3>
@@ -131,7 +131,7 @@
       class="email-row"
       [class.unread]="!email.isRead"
       [class.selected]="selectedEmailId() === email.id"
-      (click)="openEmail(email)"
+      (click)="openEmail(email.id)"
     >
       <div class="row-checkbox" (click)="$event.stopPropagation()">
         <input
@@ -143,29 +143,33 @@
 
       <div class="row-priority">
         @if (email.priority === 1) {
-        <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
-        <!--              😨-->
+        <!-- URGENT: Red, Strong Up Arrow -->
+        <lucide-icon [img]="icons.ChevronsUp" class="priority-urgent"></lucide-icon>
         } @else if (email.priority === 2) {
-        <lucide-icon [img]="icons.ChevronsUp" class="priority-medium"></lucide-icon>
-        <!--              😧-->
+        <!-- HIGH: Orange/Amber, Up Arrow -->
+        <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
         } @else if (email.priority === 3) {
+        <!-- NORMAL: Flag or Neutral Marker (No urgency implied) -->
+        <lucide-icon [img]="icons.Flag" class="priority-normal"></lucide-icon>
+        } @else if (email.priority === 4) {
+        <!-- LOW: Blue/Green, Down Arrow -->
         <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
-        <!--              🥱-->
-        } @else if (email.priority === 4) { 😴 }
+        }
       </div>
 
       <div class="row-content">
         <div class="row-top">
           <span class="sender-name">{{ email.sender.name }}</span>
-          @if (email.attachments.length) {
+          @if (email.hasAttachments) {
           <span class="attachment-badge">📎</span>
           }
         </div>
         <div class="subject-line">{{ email.subject }}</div>
+        <div class="preview-line">{{ email.preview }}</div>
       </div>
 
       <div class="row-date">
-        {{ formatDate(email.date.toDateString()) }}
+        {{ formatDate(email.sentAt) }}
       </div>
     </div>
     } }

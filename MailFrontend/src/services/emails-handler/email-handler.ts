@@ -6,6 +6,7 @@ import { EmailPageDTO } from '../../app/models/EmailPageDTO';
 import { PaginationRequest } from '../../app/models/PaginationRequest';
 import { AuthService } from '../auth/auth-service';
 import { NotificationService } from '../notification/notification-service';
+import { MailDetailsDTO } from '../../app/models/DetailedMail';
 
 @Injectable({
   providedIn: 'root',
@@ -34,9 +35,14 @@ export class EmailHandler {
       params = params.set('sort', `${request.sortBy},${request.sortDirection}`);
     }
 
-    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/`, { params });
+    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/page`, { params });
   }
 
+  getMailDetails(userId: number, mailId: number): Observable<MailDetailsDTO> {
+    let params = new HttpParams().set('userId', userId).set('mailId', mailId);
+
+    return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
+  }
   // readonly filteredEmails = computed(() => {
   //   const folderId = this.currentFolderId();
   //   return this.emails().filter((e) => e.folder === folderId);

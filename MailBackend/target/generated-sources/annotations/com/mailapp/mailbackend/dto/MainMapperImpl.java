@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-12T13:30:41+0200",
+    date = "2025-12-13T21:23:51+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
@@ -82,12 +82,13 @@ public class MainMapperImpl extends MainMapper {
 
         mailSummaryDTO.to = mapReceivers(userMail.getMail());
         mailSummaryDTO.hasAttachments = hasAttachments(userMail.getMail());
+        mailSummaryDTO.preview = userMail.getMail().getBody().split("\\n")[0];
 
         return mailSummaryDTO;
     }
 
     @Override
-    public MailDetailsDTO toEmailDTO(UserMail userMail) {
+    public MailDetailsDTO toDetailedEmailDTO(UserMail userMail) {
         if ( userMail == null ) {
             return null;
         }
@@ -138,6 +139,7 @@ public class MainMapperImpl extends MainMapper {
         mailDetailsDTO.subject = mail.getSubject();
         mailDetailsDTO.body = mail.getBody();
         mailDetailsDTO.sentAt = mail.getSentAt();
+        mailDetailsDTO.priority = mail.getPriority();
 
         return mailDetailsDTO;
     }
@@ -148,15 +150,16 @@ public class MainMapperImpl extends MainMapper {
             return null;
         }
 
-        Mail mail = new Mail();
+        Mail.MailBuilder mail = Mail.builder();
 
-        mail.setId( emailDTO.id );
-        mail.setSender( senderDTOToUser( emailDTO.sender ) );
-        mail.setSubject( emailDTO.subject );
-        mail.setBody( emailDTO.body );
-        mail.setSentAt( emailDTO.sentAt );
+        mail.id( emailDTO.id );
+        mail.sender( senderDTOToUser( emailDTO.sender ) );
+        mail.subject( emailDTO.subject );
+        mail.body( emailDTO.body );
+        mail.sentAt( emailDTO.sentAt );
+        mail.priority( emailDTO.priority );
 
-        return mail;
+        return mail.build();
     }
 
     @Override

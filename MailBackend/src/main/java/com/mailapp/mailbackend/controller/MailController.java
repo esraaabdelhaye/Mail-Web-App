@@ -2,6 +2,7 @@ package com.mailapp.mailbackend.controller;
 
 
 import com.mailapp.mailbackend.dto.EmailRequest;
+import com.mailapp.mailbackend.dto.MailDetailsDTO;
 import com.mailapp.mailbackend.dto.MailPageDTO;
 import com.mailapp.mailbackend.service.Mail.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class MailController {
     private MailService mailService;
 
 
-    @GetMapping("/")
+    @GetMapping("/page")
     public ResponseEntity<MailPageDTO> getInbox(
             @RequestParam Long userId,
             @RequestParam(defaultValue = "Inbox") String folderName,
@@ -34,6 +35,12 @@ public class MailController {
 
         MailPageDTO pageDTO = mailService.getPaginatedMail(userId, folderName, pageable);
         return ResponseEntity.ok(pageDTO);
+    }
+
+    @GetMapping("/getDetails")
+    public ResponseEntity<MailDetailsDTO> getMailDetails(@RequestParam Long userId, @RequestParam Long mailId){
+        MailDetailsDTO dto = mailService.getMailDetails(userId, mailId);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

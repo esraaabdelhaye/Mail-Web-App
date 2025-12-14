@@ -5,12 +5,14 @@ import com.mailapp.mailbackend.entity.UserMail;
 import com.mailapp.mailbackend.repository.EmailSearchRepository;
 import com.mailapp.mailbackend.service.Mail.MailService;
 import com.mailapp.mailbackend.service.search.handlers.SearchHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class EmailSearchService {
@@ -20,9 +22,6 @@ public class EmailSearchService {
 
     @Autowired
     private SearchHandler searchHandlerChain;
-
-    @Autowired
-    private MainMapper mainMapper;
 
     @Autowired
     private MailService mailService;
@@ -60,6 +59,8 @@ public class EmailSearchService {
                 pageable,
                 searchHandlerChain
         );
+
+        System.out.println("from quickSearch: " + mailPage.getContent());
 
        return mailService.getPageDTO(mailPage);
     }
