@@ -37,7 +37,8 @@ public class UserMailService {
 
     public void saveDraft(Mail mail, ReceiverEntry entry) {
         User sender = mail.getSender();
-        Folder senderFolder = folderService.getSent(sender);
+        Folder senderFolder = folderService.getDrafts(sender);
+        save(mail, sender, senderFolder, true);
     }
 
     private void save(Mail mail, User user, Folder folder, boolean isRead) {
