@@ -26,6 +26,7 @@ import { ButtonComponent } from '../../shared/button/button';
 import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
 import {SearchOptionsModalComponent} from '../search-options-modal/search-options-modal';
+import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
 
 interface CustomFolder {
   id: number;
@@ -184,6 +185,28 @@ export class EmailListComponent implements OnInit {
       }
       return new Set(set);
     });
+  }
+
+  handleAdvancedSearch(request: SearchRequestDTO){
+    this.emailHandler.doAdvancedSearch(request).subscribe({
+      next: (data)=> {
+        this.emailPage.set(data);
+        this.paginatedEmails.set(data.content);
+
+        // 2. Reset Pagination
+        this.currentPage.set(1);
+
+        // 3. UI Feedback: Maybe update title to "Search Results"?
+        this.currentFolder.set('Search Results');
+
+        this.isLoading.set(false);
+        console.log("Search result: ", data);
+      },
+      error: (err) => {
+        console.log("Advanced search failed, Error: ");
+        console.log(err);
+      }
+    })
   }
 
   // --- BULK ACTION HANDLERS ---
