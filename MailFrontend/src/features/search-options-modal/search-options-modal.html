@@ -41,50 +41,50 @@
         </div>
 
         <!-- Includes Words -->
-        <div class="grid-row">
-          <label>Includes words</label>
-          <input type="text" [(ngModel)]="options.includesWords" class="form-input">
-        </div>
+<!--        <div class="grid-row">-->
+<!--          <label>Includes words</label>-->
+<!--          <input type="text" [(ngModel)]="options.includesWords" class="form-input">-->
+<!--        </div>-->
 
         <!-- Doesn't Have -->
-        <div class="grid-row">
-          <label>Doesn't have</label>
-          <input type="text" [(ngModel)]="options.doesntHave" class="form-input">
-        </div>
+<!--        <div class="grid-row">-->
+<!--          <label>Doesn't have</label>-->
+<!--          <input type="text" [(ngModel)]="options.doesntHave" class="form-input">-->
+<!--        </div>-->
 
         <!-- Size -->
-        <div class="grid-row">
-          <label>Size</label>
-          <div class="flex-group">
-            <select [(ngModel)]="options.sizeOperator" class="form-select w-small">
-              <option value="greater">greater than</option>
-              <option value="less">less than</option>
-            </select>
-            <input type="number" [(ngModel)]="options.sizeValue" class="form-input flex-1">
-            <select [(ngModel)]="options.sizeUnit" class="form-select w-tiny">
-              <option value="MB">MB</option>
-              <option value="KB">KB</option>
-              <option value="bytes">bytes</option>
-            </select>
-          </div>
-        </div>
+<!--        <div class="grid-row">-->
+<!--          <label>Size</label>-->
+<!--          <div class="flex-group">-->
+<!--            <select [(ngModel)]="options.sizeOperator" class="form-select w-small">-->
+<!--              <option value="greater">greater than</option>-->
+<!--              <option value="less">less than</option>-->
+<!--            </select>-->
+<!--            <input type="number" [(ngModel)]="options.sizeValue" class="form-input flex-1">-->
+<!--            <select [(ngModel)]="options.sizeUnit" class="form-select w-tiny">-->
+<!--              <option value="MB">MB</option>-->
+<!--              <option value="KB">KB</option>-->
+<!--              <option value="bytes">bytes</option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--        </div>-->
 
         <!-- Date Within -->
         <div class="grid-row">
           <label>Date within</label>
           <div class="flex-group">
-            <select [(ngModel)]="options.dateWithin" class="form-select w-small">
-              <option value="1 day">1 day</option>
-              <option value="3 days">3 days</option>
-              <option value="1 week">1 week</option>
-              <option value="2 weeks">2 weeks</option>
-              <option value="1 month">1 month</option>
-              <option value="3 months">3 months</option>
-              <option value="6 months">6 months</option>
-              <option value="1 year">1 year</option>
-            </select>
-            <div class="relative-input flex-1">
-              <input type="date" [(ngModel)]="options.dateValue" class="form-input pr-icon">
+<!--            <select [(ngModel)]="options.sentAt" class="form-select w-small">-->
+<!--              <option value="1 day">1 day</option>-->
+<!--              <option value="3 days">3 days</option>-->
+<!--              <option value="1 week">1 week</option>-->
+<!--              <option value="2 weeks">2 weeks</option>-->
+<!--              <option value="1 month">1 month</option>-->
+<!--              <option value="3 months">3 months</option>-->
+<!--              <option value="6 months">6 months</option>-->
+<!--              <option value="1 year">1 year</option>-->
+<!--            </select>-->
+            <div class="relative-input">
+              <input type="date" [(ngModel)]="options.sentAt" class="form-input pr-icon">
               <!-- Calendar Icon is decorative/indicator -->
               <!-- <lucide-icon [img]="icons.Calendar" class="input-icon"></lucide-icon> -->
             </div>
@@ -94,7 +94,7 @@
         <!-- Search In -->
         <div class="grid-row">
           <label>Search</label>
-          <select [(ngModel)]="options.searchFolder" class="form-select">
+          <select [(ngModel)]="options.folder" class="form-select">
             <option value="all">All Mail</option>
             @for (folder of folders; track folder.folderID) {
               <option [value]="folder.folderID">{{ folder.folderName }}</option>
