@@ -7,6 +7,7 @@ import { PaginationRequest } from '../../app/models/PaginationRequest';
 import { AuthService } from '../auth/auth-service';
 import { NotificationService } from '../notification/notification-service';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
 
 @Injectable({
   providedIn: 'root',
@@ -42,6 +43,14 @@ export class EmailHandler {
     let params = new HttpParams().set('userId', userId).set('mailId', mailId);
 
     return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
+  }
+
+  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO>{
+    let params = new HttpParams()
+      .set('userId', this.auth.getCurrentUserId()!);
+      // .set('criteria', request);
+
+    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {params});
   }
   // readonly filteredEmails = computed(() => {
   //   const folderId = this.currentFolderId();

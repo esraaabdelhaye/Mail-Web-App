@@ -13,7 +13,7 @@
           class="search-input"
         />
 
-        <app-search-options-modal [folders]="emailHandler.folders()" class="search-options-icon"/>
+        <app-search-options-modal [folders]="emailHandler.folders()" (search)="handleAdvancedSearch($event)" class="search-options-icon"/>
       </div>
 
       <!-- Sort Dropdown (Native) -->

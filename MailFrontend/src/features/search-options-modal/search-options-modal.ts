@@ -4,21 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, SlidersHorizontal, Calendar, X } from 'lucide-angular';
 import {ButtonComponent} from '../../shared/button/button';
 import {FolderDTO as Folder} from '../../app/models/FolderDTO';
+import {SearchRequestDTO as SearchOptions} from '../../app/models/SearchRequestDTO';
 
-export interface SearchOptions {
-  from: string;
-  to: string;
-  subject: string;
-  includesWords: string;
-  doesntHave: string;
-  sizeOperator: 'greater' | 'less';
-  sizeValue: string;
-  sizeUnit: 'MB' | 'KB' | 'bytes';
-  dateWithin: string;
-  dateValue: string;
-  searchFolder: string;
-  hasAttachment: boolean;
-}
+// Matches Backend SearchCriteriaDTO exactly
+
 
 @Component({
   selector: 'app-search-options-modal',
@@ -30,40 +19,38 @@ export interface SearchOptions {
 export class SearchOptionsModalComponent {
   @Input() folders: Folder[] = [];
   @Output() search = new EventEmitter<SearchOptions>();
-  // We can use a boolean input/output for open state, or just a method to open it.
-  // Let's stick to the React pattern: internal state for open/close managed by a trigger button.
 
   isOpen = false;
-
   readonly icons = { SlidersHorizontal, Calendar, X };
 
-  // Initial State
+  // Initial State (Matches DTO)
   readonly defaultOptions: SearchOptions = {
+    query: '',
     from: '',
     to: '',
     subject: '',
-    includesWords: '',
-    doesntHave: '',
-    sizeOperator: 'greater',
-    sizeValue: '',
-    sizeUnit: 'MB',
-    dateWithin: '1 day',
-    dateValue: '',
-    searchFolder: 'all',
+    body: '',
     hasAttachment: false,
+    folder: 'all',
+    priority: '',
+    isRead: false,
+    endDate: '',
+    startDate: '',
   };
 
   // Current State
   options: SearchOptions = { ...this.defaultOptions };
-
-  // --- Actions ---
 
   toggleOpen() {
     this.isOpen = !this.isOpen;
   }
 
   handleSearch() {
-    this.search.emit(this.options);
+    // Filter out empty 'all' folder if backend handles it differently
+    const payload = { ...this.options };
+    if (payload.folder === 'all') payload.folder = ''; // Or keep 'all' if backend handles it
+    if (!payload.priority) payload.priority = null;
+    this.search.emit(payload);
     this.isOpen = false;
   }
 

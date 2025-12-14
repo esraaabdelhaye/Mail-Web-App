@@ -99,6 +99,7 @@
   grid-template-columns: 100px 1fr; /* 100px Label, Rest Input */
   align-items: center;
   gap: 1rem;
+  margin-right: 40px;
 }
 
 .grid-row label {
@@ -156,12 +157,11 @@
 
 /* --- Footer --- */
 .modal-footer {
-  padding: 1rem 1.5rem;
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   background-color: white;
-  padding-bottom: 1.5rem;
+  padding: 1rem 1.5rem 1.5rem;
 }
 
 /* Animations */
