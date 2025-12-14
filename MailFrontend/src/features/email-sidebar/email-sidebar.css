@@ -101,6 +101,7 @@
   background-color: hsl(var(--secondary));
   color: hsl(var(--secondary-foreground));
   font-weight: 500;
+  filter: brightness(0.8); // Gives it a slightly darker background color
 }
 
 .nav-icon {

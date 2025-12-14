@@ -5,7 +5,7 @@ export interface SearchRequestDTO{
   subject: string;
   body: string;           // Maps to 'Includes words'
   hasAttachment: boolean;
-  folder: string;
+  folder: string | null;
   startDate: string;         // Maps to Date input
   endDate: string;
   priority: string | null;       // Maps to Priority dropdown

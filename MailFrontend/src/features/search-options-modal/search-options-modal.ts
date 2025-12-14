@@ -48,7 +48,7 @@ export class SearchOptionsModalComponent {
   handleSearch() {
     // Filter out empty 'all' folder if backend handles it differently
     const payload = { ...this.options };
-    if (payload.folder === 'all') payload.folder = ''; // Or keep 'all' if backend handles it
+    if (payload.folder === 'all') payload.folder = null; // Or keep 'all' if backend handles it
     if (!payload.priority) payload.priority = null;
     this.search.emit(payload);
     this.isOpen = false;
