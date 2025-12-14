@@ -32,7 +32,6 @@ public class MailService {
 
     @Autowired
     private MainMapper mainMapper;
-
     @Autowired
     private UserRepo userRepo;
 
@@ -53,6 +52,7 @@ public class MailService {
         // 2. Convert to DTOs using MapStruct
         return mainMapper.toEmailDTOs(mails);
     }
+
     public MailPageDTO getPaginatedMail(Long userId, String folderName, Pageable pageable) {
         User user = userRepo.getReferenceById(userId);
         Folder folder = folderRepo.findByUserAndFolderName(user, folderName);
@@ -79,6 +79,36 @@ public class MailService {
         return pageDTO;
     }
 
+    /**
+     * Retrieves the full details of a specific email for the user.
+     * @param userId The ID of the authenticated user.
+     * @param mailId The ID of the UserMail entry (not the Mail ID).
+     * @return MailDetailsDTO containing all content and attachments.
+     */
+    public MailDetailsDTO getMailDetails(Long userId, Long mailId) {
+        // 1. Find the UserMail entry based on the row ID (mailId from the controller)
+        UserMail userMail = userMailRepo.findById(mailId)
+                .orElseThrow(() -> new RuntimeException("Email not found for ID: " + mailId));
+
+        // 2. Optional: Security check to ensure the mail belongs to the requesting user
+        if (!userMail.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: Email does not belong to user.");
+        }
+
+        // 3. Mark the email as read (synchronous update)
+        if (userMail.getIsRead() == null || !userMail.getIsRead()) {
+            userMail.setIsRead(true);
+            userMailRepo.save(userMail);
+        }
+
+        // 4. Map the full Mail entity to the MailDetailsDTO
+        // MapStruct should be configured to handle the nested mappings (Mail -> DTO, Attachment -> DTO).
+        MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail);
+
+        return dto;
+    }
+
+
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
         Mail mail = buildMail(emailRequest);
         mailRepository.save(mail);
@@ -96,9 +126,6 @@ public class MailService {
 
         SendStrategy strategy = selectStrategy(emailRequest);
         strategy.sendMail(mail, emailRequest);
-
-
-
     }
 
 
@@ -158,4 +185,3 @@ public class MailService {
         return singleReceiverSend;
     }
 }
-
