@@ -53,6 +53,34 @@ export class EmailHandler {
 
     return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {params});
   }
+
+  moveEmailsToFolder(mailIds: Set<Number>, targetFolderName: string, onSuccess?: () =>void): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams()
+      .set('userId', userId!)
+      .set('targetFolder', targetFolderName);
+
+    mailIds.forEach(id => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http.put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' }).subscribe({
+      next: (response) => {
+        this.notificationService.show('Emails moved successfully', 'success');
+        this.opStatus.set(true);
+        this.opMessage.set('Emails moved successfully');
+        if(onSuccess) onSuccess();
+      },
+      error: (error) => {
+        this.notificationService.show('Failed to move emails', 'error');
+        this.opStatus.set(false);
+        this.opMessage.set(error.message || 'Failed to move emails');
+        console.error('Error moving emails:', error);
+      }
+    });
+  }
+
   // readonly filteredEmails = computed(() => {
   //   const folderId = this.currentFolderId();
   //   return this.emails().filter((e) => e.folder === folderId);
