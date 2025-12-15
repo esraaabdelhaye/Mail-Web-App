@@ -13,6 +13,7 @@ import java.util.Arrays;
 
 
 @SpringBootApplication
+@EnableScheduling
 public class MailBackendApplication {
 
     public static void main(String[] args) {
