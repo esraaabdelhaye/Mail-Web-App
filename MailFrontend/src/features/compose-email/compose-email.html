@@ -316,9 +316,9 @@
           <div class="attachment-list-container">
             @for (file of attachments; track $index; let i = $index) {
             <div class="attachment-item">
-              <span class="attachment-name">{{ file.name }}</span>
+              <span class="attachment-name">{{ file.fileName }}</span>
               <div class="attachment-info">
-                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                <span class="file-size">{{ formatFileSize(file.fileSize) }}</span>
                 <button
                   type="button"
                   (click)="handleRemoveAttachment(i)"

@@ -20,7 +20,7 @@ export interface EmailData {
   subject: string;
   body: string;
   priority: number;
-  attachments: File[];
+  attachments: AttachmentDto[];
 }
 
 export interface PriorityOption {
@@ -33,6 +33,12 @@ interface Recipient {
   id?: number; // the MailReceiver id assigned by backend
   email: string;
   type: 'to' | 'cc' | 'bcc';
+}
+
+export interface AttachmentDto {
+  id: number;
+  fileName: string;
+  fileSize: number;
 }
 
 @Component({
@@ -56,8 +62,8 @@ export class ComposeEmail implements OnInit, OnDestroy {
   bccInput = '';
   subject = '';
   body = '';
-  priority = '3';
-  attachments: File[] = [];
+  priority = '2';
+  attachments: AttachmentDto[] = [];
 
   isMinimized = false;
   isCcOpen = false;
@@ -131,7 +137,9 @@ export class ComposeEmail implements OnInit, OnDestroy {
     if (!this.draftId) return;
 
     const currentState = JSON.stringify(this.draftAutoSaveData);
+
     if (currentState !== this.lastAutoSavedState) {
+      console.log(this.priority);
       this.lastAutoSavedState = currentState;
       this.http
         .post(`${this.apiUrl}/email/draft/save`, this.draftAutoSaveData, { responseType: 'text' })
@@ -315,53 +323,99 @@ export class ComposeEmail implements OnInit, OnDestroy {
   // }
 
   // --- Attachments ---
-  handleFileChange(event: Event) {
+   handleFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
+
     const newFiles = Array.from(input.files);
 
-    const existingKeys = new Set(this.attachments.map((f) => `${f.name}-${f.size}`));
-    const uniqueFiles = newFiles.filter((f) => {
-      const key = `${f.name}-${f.size}`;
-      if (existingKeys.has(key)) {
-        this.addMessage(`File already attached: ${f.name}`);
+    const existingNames = new Set(this.attachments.map((a) => a.fileName.toLowerCase()));
+    const uniqueFiles = newFiles.filter((file) => {
+      const name = file.name.toLowerCase();
+      if (existingNames.has(name)) {
+        console.warn(`File already attached: ${file.name}`);
         return false;
       }
-      existingKeys.add(key);
+      existingNames.add(name);
       return true;
     });
 
-    this.attachments.push(...uniqueFiles);
-    uniqueFiles.forEach((f) => this.uploadAttachment(f));
+    uniqueFiles.forEach((file) => this.uploadAttachment(file));
     input.value = '';
   }
+  // handleRemoveAttachment(index: number) {
+  //   if (!this.attachments[index]) return;
+  //   const file = this.attachments[index];
+  //   this.http.delete(`${this.apiUrl}/email/draft/attachment/${file.name}`).subscribe({
+  //     next: () => this.attachments.splice(index, 1),
+  //     error: (err) => console.error(err),
+  //   });
+  // }
 
-  handleRemoveAttachment(index: number) {
-    if (!this.attachments[index]) return;
-    const file = this.attachments[index];
-    this.http.delete(`${this.apiUrl}/email/draft/attachment/${file.name}`).subscribe({
-      next: () => this.attachments.splice(index, 1),
-      error: (err) => console.error(err),
-    });
+handleRemoveAttachment(index: number) {
+    const attachment = this.attachments[index];
+    if (!attachment) return;
+
+    this.http
+      .delete(`${this.apiUrl}/email/draft/attachment/${attachment.id}`)
+      .subscribe({
+        next: () => this.attachments.splice(index, 1),
+        error: (err) => console.error(err),
+      });
   }
 
   uploadAttachment(file: File) {
     if (!this.draftId) return;
+
     const form = new FormData();
     form.append('file', file);
     form.append('draftId', this.draftId.toString());
-    this.http.post(`${this.apiUrl}/email/draft/attachment`, form).subscribe();
+
+    this.http
+      .post<AttachmentDto>(`${this.apiUrl}/email/draft/attachment`, form)
+      .subscribe({
+        next: (attachment) => this.attachments.push(attachment),
+        error: (err) => console.error(err),
+      });
   }
 
   // --- Sending / Saving ---
+  // handleSend() {
+  //   if (!this.auth.getCurrentUserId()) return;
+  //   const userId = this.auth.getCurrentUserId();
+  //   if (!userId) {
+  //     console.error('No logged-in user');
+  //     return;
+  //   }
+  //   this.senderId = userId;
+
+  //   const data: EmailData = {
+  //     senderId: this.senderId,
+  //     to: this.to.map((r) => r.email),
+  //     cc: this.cc.map((r) => r.email),
+  //     bcc: this.bcc.map((r) => r.email),
+  //     subject: this.subject,
+  //     body: this.body,
+  //     priority: parseInt(this.priority),
+  //     attachments: this.attachments.,
+  //   };
+
+  //   const form = new FormData();
+  //   form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  //   this.attachments.forEach((f) => form.append('files', f));
+
+  //   this.http
+  //     .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
+  //     .subscribe({
+  //       next: (res) => console.log('sent', res),
+  //       error: (err) => console.error(err),
+  //     });
+
+  //   this.resetForm();
+  // }
+
   handleSend() {
-    if (!this.auth.getCurrentUserId()) return;
-    const userId = this.auth.getCurrentUserId();
-    if (!userId) {
-      console.error('No logged-in user');
-      return;
-    }
-    this.senderId = userId;
+    if (!this.senderId) return;
 
     const data: EmailData = {
       senderId: this.senderId,
@@ -374,20 +428,14 @@ export class ComposeEmail implements OnInit, OnDestroy {
       attachments: this.attachments,
     };
 
-    const form = new FormData();
-    form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-    this.attachments.forEach((f) => form.append('files', f));
-
-    this.http
-      .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
-      .subscribe({
-        next: (res) => console.log('sent', res),
-        error: (err) => console.error(err),
-      });
+    this.http.post(`${this.apiUrl}/email/send`, data, { responseType: 'text' }).subscribe({
+      next: () => console.log('Email sent'),
+      error: (err) => console.error(err),
+    });
 
     this.resetForm();
   }
-
+  
   handleSaveDraft() {
     this.saveDraft.emit();
     this.resetForm();
