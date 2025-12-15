@@ -62,4 +62,12 @@ public class MailController {
         return ResponseEntity.ok("Emails moved successfully");
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> permanentlyDeleteEmails(
+            @RequestParam Long userId,
+            @RequestParam List<Long> mailId) {
+
+        mailService.permanentlyDeleteEmails(userId, mailId);
+        return ResponseEntity.ok("Emails permanently deleted");
+    }
 }

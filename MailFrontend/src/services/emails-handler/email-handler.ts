@@ -96,7 +96,7 @@ export class EmailHandler {
       .put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' })
       .subscribe({
         next: (response) => {
-          this.notificationService.show('Emails moved successfully', 'success');
+          this.notificationService.show(successMsg || 'Emails moved successfully', 'success');
           if (successMsg) {
             this.opStatus.set(true);
             this.opMessage.set(successMsg);
@@ -265,8 +265,6 @@ export class EmailHandler {
       },
     });
   }
-
-  contactsClick() {}
 
   //   // markAsRead(id: string) {
   //   //   this.emails.update((list) => list.map((e) => (e.id === id ? { ...e, isRead: true } : e)));

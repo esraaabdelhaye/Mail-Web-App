@@ -223,16 +223,17 @@
 }
 
 /* Folder Actions */
-.folder-row-container {
+.nav-item {
   position: relative;
 }
 
 .folder-actions {
   display: none;
   gap: 0.25rem;
+  margin-left: auto;
 }
 
-.folder-row-container:hover .folder-actions {
+.nav-item:hover .folder-actions {
   display: flex;
 }
 
@@ -260,10 +261,13 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mini-input {
   flex: 1;
+  min-width: 0;
   height: 2rem;
   font-size: 0.875rem;
   padding: 0 0.5rem;
@@ -279,8 +283,10 @@
 }
 
 .mini-btn {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  flex-shrink: 0;
 }
 
 /* Add Folder */
