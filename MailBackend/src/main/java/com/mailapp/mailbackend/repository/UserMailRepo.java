@@ -24,4 +24,6 @@ public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     List<UserMail> findOldTrashEmails(@Param("cutoffDate") Date cutoffDate);
 
     Optional<UserMail> findUserMailByMail(Mail mail);
+
+    Optional<UserMail> findByMailAndUserAndFolder(Mail mail, User user, Folder folder);
 }

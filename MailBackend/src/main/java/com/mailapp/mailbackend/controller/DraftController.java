@@ -56,22 +56,22 @@ public class DraftController {
         return ResponseEntity.ok(draftService.isValid(recipientEmail));
     }
 
-    @PostMapping(value = "/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadDraftAttachment(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("draftId") Long draftId) {
-
-        draftService.addAttachmentToDraft(draftId, file);
-        return ResponseEntity.ok("Attachment uploaded");
-    }
-
-    @DeleteMapping("/attachment")
-    public ResponseEntity<String> removeDraftAttachment(
-            @RequestParam String fileName,
-            @RequestParam Long draftId) {
-        draftService.removeAttachmentFromDraft(draftId, fileName);
-        return ResponseEntity.ok("Attachment deleted");
-    }
+//    @PostMapping(value = "/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<String> uploadDraftAttachment(
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("draftId") Long draftId) {
+//
+//        draftService.addAttachmentToDraft(draftId, file);
+//        return ResponseEntity.ok("Attachment uploaded");
+//    }
+//
+//    @DeleteMapping("/attachment")
+//    public ResponseEntity<String> removeDraftAttachment(
+//            @RequestParam String fileName,
+//            @RequestParam Long draftId) {
+//        draftService.removeAttachmentFromDraft(draftId, fileName);
+//        return ResponseEntity.ok("Attachment deleted");
+//    }
 
 
 }

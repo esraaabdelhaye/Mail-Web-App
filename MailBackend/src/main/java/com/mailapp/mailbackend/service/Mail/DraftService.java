@@ -112,24 +112,24 @@ public class DraftService {
         }
     }
 
-    public void addAttachmentToDraft(Long draftId, MultipartFile file) {
-        Mail mail = mailRepo.findById(draftId)
-                .orElseThrow(() -> new RuntimeException("Draft not found"));
-        try{
-            attachmentService.saveAttachment(mail, file);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to save attachments", e);
-        }
-
-    }
-
-    public void removeAttachmentFromDraft(Long draftId, String fileName) {
-        Mail mail = mailRepo.findById(draftId)
-                .orElseThrow(() -> new RuntimeException("Draft not found"));
-        Attachment attachment = attachmentRepo.findByFileName(fileName);
-        attachmentRepo.deleteByFileNameAndMail(fileName, mail);
-    }
+//    public void addAttachmentToDraft(Long draftId, MultipartFile file) {
+//        Mail mail = mailRepo.findById(draftId)
+//                .orElseThrow(() -> new RuntimeException("Draft not found"));
+//        try{
+//            attachmentService.saveAttachment(mail, file);
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//            throw new RuntimeException("Failed to save attachments", e);
+//        }
+//
+//    }
+//
+//    public void removeAttachmentFromDraft(Long draftId, String fileName) {
+//        Mail mail = mailRepo.findById(draftId)
+//                .orElseThrow(() -> new RuntimeException("Draft not found"));
+//        Attachment attachment = attachmentRepo.findByFileName(fileName);
+//        attachmentRepo.deleteByFileNameAndMail(fileName, mail);
+//    }
 }
