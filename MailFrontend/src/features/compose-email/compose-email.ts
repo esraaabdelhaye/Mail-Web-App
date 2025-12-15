@@ -101,8 +101,8 @@ export class ComposeEmail implements OnInit, OnDestroy {
       return;
     }
 
-    if(this.draftId){
-      console.log("already created" + this.draftId);
+    if (this.draftId) {
+      console.log('already created' + this.draftId);
       return;
     }
 
@@ -120,7 +120,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
         error: (err) => console.error('Draft creation failed', err),
       });
 
-    // this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
+    this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
   }
 
   ngOnDestroy(): void {
