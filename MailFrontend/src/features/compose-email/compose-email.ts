@@ -59,7 +59,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   bccInput = '';
   subject = '';
   body = '';
-  priority = '3';
+  priority = '2';
   attachments: File[] = [];
   attachmentIds: (number | null)[] = [];
 
@@ -67,7 +67,8 @@ export class ComposeEmail implements OnInit, OnDestroy {
   isCcOpen = false;
   isBccOpen = false;
 
-  duplicateMessages: { text: string; id: number }[] = [];
+  duplicateMessages: { text: string; id: number; type: 'success' | 'error' }[] = [];
+
   private duplicateMessageIdCounter = 0;
 
   private readonly apiUrl = 'http://localhost:8080';
@@ -322,7 +323,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   // --- Attachments ---
   handleFileChange(event: Event) {
     if (!this.draftId) {
-      this.addMessage('Please wait for draft to be created');
+      this.addMessage('Please wait for draft to be created', "error");
       return;
     }
     const input = event.target as HTMLInputElement;
@@ -333,7 +334,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     const uniqueFiles = newFiles.filter((f) => {
       const key = `${f.name}-${f.size}`;
       if (existingKeys.has(key)) {
-        this.addMessage(`File already attached: ${f.name}`);
+        this.addMessage(`File already attached: ${f.name}`, "error");
         return false;
       }
       existingKeys.add(key);
@@ -357,18 +358,21 @@ export class ComposeEmail implements OnInit, OnDestroy {
         next: () => {
           this.attachments.splice(index, 1);
           this.attachmentIds.splice(index, 1);
-          this.addMessage(`${file.name} removed`);
+          console.log("deleted");
+          
+          this.addMessage(`${file.name} removed`, "success");
+          this.cdr.detectChanges(); 
         },
         error: (err: any) => {
           console.error('Delete failed:', err);
-          this.addMessage(`Failed to remove ${file.name}`);
+          this.addMessage(`Failed to remove ${file.name}`, "error");
         },
       });
     } else {
       // Just remove from both arrays if not uploaded yet
       this.attachments.splice(index, 1);
       this.attachmentIds.splice(index, 1);
-      this.addMessage(`${file.name} removed`);
+      this.addMessage(`${file.name} removed`, "success");
     }
   }
 
@@ -388,14 +392,16 @@ export class ComposeEmail implements OnInit, OnDestroy {
         console.log('File uploaded successfully:', response);
         // Store backend attachment ID at the same index
         this.attachmentIds[fileIndex] = response.id;
-        this.addMessage(`${file.name} uploaded successfully`);
+        this.addMessage(`${file.name} uploaded successfully`, "success");
+        this.cdr.detectChanges(); 
+        
       },
       error: (err: any) => {
         console.error('Upload failed:', err);
         // Remove failed upload from both arrays
         this.attachments.splice(fileIndex, 1);
         this.attachmentIds.splice(fileIndex, 1);
-        this.addMessage(`Failed to upload ${file.name}`);
+        this.addMessage(`Failed to upload ${file.name}`, "error");
       },
     });
   }
@@ -457,14 +463,17 @@ export class ComposeEmail implements OnInit, OnDestroy {
   }
 
   // --- Utilities ---
-  addMessage(text: string) {
-    const id = this.duplicateMessageIdCounter++;
-    this.duplicateMessages.push({ text, id });
-    setTimeout(() => {
-      this.duplicateMessages = [];
-      // this.cdr.detectChanges();
-    }, 3000);
-  }
+  addMessage(text: string, type: 'success' | 'error' = 'error') {
+  const id = this.duplicateMessageIdCounter++;
+  this.duplicateMessages.push({ text, id, type });
+  this.cdr.detectChanges();
+
+  setTimeout(() => {
+    this.duplicateMessages = [];
+    this.cdr.detectChanges();
+  }, 3000);
+}
+
 
   formatFileSize(bytes: number) {
     if (bytes < 1024) return `${bytes} B`;

@@ -314,11 +314,11 @@
         <div class="form-group flex-row">
           <label>Attachments</label>
           <div class="attachment-list-container">
-            @for (file of attachments; track file.name + file.size; let i= $index) {
+            @for (file of attachments; track $index; let i = $index) {
             <div class="attachment-item">
-              <span class="attachment-name">{{ file.fileName }}</span>
+              <span class="attachment-name">{{ file.name }}</span>
               <div class="attachment-info">
-                <span class="file-size">{{ formatFileSize(file.fileSize) }}</span>
+                <span class="file-size">{{ formatFileSize(file.size) }}</span>
                 <button
                   type="button"
                   (click)="handleRemoveAttachment(i)"
@@ -348,7 +348,7 @@
 
         <div class="popup-container">
           @for (msg of duplicateMessages; track $index) {
-          <div class="popup-message">
+          <div class="popup-message {{msg.type}}" >
             {{ msg.text }}
           </div>
           }
