@@ -1,5 +1,6 @@
 package com.mailapp.mailbackend.dto;
 
+import com.mailapp.mailbackend.entity.Attachment;
 import com.mailapp.mailbackend.entity.Folder;
 import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.entity.User;
@@ -11,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-15T16:45:45+0200",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 23.0.2 (Oracle Corporation)"
+    date = "2025-12-15T21:26:25+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25 (Oracle Corporation)"
 )
 @Component
 public class MainMapperImpl extends MainMapper {
@@ -140,6 +141,7 @@ public class MainMapperImpl extends MainMapper {
         mailDetailsDTO.body = mail.getBody();
         mailDetailsDTO.sentAt = mail.getSentAt();
         mailDetailsDTO.priority = mail.getPriority();
+        mailDetailsDTO.attachments = attachmentListToAttachmentDTOList( mail.getAttachments() );
 
         return mailDetailsDTO;
     }
@@ -158,6 +160,7 @@ public class MainMapperImpl extends MainMapper {
         mail.body( emailDTO.body );
         mail.sentAt( emailDTO.sentAt );
         mail.priority( emailDTO.priority );
+        mail.attachments( attachmentDTOListToAttachmentList( emailDTO.attachments ) );
 
         return mail.build();
     }
@@ -236,6 +239,38 @@ public class MainMapperImpl extends MainMapper {
         return folderName;
     }
 
+    protected AttachmentDTO attachmentToAttachmentDTO(Attachment attachment) {
+        if ( attachment == null ) {
+            return null;
+        }
+
+        AttachmentDTO attachmentDTO = new AttachmentDTO();
+
+        if ( attachment.getId() != null ) {
+            attachmentDTO.id = String.valueOf( attachment.getId() );
+        }
+        attachmentDTO.fileName = attachment.getFileName();
+        if ( attachment.getFileSize() != null ) {
+            attachmentDTO.fileSize = String.valueOf( attachment.getFileSize() );
+        }
+        attachmentDTO.fileType = attachment.getFileType();
+
+        return attachmentDTO;
+    }
+
+    protected List<AttachmentDTO> attachmentListToAttachmentDTOList(List<Attachment> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<AttachmentDTO> list1 = new ArrayList<AttachmentDTO>( list.size() );
+        for ( Attachment attachment : list ) {
+            list1.add( attachmentToAttachmentDTO( attachment ) );
+        }
+
+        return list1;
+    }
+
     protected User senderDTOToUser(MailDetailsDTO.SenderDTO senderDTO) {
         if ( senderDTO == null ) {
             return null;
@@ -246,5 +281,37 @@ public class MainMapperImpl extends MainMapper {
         user.setEmail( senderDTO.email );
 
         return user;
+    }
+
+    protected Attachment attachmentDTOToAttachment(AttachmentDTO attachmentDTO) {
+        if ( attachmentDTO == null ) {
+            return null;
+        }
+
+        Attachment.AttachmentBuilder attachment = Attachment.builder();
+
+        if ( attachmentDTO.id != null ) {
+            attachment.id( Long.parseLong( attachmentDTO.id ) );
+        }
+        attachment.fileName( attachmentDTO.fileName );
+        attachment.fileType( attachmentDTO.fileType );
+        if ( attachmentDTO.fileSize != null ) {
+            attachment.fileSize( Long.parseLong( attachmentDTO.fileSize ) );
+        }
+
+        return attachment.build();
+    }
+
+    protected List<Attachment> attachmentDTOListToAttachmentList(List<AttachmentDTO> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<Attachment> list1 = new ArrayList<Attachment>( list.size() );
+        for ( AttachmentDTO attachmentDTO : list ) {
+            list1.add( attachmentDTOToAttachment( attachmentDTO ) );
+        }
+
+        return list1;
     }
 }
