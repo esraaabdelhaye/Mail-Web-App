@@ -79,10 +79,10 @@ export class ComposeEmail implements OnInit, OnDestroy {
 
   // Priority mapping
   priorityMap: Record<string, Omit<PriorityOption, 'value'>> = {
-    '1': { label: 'Urgent', color: 'red' },
-    '2': { label: 'High', color: 'orange' },
-    '3': { label: 'Normal', color: 'black' },
-    '4': { label: 'Low', color: 'green' },
+    '1': { label: 'Low', color: 'green' },
+    '2': { label: 'Normal', color: 'black' },
+    '3': { label: 'High', color: 'orange' },
+    '4': { label: 'Urgent', color: 'red' },
   };
 
   get priorityLevels(): PriorityOption[] {
@@ -160,7 +160,6 @@ export class ComposeEmail implements OnInit, OnDestroy {
   //     // Check if the email is already in the list
   //     if (this.isValidEmail(email) && !list.some((r) => r.email === email)) {
 
-        
   //       // Create a Recipient object
   //       const recipient: Recipient = { email, type };
 
@@ -178,118 +177,110 @@ export class ComposeEmail implements OnInit, OnDestroy {
 
   // Assuming your service method is now: isValidEmail(email: string): Observable<boolean>
 
-handleAddRecipient(
+  handleAddRecipient(
     event: KeyboardEvent,
     list: Recipient[],
     inputModel: 'toInput' | 'ccInput' | 'bccInput',
     type: 'to' | 'cc' | 'bcc'
-) {
+  ) {
     if (event.key === 'Enter' || event.key === ',') {
-        event.preventDefault();
-        const email = this[inputModel].trim().replace(',', '');
+      event.preventDefault();
+      const email = this[inputModel].trim().replace(',', '');
 
-        if (!email) {
-            return; // Exit if the email is empty
-        }
+      if (!email) {
+        return; // Exit if the email is empty
+      }
 
-        // 1. Check if the email is already in the list (synchronous check)
-        const isAlreadyInList = list.some((r) => r.email === email);
+      // 1. Check if the email is already in the list (synchronous check)
+      const isAlreadyInList = list.some((r) => r.email === email);
 
-        if (isAlreadyInList) {
-            console.log(`Email ${email} is already in the list.`);
-            this[inputModel] = ''; // Clear input if it's a duplicate
-            return;
-        }
+      if (isAlreadyInList) {
+        console.log(`Email ${email} is already in the list.`);
+        this[inputModel] = ''; // Clear input if it's a duplicate
+        return;
+      }
 
-        // 2. Call the asynchronous validation service and SUBSCRIBE
-        this.isValidEmail(email).subscribe({
-            next: (isValid: boolean) => {
-                // 3. All subsequent logic now executes ONLY when the boolean result arrives
-                if (isValid) {
-                    console.log(`Validation successful for ${email}`);
+      // 2. Call the asynchronous validation service and SUBSCRIBE
+      this.isValidEmail(email).subscribe({
+        next: (isValid: boolean) => {
+          // 3. All subsequent logic now executes ONLY when the boolean result arrives
+          if (isValid) {
+            console.log(`Validation successful for ${email}`);
 
-                    // Create a Recipient object
-                    const recipient: Recipient = { email, type };
-                    console.log("after recipient");
+            // Create a Recipient object
+            const recipient: Recipient = { email, type };
+            console.log('after recipient');
 
-                    // Push it to the list
-                    list.push(recipient);
-                    this.cdr.markForCheck();
-                    console.log("after push")
+            // Push it to the list
+            list.push(recipient);
+            this.cdr.markForCheck();
+            console.log('after push');
 
+            // Clear input
+            this[inputModel] = '';
+            console.log('afetr input');
 
-                    // Clear input
-                    this[inputModel] = '';
-                    console.log("afetr input")
-
-                    // Call backend to save draft and get id
-                    this.addDraftRecipient(type, recipient);
-                    console.log("after backend");
-                } else {
-                    console.log(`Validation failed: User not found for ${email}`);
-                    // Optional: Display an error message to the user
-                    // this.showValidationError = true;
-                }
-            },
-            error: (err) => {
-                console.error('Validation API failed:', err);
-                // Handle network error (e.g., show a network error message)
-            }
-        });
+            // Call backend to save draft and get id
+            this.addDraftRecipient(type, recipient);
+            console.log('after backend');
+          } else {
+            console.log(`Validation failed: User not found for ${email}`);
+            // Optional: Display an error message to the user
+            // this.showValidationError = true;
+          }
+        },
+        error: (err) => {
+          console.error('Validation API failed:', err);
+          // Handle network error (e.g., show a network error message)
+        },
+      });
     }
-}
-
-
-
+  }
 
   handleRemoveRecipient(recipient: Recipient) {
-  if (!recipient.id) return;
+    if (!recipient.id) return;
 
-
-  switch (recipient.type) {
-    case 'to':
-      this.to = this.to.filter((r) => r.id !== recipient.id);
-      break;
-    case 'cc':
-      this.cc = this.cc.filter((r) => r.id !== recipient.id);
-      break;
-    case 'bcc':
-      this.bcc = this.bcc.filter((r) => r.id !== recipient.id);
-      break;
-  }
-
-
-  this.http.delete(`${this.apiUrl}/email/draft/recipient/${recipient.id}`).subscribe({
-    next: () => {
-      console.log('Recipient deleted on backend');
-    },
-    error: (err) => {
-      // If 404, it was already deleted, ignore
-      if (err.status === 404) {
-        console.warn('Recipient was already deleted');
-      } else {
-        console.error('Failed to delete recipient:', err);
-        // Optionally: revert frontend state if needed
-      }
+    switch (recipient.type) {
+      case 'to':
+        this.to = this.to.filter((r) => r.id !== recipient.id);
+        break;
+      case 'cc':
+        this.cc = this.cc.filter((r) => r.id !== recipient.id);
+        break;
+      case 'bcc':
+        this.bcc = this.bcc.filter((r) => r.id !== recipient.id);
+        break;
     }
-  });
-}
 
-
-isValidEmail(email: string): Observable<boolean> {
-  if (!email) {
-    // Return an Observable of false immediately if input is empty
-    return of(false); 
+    this.http.delete(`${this.apiUrl}/email/draft/recipient/${recipient.id}`).subscribe({
+      next: () => {
+        console.log('Recipient deleted on backend');
+      },
+      error: (err) => {
+        // If 404, it was already deleted, ignore
+        if (err.status === 404) {
+          console.warn('Recipient was already deleted');
+        } else {
+          console.error('Failed to delete recipient:', err);
+          // Optionally: revert frontend state if needed
+        }
+      },
+    });
   }
 
-  // 3. The post method must be typed to expect a boolean response
-  return this.http.post<boolean>(
-    // Fix: Assuming your backend controller path is just "recipient/validate"
-    `${this.apiUrl}/email/draft/recipient/validate`, 
-    email // Pass the email string as the request body
-  );
-}
+  isValidEmail(email: string): Observable<boolean> {
+    if (!email) {
+      // Return an Observable of false immediately if input is empty
+      return of(false);
+    }
 
+    // 3. The post method must be typed to expect a boolean response
+    return this.http.post<boolean>(
+      // Fix: Assuming your backend controller path is just "recipient/validate"
+      `${this.apiUrl}/email/draft/recipient/validate`,
+      email // Pass the email string as the request body
+    );
+  }
 
   addDraftRecipient(type: 'to' | 'cc' | 'bcc', recipient: Recipient) {
     if (!this.draftId) return;
@@ -306,13 +297,12 @@ isValidEmail(email: string): Observable<boolean> {
       });
   }
 
-// deleteDraftRecipient(type: 'to' | 'cc' | 'bcc', recipientId: number) {
-//   if (!this.draftId) return;
-//   this.http
-//     .post(`${this.apiUrl}/email/draft/recipient/delete`, { draftId: this.draftId, type, recipientId })
-//     .subscribe();
-// }
-
+  // deleteDraftRecipient(type: 'to' | 'cc' | 'bcc', recipientId: number) {
+  //   if (!this.draftId) return;
+  //   this.http
+  //     .post(`${this.apiUrl}/email/draft/recipient/delete`, { draftId: this.draftId, type, recipientId })
+  //     .subscribe();
+  // }
 
   // --- Attachments ---
   handleFileChange(event: Event) {
