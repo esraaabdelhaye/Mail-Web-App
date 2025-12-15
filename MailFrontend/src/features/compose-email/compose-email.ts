@@ -120,7 +120,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
         error: (err) => console.error('Draft creation failed', err),
       });
 
-    // this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
+    this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
   }
 
   ngOnDestroy(): void {
