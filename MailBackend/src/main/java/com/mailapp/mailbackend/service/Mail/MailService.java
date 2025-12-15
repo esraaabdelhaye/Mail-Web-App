@@ -65,7 +65,7 @@ public class MailService {
         User user = userRepo.getReferenceById(userId);
         Folder folder = folderRepo.findByUserAndFolderName(user, folderName);
 
-        SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy);
+        SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy, folderName);
         Sort sort = sortStrategy.getSort();
 
         Pageable pageable = PageRequest.of(page, size, sort);

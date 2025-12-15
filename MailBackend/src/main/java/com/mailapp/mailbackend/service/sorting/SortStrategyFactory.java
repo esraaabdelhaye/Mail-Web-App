@@ -20,7 +20,10 @@ public class SortStrategyFactory {
             @Qualifier("sortBySender") SortStrategy sortBySender,
             @Qualifier("sortByUnread") SortStrategy sortByUnread,
             @Qualifier("sortBySubject") SortStrategy sortBySubject,
-            @Qualifier("sortByBody") SortStrategy sortByBody
+            @Qualifier("sortByBody") SortStrategy sortByBody,
+            @Qualifier("sortByUpdatedDateDesc") SortStrategy sortByUpdatedDateDesc,
+            @Qualifier("sortByUpdatedDateAsc") SortStrategy sortByUpdatedDateAsc
+
     ) {
         strategies.put("DATE_DESC", sortByDateDesc);
         strategies.put("DATE_ASC", sortByDateAsc);
@@ -29,9 +32,20 @@ public class SortStrategyFactory {
         strategies.put("UNREAD_FIRST", sortByUnread);
         strategies.put("SUBJECT", sortBySubject);
         strategies.put("BODY", sortByBody);
+        strategies.put("UPDATED_DATE_DESC", sortByUpdatedDateDesc);
+        strategies.put("UPDATED_DATE_ASC", sortByUpdatedDateAsc);
     }
 
-    public SortStrategy getStrategy(String strategyName) {
+    public SortStrategy getStrategy(String strategyName, String folderName) {
+
+        if(folderName.equals("Drafts")){
+            if(strategyName.equalsIgnoreCase("DATE_DESC")){
+                strategyName = "UPDATED_DATE_DESC";
+            }else if(strategyName.equalsIgnoreCase("DATE_ASC")){
+                strategyName = "UPDATED_DATE_ASC";
+            }
+        }
+
         SortStrategy strategy = strategies.get(strategyName.toUpperCase());
         if (strategy == null) {
             // Default to DATE_DESC if strategy not found

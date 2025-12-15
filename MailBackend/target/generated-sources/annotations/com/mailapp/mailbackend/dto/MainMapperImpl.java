@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-15T16:34:40+0200",
+    date = "2025-12-15T22:20:36+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
 )
 @Component
@@ -74,12 +74,12 @@ public class MainMapperImpl extends MainMapper {
         mailSummaryDTO.id = userMail.getId();
         mailSummaryDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
         mailSummaryDTO.subject = userMailMailSubject( userMail );
-        mailSummaryDTO.sentAt = userMail.getSentAt();
         if ( userMail.getIsRead() != null ) {
             mailSummaryDTO.isRead = userMail.getIsRead();
         }
         mailSummaryDTO.priority = map( userMail.getImportance() );
 
+        mailSummaryDTO.sentAt = userMail.getSentAt() != null ? userMail.getSentAt() : userMail.getMail().getUpdatedAt();
         mailSummaryDTO.to = mapReceivers(userMail.getMail());
         mailSummaryDTO.hasAttachments = hasAttachments(userMail.getMail());
         mailSummaryDTO.preview = userMail.getMail() != null && userMail.getMail().getBody() != null ? userMail.getMail().getBody().split("\\n")[0] : "";
@@ -99,13 +99,13 @@ public class MainMapperImpl extends MainMapper {
         mailDetailsDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
         mailDetailsDTO.subject = userMailMailSubject( userMail );
         mailDetailsDTO.body = userMailMailBody( userMail );
-        mailDetailsDTO.sentAt = userMail.getSentAt();
         if ( userMail.getIsRead() != null ) {
             mailDetailsDTO.isRead = userMail.getIsRead();
         }
         mailDetailsDTO.priority = map( userMail.getImportance() );
         mailDetailsDTO.folder = userMailFolderFolderName( userMail );
 
+        mailDetailsDTO.sentAt = userMail.getSentAt() != null ? userMail.getSentAt() : userMail.getMail().getUpdatedAt();
         mailDetailsDTO.to = mapReceivers(userMail.getMail());
         mailDetailsDTO.attachments = mapAttachments(userMail.getMail());
 

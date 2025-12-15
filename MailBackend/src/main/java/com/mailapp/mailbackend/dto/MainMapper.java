@@ -88,7 +88,14 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.id", target = "id")
     @Mapping(source = "userMail.mail.sender", target = "sender")
     @Mapping(source = "userMail.mail.subject", target = "subject")
-    @Mapping(source = "userMail.sentAt", target = "sentAt")
+    @Mapping(
+            target = "sentAt",
+            expression = "java(" +
+                    "userMail.getSentAt() != null " +
+                    "? userMail.getSentAt() " +
+                    ": userMail.getMail().getUpdatedAt()" +
+                    ")"
+    )
     @Mapping(source = "userMail.isRead", target = "isRead")
     @Mapping(source = "userMail.importance", target = "priority")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
@@ -108,7 +115,14 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.mail.sender", target = "sender")
     @Mapping(source = "userMail.mail.subject", target = "subject")
     @Mapping(source = "userMail.mail.body", target = "body")
-    @Mapping(source = "userMail.sentAt", target = "sentAt")
+    @Mapping(
+            target = "sentAt",
+            expression = "java(" +
+                    "userMail.getSentAt() != null " +
+                    "? userMail.getSentAt() " +
+                    ": userMail.getMail().getUpdatedAt()" +
+                    ")"
+    )
     @Mapping(source = "userMail.isRead", target = "isRead")
     @Mapping(source = "userMail.importance", target = "priority")
     @Mapping(source = "userMail.folder.folderName", target = "folder")
