@@ -13,15 +13,19 @@
           class="search-input"
         />
 
-        <app-search-options-modal [folders]="emailHandler.folders()" (search)="handleAdvancedSearch($event)" class="search-options-icon"/>
+        <app-search-options-modal
+          [folders]="emailHandler.folders()"
+          (search)="handleAdvancedSearch($event)"
+          class="search-options-icon"
+        />
       </div>
 
       <!-- Sort Dropdown (Native) -->
       <select [(ngModel)]="sortBy" class="sort-select">
-        <option value="date">Date</option>
-        <option value="sender">Sender</option>
+        <option value="sentAt">Date</option>
+        <!-- <option value="sender">Sender</option> -->
         <option value="importance">Importance</option>
-        <option value="subject">Subject</option>
+        <!-- <option value="subject">Subject</option> -->
       </select>
 
       <!-- Refresh Button -->
@@ -144,16 +148,16 @@
       </div>
 
       <div class="row-priority">
-        @if (email.priority === 1) {
+        @if (email.priority === 4) {
         <!-- URGENT: Red, Strong Up Arrow -->
         <lucide-icon [img]="icons.ChevronsUp" class="priority-urgent"></lucide-icon>
-        } @else if (email.priority === 2) {
+        } @else if (email.priority === 3) {
         <!-- HIGH: Orange/Amber, Up Arrow -->
         <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
-        } @else if (email.priority === 3) {
+        } @else if (email.priority === 2) {
         <!-- NORMAL: Flag or Neutral Marker (No urgency implied) -->
         <lucide-icon [img]="icons.Flag" class="priority-normal"></lucide-icon>
-        } @else if (email.priority === 4) {
+        } @else if (email.priority === 1) {
         <!-- LOW: Blue/Green, Down Arrow -->
         <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
         }
