@@ -136,19 +136,18 @@ public class MailService {
         } else {
             // Create new mail if no draft
             mail = buildMail(emailRequest);
-        }
-        
-        mailRepository.save(mail);
-        
-        if (files != null && !files.isEmpty())
-        {
-            try {
-                saveAttachments(mail, files);
-            }
-            catch (IOException e)
+            mailRepository.save(mail);
+
+            if (files != null && !files.isEmpty())
             {
-                e.printStackTrace();
-                throw new RuntimeException("Failed to save attachments", e);
+                try {
+                    saveAttachments(mail, files);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    throw new RuntimeException("Failed to save attachments", e);
+                }
             }
         }
 
