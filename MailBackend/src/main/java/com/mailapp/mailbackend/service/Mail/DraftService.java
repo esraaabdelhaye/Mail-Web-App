@@ -65,7 +65,7 @@ public class DraftService {
                 .orElseThrow(() -> new RuntimeException("Draft not found"));
 
         updateDraft(request, mail);
-
+        userMailService.updateDraftInUserMail(mail, request.getPriority());
     }
 
     private void updateDraft(DraftDTO request, Mail mail) {
