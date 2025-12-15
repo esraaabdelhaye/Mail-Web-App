@@ -3,11 +3,15 @@ package com.mailapp.mailbackend.service.Mail;
 import com.mailapp.mailbackend.dto.*;
 import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.repository.*;
+import com.mailapp.mailbackend.service.sorting.SortStrategy;
+import com.mailapp.mailbackend.service.sorting.SortStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,6 +48,9 @@ public class MailService {
     @Autowired
     private MultiReceiverSend multiReceiverSend;
 
+    @Autowired
+    private SortStrategyFactory sortStrategyFactory;
+
 
     public List<MailDetailsDTO> getEmails(String folderId) {
         // Fetch from DB
@@ -53,9 +60,16 @@ public class MailService {
         return mainMapper.toEmailDTOs(mails);
     }
 
-    public MailPageDTO getPaginatedMail(Long userId, String folderName, Pageable pageable) {
+    public MailPageDTO getPaginatedMail(Long userId, String folderName,
+                                        int page, int size, String sortBy) {
         User user = userRepo.getReferenceById(userId);
         Folder folder = folderRepo.findByUserAndFolderName(user, folderName);
+
+        SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy);
+        Sort sort = sortStrategy.getSort();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         Page<UserMail> mailPage = userMailRepo.findByUserAndFolder(user, folder, pageable);
 
         return getPageDTO(mailPage);
@@ -183,5 +197,31 @@ public class MailService {
                 req.getBcc().size();
         if (total > 1) return multiReceiverSend;
         return singleReceiverSend;
+    }
+
+    public void moveEmailsToFolder(Long userId, List<Long> userMailIds, String targetFolderName){
+        for (Long userMailId : userMailIds){
+            moveEmailToFolder(userId, userMailId, targetFolderName);
+        }
+    }
+
+    private void moveEmailToFolder(Long userId, Long userMailId, String targetFolderName){
+        // Get the email from the db
+        UserMail userMail = userMailRepo.findById(userMailId)
+                .orElseThrow(() -> new RuntimeException("Email with id "+ userMailId + "was not found in the db"));
+
+        if (!userMail.getUser().getId().equals(userId)){
+            throw new RuntimeException("Access denied! An email belonging to user " + userMail.getUser().getId() + "was attempted to be accessed from user " + userId);
+        }
+
+        // Get the target folder
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Folder targetFolder = folderRepo.findByUserAndFolderName(user, targetFolderName);
+
+        // 3. Update the folder reference
+        userMail.setFolder(targetFolder);
+        userMailRepo.save(userMail);
     }
 }

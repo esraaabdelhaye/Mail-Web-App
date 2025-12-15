@@ -7,7 +7,7 @@ import { PaginationRequest } from '../../app/models/PaginationRequest';
 import { AuthService } from '../auth/auth-service';
 import { NotificationService } from '../notification/notification-service';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
-import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 
 @Injectable({
   providedIn: 'root',
@@ -33,9 +33,10 @@ export class EmailHandler {
       .set('page', request.page.toString())
       .set('size', request.size.toString());
 
-    if (request.sortBy && request.sortDirection) {
-      params = params.set('sort', `${request.sortBy},${request.sortDirection}`);
+    if (request.sortBy) {
+      params = params.set('sortBy', `${request.sortBy}`);
     }
+    console.log(params);
 
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/page`, { params });
   }
@@ -46,13 +47,71 @@ export class EmailHandler {
     return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
   }
 
-  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO>{
-    let params = new HttpParams()
-      .set('userId', this.auth.getCurrentUserId()!);
-      // .set('criteria', request);
+  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
+    let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);
+    // .set('criteria', request);
 
-    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {params});
+    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
+      params,
+    });
   }
+
+  permanentlyDeleteEmails(mailIds: Number[], onSuccess?: () => void): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams().set('userId', userId!);
+
+    mailIds.forEach((id) => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http
+      .delete<string>(`${this.apiUrl}/email/delete`, { params, responseType: 'text' as 'json' })
+      .subscribe({
+        next: (response) => {
+          this.notificationService.show('Emails permanently deleted', 'success');
+          if (onSuccess) onSuccess();
+        },
+        error: (error) => {
+          this.notificationService.show('Failed to permanently delete emails', 'error');
+          console.error('Error deleting emails:', error);
+        },
+      });
+  }
+  moveEmailsToFolder(
+    mailIds: Number[],
+    targetFolderName: string,
+    successMsg?: string,
+    onSuccess?: () => void
+  ): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams().set('userId', userId!).set('targetFolder', targetFolderName);
+
+    mailIds.forEach((id) => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http
+      .put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' })
+      .subscribe({
+        next: (response) => {
+          this.notificationService.show('Emails moved successfully', 'success');
+          if (successMsg) {
+            this.opStatus.set(true);
+            this.opMessage.set(successMsg);
+          }
+          if (onSuccess) onSuccess();
+        },
+        error: (error) => {
+          this.notificationService.show('Failed to move emails', 'error');
+          this.opStatus.set(false);
+          this.opMessage.set(error.message || 'Failed to move emails');
+          console.error('Error moving emails:', error);
+        },
+      });
+  }
+
   // readonly filteredEmails = computed(() => {
   //   const folderId = this.currentFolderId();
   //   return this.emails().filter((e) => e.folder === folderId);
@@ -73,7 +132,6 @@ export class EmailHandler {
 
   //   return counts;
   // });
-
 
   // --------------------- Folder actions ----------------------
 
@@ -105,15 +163,15 @@ export class EmailHandler {
     });
   }
 
-  private emailListComp : any;
+  private emailListComp: any;
 
-  regList(component: any){
+  regList(component: any) {
     this.emailListComp = component;
   }
 
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
-    if (this.emailListComp != null){
+    if (this.emailListComp != null) {
       this.emailListComp.fetchMail();
     }
     console.log('Load emails for:', folderName);
@@ -159,9 +217,13 @@ export class EmailHandler {
     this.http.delete(`${this.apiUrl}/folders/${folderId}`).subscribe({
       next: () => {
         console.log('Deleted folder with id: ' + folderId);
-        this.notificationService.showSuccess(`Successfully Deleted`);
+        this.notificationService.showSuccess(`Successfully Deleted folder`);
         // Refresh the List (Remove it from the screen)
         this.loadFolders();
+
+        // Take him back to the inbox
+        this.currentFolderName.set('Inbox');
+        this.emailListComp.fetchMail(); // Update the email list
       },
 
       error: (err) => {

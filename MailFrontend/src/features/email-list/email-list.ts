@@ -25,8 +25,8 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
-import {SearchOptionsModalComponent} from '../search-options-modal/search-options-modal';
-import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
+import { SearchOptionsModalComponent } from '../search-options-modal/search-options-modal';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 
 interface CustomFolder {
   id: number;
@@ -36,7 +36,13 @@ interface CustomFolder {
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent, SearchOptionsModalComponent],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    FormsModule,
+    ButtonComponent,
+    SearchOptionsModalComponent,
+  ],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,11 +70,11 @@ export class EmailListComponent implements OnInit {
   public processedEmails = signal<MailSummaryDTO[]>([]);
 
   public searchQuery = signal('');
-  public sortBy = signal('sentAt');
+  public sortBy = signal('DATE_DESC');
   public viewMode = signal<'default' | 'priority'>('default');
 
   public selectedIds = signal(new Set<Number>());
-  public currentFolder = signal('Inbox');
+  // public currentFolder = signal('Inbox');
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
@@ -79,11 +85,6 @@ export class EmailListComponent implements OnInit {
 
   public totalPages = computed(() => this.emailPage()?.totalPages || 1);
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
-
-  public customFolders: CustomFolder[] = [
-    { id: 101, name: 'Work' },
-    { id: 102, name: 'Personal' },
-  ];
 
   public onRefresh(): void {
     this.fetchMail(true);
@@ -113,10 +114,10 @@ export class EmailListComponent implements OnInit {
   constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
-    // this is very very very very very very very very very very bad design, this should be changed but i'll leave cause I only want to test the concept
+    // this is very very very very very very very very very very bad design, this should be changed but i'll leave it cause I only want to test the concept
     // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
     this.emailHandler.regList(this);
-
+    // this.sortBy.set('DATE_DESC');
     this.fetchMail();
   }
 
@@ -132,7 +133,7 @@ export class EmailListComponent implements OnInit {
       page: apiPage,
       size: this.itemsPerPage(),
       sortBy: this.sortBy(),
-      sortDirection: 'desc',
+      // sortDirection: 'desc',
     };
 
     this.emailHandler.getMailPage(request).subscribe({
@@ -191,41 +192,73 @@ export class EmailListComponent implements OnInit {
     });
   }
 
-  handleAdvancedSearch(request: SearchRequestDTO){
+  handleAdvancedSearch(request: SearchRequestDTO) {
     this.emailHandler.doAdvancedSearch(request).subscribe({
-      next: (data)=> {
+      next: (data) => {
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
 
-        // 2. Reset Pagination
+        // Reset Pagination
         this.currentPage.set(1);
 
-        // 3. UI Feedback: Maybe update title to "Search Results"?
-        this.currentFolder.set('Search Results');
+        // this.currentFolder.set('Search Results');
 
         this.isLoading.set(false);
-        console.log("Search result: ", data);
+        console.log('Search result: ', data);
       },
       error: (err) => {
-        console.log("Advanced search failed, Error: ");
+        console.log('Advanced search failed, Error: ');
         console.log(err);
-      }
-    })
+      },
+    });
   }
 
   // --- BULK ACTION HANDLERS ---
 
-  handleMove(folderId: number): void {
-    console.log(`Moving ${this.selectedIds().size} emails to folder ID: ${folderId}`);
-    this.selectedIds.set(new Set());
-    this.fetchMail();
+  handleMove(targetFolderName: string): void {
+    const mailIds = Array.from(this.selectedIds());
+
+    console.log(`Moving ${mailIds.length} emails to folder: ${targetFolderName}`);
+    this.emailHandler.moveEmailsToFolder(
+      mailIds,
+      targetFolderName,
+      'Emails moved successfully',
+      () => {
+        this.selectedIds.set(new Set());
+
+        this.onRefresh();
+      }
+    );
   }
 
   handleDelete(): void {
-    if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
-      console.log(`Deleting ${this.selectedIds().size} emails...`);
-      this.selectedIds.set(new Set());
-      this.fetchMail();
+    const mailIds = Array.from(this.selectedIds());
+
+    if (this.emailHandler.currentFolderName() == 'Trash') {
+      if (
+        confirm(`Are you sure you want to PERMANENTLY delete ${this.selectedIds().size} emails?`)
+      ) {
+        this.emailHandler.permanentlyDeleteEmails(mailIds, () => {
+          this.selectedIds.set(new Set());
+          this.onRefresh();
+        });
+      }
+    } else {
+      if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
+        // console.log(`Deleting ${this.selectedIds().size} emails...`);
+        // this.selectedIds.set(new Set());
+        // this.fetchMail();
+        this.emailHandler.moveEmailsToFolder(
+          mailIds,
+          'Trash',
+          'Emails deleted to Trash successfully',
+          () => {
+            this.selectedIds.set(new Set());
+
+            this.onRefresh();
+          }
+        );
+      }
     }
   }
 

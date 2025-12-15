@@ -13,16 +13,22 @@
           class="search-input"
         />
 
-        <app-search-options-modal [folders]="emailHandler.folders()" (search)="handleAdvancedSearch($event)" class="search-options-icon"/>
+        <app-search-options-modal
+          [folders]="emailHandler.folders()"
+          (search)="handleAdvancedSearch($event)"
+          class="search-options-icon"
+        />
       </div>
 
       <!-- Sort Dropdown (Native) -->
-      <select [(ngModel)]="sortBy" class="sort-select">
-        <option value="" disabled selected>Sort by</option>
-        <option value="date">Date</option>
-        <option value="sender">Sender</option>
-        <option value="importance">Importance</option>
-        <option value="subject">Subject</option>
+      <select [(ngModel)]="sortBy" class="sort-select" (change)="fetchMail()">
+        <option selected value="DATE_DESC">DATE_DESC</option>
+        <option value="DATE_ASC">DATE_ASC</option>
+        <option value="PRIORITY">PRIORITY</option>
+        <option value="SENDER">SENDER</option>
+        <option value="UNREAD_FIRST">UNREAD_FIRST</option>
+        <option value="SUBJECT">SUBJECT</option>
+        <option value="BODY">BODY</option>
       </select>
 
       <!-- Refresh Button -->
@@ -68,8 +74,8 @@
         (change)="handleMove($any($event.target).value); $any($event.target).value = ''"
       >
         <option value="" disabled selected>Move to...</option>
-        @for (folder of customFolders; track folder.id) {
-        <option [value]="folder.id">{{ folder.name }}</option>
+        @for (folder of emailHandler.folders(); track folder.folderID) {
+        <option [value]="folder.folderName">{{ folder.folderName }}</option>
         }
       </select>
 
@@ -145,16 +151,16 @@
       </div>
 
       <div class="row-priority">
-        @if (email.priority === 1) {
+        @if (email.priority === 4) {
         <!-- URGENT: Red, Strong Up Arrow -->
         <lucide-icon [img]="icons.ChevronsUp" class="priority-urgent"></lucide-icon>
-        } @else if (email.priority === 2) {
+        } @else if (email.priority === 3) {
         <!-- HIGH: Orange/Amber, Up Arrow -->
         <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
-        } @else if (email.priority === 3) {
+        } @else if (email.priority === 2) {
         <!-- NORMAL: Flag or Neutral Marker (No urgency implied) -->
         <lucide-icon [img]="icons.Flag" class="priority-normal"></lucide-icon>
-        } @else if (email.priority === 4) {
+        } @else if (email.priority === 1) {
         <!-- LOW: Blue/Green, Down Arrow -->
         <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
         }

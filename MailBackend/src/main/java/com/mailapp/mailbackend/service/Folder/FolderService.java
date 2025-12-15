@@ -3,7 +3,9 @@ package com.mailapp.mailbackend.service.Folder;
 import com.mailapp.mailbackend.dto.UserFolderDTO;
 import com.mailapp.mailbackend.entity.Folder;
 import com.mailapp.mailbackend.entity.User;
+import com.mailapp.mailbackend.entity.UserMail;
 import com.mailapp.mailbackend.repository.FolderRepo;
+import com.mailapp.mailbackend.repository.UserMailRepo;
 import com.mailapp.mailbackend.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class FolderService {
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private UserMailRepo userMailRepo;
 
 
     // Get all folders
@@ -74,10 +79,29 @@ public class FolderService {
 
     // Delete a folder
     public void deleteFolder(Long folderId){
-        Folder folder = folderRepo.findById(folderId).orElseThrow(() -> new RuntimeException("Folder with id: "+ folderId.toString() +" not found"));
+        Folder folder = folderRepo.findById(folderId)
+                .orElseThrow(() -> new RuntimeException("Folder with id: "+ folderId.toString() +" not found"));
 
         if (Boolean.TRUE.equals(folder.getIsSystemFolder())){
             throw new RuntimeException("Can't delete " + folder.getFolderName() + " as it is a system folder!");
+        }
+
+        // Move emails in this folder to Trash
+        User user = folder.getUser();
+        Folder trashFolder = folderRepo.findByUserAndFolderName(user, "Trash");
+
+
+        // Well this shouldn't really happen but just in case
+        if (trashFolder == null){
+            throw new RuntimeException("Trash folder not found for user");
+        }
+
+        List<UserMail> emailsInFolder = userMailRepo.findByFolder(folder);
+
+        // For each email in the folder send it to the trash folder
+        for (UserMail userMail : emailsInFolder) {
+            userMail.setFolder(trashFolder);
+            userMailRepo.save(userMail);
         }
 
         folderRepo.delete(folder);
