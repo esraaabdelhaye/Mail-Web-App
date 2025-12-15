@@ -6,11 +6,18 @@ import com.mailapp.mailbackend.entity.UserMail;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 
 public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     Page<UserMail> findByUserAndFolder(User user, Folder folder, Pageable pageable);
     UserMail findByUserAndId(User user, Long mailId);
     List<UserMail> findByFolder(Folder folder);
+
+    @Query("SELECT um FROM UserMail um WHERE um.folder.folderName = 'Trash' " +
+            "AND um.movedAt < :cutoffDate")
+    List<UserMail> findOldTrashEmails(@Param("cutoffDate") Date cutoffDate);
 }
