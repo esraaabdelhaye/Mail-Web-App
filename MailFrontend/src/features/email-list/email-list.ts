@@ -25,6 +25,8 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import {SearchOptionsModalComponent} from '../search-options-modal/search-options-modal';
+import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
 
 interface CustomFolder {
   id: number;
@@ -34,7 +36,7 @@ interface CustomFolder {
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent],
+  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent, SearchOptionsModalComponent],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -108,13 +110,17 @@ export class EmailListComponent implements OnInit {
 
   public math = Math;
 
-  constructor(private emailHandler: EmailHandler, private authService: AuthService) {}
+  constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
+    // this is very very very very very very very very very very bad design, this should be changed but i'll leave cause I only want to test the concept
+    // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
+    this.emailHandler.regList(this);
+
     this.fetchMail();
   }
 
-  fetchMail(isRefresh: boolean = false): void {
+  public fetchMail(isRefresh: boolean = false): void {
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
 
@@ -122,7 +128,7 @@ export class EmailListComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     const request: PaginationRequest = {
       userId: Number(userId),
-      folderName: this.currentFolder(),
+      folderName: this.emailHandler.currentFolderName(),
       page: apiPage,
       size: this.itemsPerPage(),
       sortBy: this.sortBy(),
@@ -183,6 +189,28 @@ export class EmailListComponent implements OnInit {
       }
       return new Set(set);
     });
+  }
+
+  handleAdvancedSearch(request: SearchRequestDTO){
+    this.emailHandler.doAdvancedSearch(request).subscribe({
+      next: (data)=> {
+        this.emailPage.set(data);
+        this.paginatedEmails.set(data.content);
+
+        // 2. Reset Pagination
+        this.currentPage.set(1);
+
+        // 3. UI Feedback: Maybe update title to "Search Results"?
+        this.currentFolder.set('Search Results');
+
+        this.isLoading.set(false);
+        console.log("Search result: ", data);
+      },
+      error: (err) => {
+        console.log("Advanced search failed, Error: ");
+        console.log(err);
+      }
+    })
   }
 
   // --- BULK ACTION HANDLERS ---

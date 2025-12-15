@@ -12,6 +12,8 @@
           [(ngModel)]="searchQuery"
           class="search-input"
         />
+
+        <app-search-options-modal [folders]="emailHandler.folders()" (search)="handleAdvancedSearch($event)" class="search-options-icon"/>
       </div>
 
       <!-- Sort Dropdown (Native) -->
@@ -98,7 +100,7 @@
       <div class="list-header-right">
         <span class="page-info">
           {{ (currentPage() - 1) * itemsPerPage() + 1 }} -
-          {{ math.min(currentPage() * itemsPerPage(), processedEmails.length) }} of
+          {{ math.min(currentPage() * itemsPerPage(), processedEmails().length) }} of
           {{ processedEmails().length }}
         </span>
 
