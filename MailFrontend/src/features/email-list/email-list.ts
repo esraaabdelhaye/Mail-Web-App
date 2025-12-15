@@ -28,10 +28,7 @@ import { MailDetailsDTO } from '../../app/models/DetailedMail';
 import { SearchOptionsModalComponent } from '../search-options-modal/search-options-modal';
 import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 
-interface CustomFolder {
-  id: number;
-  name: string;
-}
+
 
 @Component({
   selector: 'app-email-list',
@@ -74,7 +71,6 @@ export class EmailListComponent implements OnInit {
   public viewMode = signal<'default' | 'priority'>('default');
 
   public selectedIds = signal(new Set<Number>());
-  // public currentFolder = signal('Inbox');
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
