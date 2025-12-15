@@ -32,6 +32,9 @@ public class Mail {
     @Column(name = "sent_at")
     private Date sentAt;
 
+    @Column(name = "uodated_at")
+    private Date updatedAt;
+
     @Column(name = "is_draft")
     private Boolean isDraft;
 

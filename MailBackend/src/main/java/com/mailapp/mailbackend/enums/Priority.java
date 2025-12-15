@@ -2,10 +2,10 @@ package com.mailapp.mailbackend.enums;
 
 
 public enum Priority {
-    URGENT(1),
-    HIGH(2),
-    NORMAL(3),
-    LOW(4);
+    URGENT(4),
+    HIGH(3),
+    NORMAL(2),
+    LOW(1);
 
     private final int value;
 
