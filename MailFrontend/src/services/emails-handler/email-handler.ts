@@ -133,6 +133,29 @@ export class EmailHandler {
   //   return counts;
   // });
 
+
+  // Attachment actions
+  uploadAttachment(mailId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('mailId', mailId.toString());
+    formData.append('file', file);
+
+    return this.http.post(`${this.apiUrl}/attachments/upload`, formData);
+  }
+
+  getAttachmentsByMail(mailId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/attachments/mail/${mailId}`);
+  }
+
+  downloadAttachment(attachmentId: number): void {
+    window.open(`${this.apiUrl}/attachments/download/${attachmentId}`, '_blank');
+  }
+
+  deleteAttachment(attachmentId: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/attachments/${attachmentId}`,
+      { responseType: 'text' as 'json' });
+  }
+
   // --------------------- Folder actions ----------------------
 
   public loadFolders(): void {

@@ -1,55 +1,60 @@
 package com.mailapp.mailbackend.service.Attachment;
 
-
 import com.mailapp.mailbackend.entity.Attachment;
 import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.repository.AttachmentRepo;
+import com.mailapp.mailbackend.repository.MailRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class AttachmentService {
+
     @Autowired
     private AttachmentRepo attachmentRepo;
 
-    public void saveAttachment(Mail mail, MultipartFile file) throws IOException {
+    @Autowired
+    private MailRepo mailRepo;
 
-        // Use relative folder without leading slash to avoid root path issues on Windows
-        Path uploadDir = Paths.get("uploads");
+    @Autowired
+    private FileStorageService fileStorageService;
 
-        // Create folder if missing
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
+    public Attachment uploadAttachment(Long mailId, MultipartFile file) throws IOException {
+        Mail mail = mailRepo.findById(mailId)
+                .orElseThrow(() -> new RuntimeException("Mail not found with ID: " + mailId));
 
-        // Generate unique file name
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        // Store file
+        String fileName = fileStorageService.storeFile(file);
 
-        // Build full path
-        Path path = uploadDir.resolve(filename);
+        // Create attachment record
+        Attachment attachment = Attachment.builder()
+                .mail(mail)
+                .fileName(fileName)
+                .originalFileName(file.getOriginalFilename())
+                .storagePath(fileStorageService.getFilePath(fileName).toString())
+                .fileSize(file.getSize())
+                .fileType(file.getContentType())
+                .build();
 
-        // Save file to disk (overwrite if needed)
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-        // Save metadata to DB
-        Attachment att = new Attachment();
-        att.setMail(mail);
-        att.setFileName(file.getOriginalFilename());
-        att.setStoragePath(path.toString());
-        att.setFileType(file.getContentType());
-        att.setFileSize(file.getSize());
-
-        attachmentRepo.save(att);
-
+        return attachmentRepo.save(attachment);
     }
 
+    public List<Attachment> getAttachmentsByMailId(Long mailId) {
+        return attachmentRepo.findByMailId(mailId);
+    }
+
+    public Attachment getAttachment(Long attachmentId) {
+        return attachmentRepo.findById(attachmentId)
+                .orElseThrow(() -> new RuntimeException("Attachment not found with ID: " + attachmentId));
+    }
+
+    public void deleteAttachment(Long attachmentId) throws IOException {
+        Attachment attachment = getAttachment(attachmentId);
+        fileStorageService.deleteFile(attachment.getFileName());
+        attachmentRepo.delete(attachment);
+    }
 }

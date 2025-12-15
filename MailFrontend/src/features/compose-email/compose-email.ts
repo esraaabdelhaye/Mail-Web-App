@@ -11,8 +11,10 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from './../../services/auth/auth-service';
 import { ButtonComponent } from '../../shared/button/button';
 import { Observable, of } from 'rxjs';
+import {EmailHandler} from '../../services/emails-handler/email-handler';
 
 export interface EmailData {
+  draftId: number | null;  // Optional draft ID (if sending from draft)
   senderId: number;
   to: string[];
   cc: string[];
@@ -20,7 +22,7 @@ export interface EmailData {
   subject: string;
   body: string;
   priority: number;
-  attachments: AttachmentDto[];
+  attachments: File[];
 }
 
 export interface PriorityOption {
@@ -35,17 +37,12 @@ interface Recipient {
   type: 'to' | 'cc' | 'bcc';
 }
 
-export interface AttachmentDto {
-  id: number;
-  fileName: string;
-  fileSize: number;
-}
-
 @Component({
   selector: 'app-compose-email',
   templateUrl: './compose-email.html',
   styleUrls: ['./compose-email.css'],
   imports: [FormsModule, ButtonComponent],
+  standalone: true
 })
 export class ComposeEmail implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
@@ -62,8 +59,9 @@ export class ComposeEmail implements OnInit, OnDestroy {
   bccInput = '';
   subject = '';
   body = '';
-  priority = '2';
-  attachments: AttachmentDto[] = [];
+  priority = '3';
+  attachments: File[] = [];
+  attachmentIds: (number | null)[] = [];
 
   isMinimized = false;
   isCcOpen = false;
@@ -80,7 +78,8 @@ export class ComposeEmail implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
-    private auth: AuthService
+    private auth: AuthService,
+    private emailHandler: EmailHandler,
   ) {}
 
   // Priority mapping
@@ -137,9 +136,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     if (!this.draftId) return;
 
     const currentState = JSON.stringify(this.draftAutoSaveData);
-
     if (currentState !== this.lastAutoSavedState) {
-      console.log(this.priority);
       this.lastAutoSavedState = currentState;
       this.http
         .post(`${this.apiUrl}/email/draft/save`, this.draftAutoSaveData, { responseType: 'text' })
@@ -323,101 +320,98 @@ export class ComposeEmail implements OnInit, OnDestroy {
   // }
 
   // --- Attachments ---
-   handleFileChange(event: Event) {
+  handleFileChange(event: Event) {
+    if (!this.draftId) {
+      this.addMessage('Please wait for draft to be created');
+      return;
+    }
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
-
     const newFiles = Array.from(input.files);
 
-    const existingNames = new Set(this.attachments.map((a) => a.fileName.toLowerCase()));
-    const uniqueFiles = newFiles.filter((file) => {
-      const name = file.name.toLowerCase();
-      if (existingNames.has(name)) {
-        console.warn(`File already attached: ${file.name}`);
+    const existingKeys = new Set(this.attachments.map((f) => `${f.name}-${f.size}`));
+    const uniqueFiles = newFiles.filter((f) => {
+      const key = `${f.name}-${f.size}`;
+      if (existingKeys.has(key)) {
+        this.addMessage(`File already attached: ${f.name}`);
         return false;
       }
-      existingNames.add(name);
+      existingKeys.add(key);
       return true;
     });
 
-    uniqueFiles.forEach((file) => this.uploadAttachment(file));
+    // this.attachments.push(...uniqueFiles);
+    uniqueFiles.forEach((f) => this.uploadAttachment(f));
     input.value = '';
   }
-  // handleRemoveAttachment(index: number) {
-  //   if (!this.attachments[index]) return;
-  //   const file = this.attachments[index];
-  //   this.http.delete(`${this.apiUrl}/email/draft/attachment/${file.name}`).subscribe({
-  //     next: () => this.attachments.splice(index, 1),
-  //     error: (err) => console.error(err),
-  //   });
-  // }
 
-handleRemoveAttachment(index: number) {
-    const attachment = this.attachments[index];
-    if (!attachment) return;
+  handleRemoveAttachment(index: number) {
+    if (!this.attachments[index]) return;
 
-    this.http
-      .delete(`${this.apiUrl}/email/draft/attachment/${attachment.id}`)
-      .subscribe({
-        next: () => this.attachments.splice(index, 1),
-        error: (err) => console.error(err),
+    const file = this.attachments[index];
+    const attachmentId = this.attachmentIds[index];
+
+    // If file has backend ID, delete from server
+    if (attachmentId) {
+      this.emailHandler.deleteAttachment(attachmentId).subscribe({
+        next: () => {
+          this.attachments.splice(index, 1);
+          this.attachmentIds.splice(index, 1);
+          this.addMessage(`${file.name} removed`);
+        },
+        error: (err: any) => {
+          console.error('Delete failed:', err);
+          this.addMessage(`Failed to remove ${file.name}`);
+        },
       });
+    } else {
+      // Just remove from both arrays if not uploaded yet
+      this.attachments.splice(index, 1);
+      this.attachmentIds.splice(index, 1);
+      this.addMessage(`${file.name} removed`);
+    }
   }
 
   uploadAttachment(file: File) {
-    if (!this.draftId) return;
+    if (!this.draftId) {
+      console.error('No draft ID for attachment upload');
+      return;
+    }
 
-    const form = new FormData();
-    form.append('file', file);
-    form.append('draftId', this.draftId.toString());
+    // Add file to array first
+    const fileIndex = this.attachments.length;
+    this.attachments.push(file);
+    this.attachmentIds.push(null); // No ID yet
 
-    this.http
-      .post<AttachmentDto>(`${this.apiUrl}/email/draft/attachment`, form)
-      .subscribe({
-        next: (attachment) => this.attachments.push(attachment),
-        error: (err) => console.error(err),
-      });
+    this.emailHandler.uploadAttachment(this.draftId, file).subscribe({
+      next: (response: any) => {
+        console.log('File uploaded successfully:', response);
+        // Store backend attachment ID at the same index
+        this.attachmentIds[fileIndex] = response.id;
+        this.addMessage(`${file.name} uploaded successfully`);
+      },
+      error: (err: any) => {
+        console.error('Upload failed:', err);
+        // Remove failed upload from both arrays
+        this.attachments.splice(fileIndex, 1);
+        this.attachmentIds.splice(fileIndex, 1);
+        this.addMessage(`Failed to upload ${file.name}`);
+      },
+    });
   }
 
   // --- Sending / Saving ---
-  // handleSend() {
-  //   if (!this.auth.getCurrentUserId()) return;
-  //   const userId = this.auth.getCurrentUserId();
-  //   if (!userId) {
-  //     console.error('No logged-in user');
-  //     return;
-  //   }
-  //   this.senderId = userId;
-
-  //   const data: EmailData = {
-  //     senderId: this.senderId,
-  //     to: this.to.map((r) => r.email),
-  //     cc: this.cc.map((r) => r.email),
-  //     bcc: this.bcc.map((r) => r.email),
-  //     subject: this.subject,
-  //     body: this.body,
-  //     priority: parseInt(this.priority),
-  //     attachments: this.attachments.,
-  //   };
-
-  //   const form = new FormData();
-  //   form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  //   this.attachments.forEach((f) => form.append('files', f));
-
-  //   this.http
-  //     .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
-  //     .subscribe({
-  //       next: (res) => console.log('sent', res),
-  //       error: (err) => console.error(err),
-  //     });
-
-  //   this.resetForm();
-  // }
-
   handleSend() {
-    if (!this.senderId) return;
+    if (!this.auth.getCurrentUserId()) return;
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) {
+      console.error('No logged-in user');
+      return;
+    }
+    this.senderId = userId;
 
     const data: EmailData = {
+      draftId: this.draftId,  // Include draft ID so backend uses existing draft
       senderId: this.senderId,
       to: this.to.map((r) => r.email),
       cc: this.cc.map((r) => r.email),
@@ -425,17 +419,23 @@ handleRemoveAttachment(index: number) {
       subject: this.subject,
       body: this.body,
       priority: parseInt(this.priority),
-      attachments: this.attachments,
+      attachments: [], // Attachments already uploaded to backend
     };
 
-    this.http.post(`${this.apiUrl}/email/send`, data, { responseType: 'text' }).subscribe({
-      next: () => console.log('Email sent'),
-      error: (err) => console.error(err),
-    });
+    const form = new FormData();
+    form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    // Don't append files - they're already uploaded and linked to the draft
+
+    this.http
+      .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
+      .subscribe({
+        next: (res) => console.log('sent', res),
+        error: (err) => console.error(err),
+      });
 
     this.resetForm();
   }
-  
+
   handleSaveDraft() {
     this.saveDraft.emit();
     this.resetForm();
@@ -452,6 +452,7 @@ handleRemoveAttachment(index: number) {
     this.body = '';
     this.priority = '3';
     this.attachments = [];
+    this.attachmentIds = [];
     this.onclose();
   }
 
@@ -461,7 +462,7 @@ handleRemoveAttachment(index: number) {
     this.duplicateMessages.push({ text, id });
     setTimeout(() => {
       this.duplicateMessages = [];
-      this.cdr.detectChanges();
+      // this.cdr.detectChanges();
     }, 3000);
   }
 

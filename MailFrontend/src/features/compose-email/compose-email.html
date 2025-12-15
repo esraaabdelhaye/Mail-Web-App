@@ -314,7 +314,7 @@
         <div class="form-group flex-row">
           <label>Attachments</label>
           <div class="attachment-list-container">
-            @for (file of attachments; track $index; let i = $index) {
+            @for (file of attachments; track file.name + file.size; let i= $index) {
             <div class="attachment-item">
               <span class="attachment-name">{{ file.fileName }}</span>
               <div class="attachment-info">
