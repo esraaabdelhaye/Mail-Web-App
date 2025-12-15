@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
 
 @Service
@@ -50,6 +52,7 @@ public class DraftService {
                 .sender(sender)
                 .priority(2)
                 .isDraft(true)
+                .updatedAt(new Date())
                 .build();
 
         mailRepo.save(mail);
@@ -69,6 +72,7 @@ public class DraftService {
         mail.setSubject(request.getSubject());
         mail.setBody(request.getBody());
         mail.setPriority(request.getPriority());
+        mail.setUpdatedAt(new Date());
         mailRepo.save(mail);
     }
 
