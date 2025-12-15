@@ -117,7 +117,7 @@
             variant="ghost"
             size="icon"
             (click)="changePage(-1)"
-            [disabled]="currentPage() === 1"
+            [disabled]="isFirst() === true"
           >
             <lucide-icon [img]="icons.ChevronLeft"></lucide-icon>
           </button>
@@ -126,7 +126,7 @@
             variant="ghost"
             size="icon"
             (click)="changePage(1)"
-            [disabled]="currentPage === totalPages"
+            [disabled]="isLast() === true"
           >
             <lucide-icon [img]="icons.ChevronRight"></lucide-icon>
           </button>

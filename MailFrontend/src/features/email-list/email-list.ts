@@ -82,6 +82,8 @@ export class EmailListComponent implements OnInit {
 
   public currentPage = signal(1);
   public itemsPerPage = signal(10);
+  public isFirst = signal<boolean>(true);
+  public isLast = signal<boolean>(true);
 
   public totalPages = computed(() => this.emailPage()?.totalPages || 1);
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
@@ -144,6 +146,8 @@ export class EmailListComponent implements OnInit {
         this.paginatedEmails.set(data.content);
 
         this.currentPage.set(data.currentPage + 1);
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
 
         this.isLoading.set(false);
         this.isRefreshing.set(false);
