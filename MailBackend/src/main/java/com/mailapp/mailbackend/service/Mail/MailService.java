@@ -184,4 +184,30 @@ public class MailService {
         if (total > 1) return multiReceiverSend;
         return singleReceiverSend;
     }
+
+    public void moveEmailsToFolder(Long userId, List<Long> userMailIds, String targetFolderName){
+        for (Long userMailId : userMailIds){
+            moveEmailToFolder(userId, userMailId, targetFolderName);
+        }
+    }
+
+    private void moveEmailToFolder(Long userId, Long userMailId, String targetFolderName){
+        // Get the email from the db
+        UserMail userMail = userMailRepo.findById(userMailId)
+                .orElseThrow(() -> new RuntimeException("Email with id "+ userMailId + "was not found in the db"));
+
+        if (!userMail.getUser().getId().equals(userId)){
+            throw new RuntimeException("Access denied! An email belonging to user " + userMail.getUser().getId() + "was attempted to be accessed from user " + userId);
+        }
+
+        // Get the target folder
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Folder targetFolder = folderRepo.findByUserAndFolderName(user, targetFolderName);
+
+        // 3. Update the folder reference
+        userMail.setFolder(targetFolder);
+        userMailRepo.save(userMail);
+    }
 }

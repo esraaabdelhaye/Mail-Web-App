@@ -1,17 +1,22 @@
 package com.mailapp.mailbackend.service.UserMail;
 
 
+import com.mailapp.mailbackend.dto.UserFolderDTO;
 import com.mailapp.mailbackend.entity.Folder;
 import com.mailapp.mailbackend.entity.Mail;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.entity.UserMail;
 import com.mailapp.mailbackend.enums.Priority;
+import com.mailapp.mailbackend.repository.FolderRepo;
 import com.mailapp.mailbackend.repository.UserMailRepo;
 import com.mailapp.mailbackend.repository.UserRepo;
 import com.mailapp.mailbackend.service.Folder.FolderService;
 import com.mailapp.mailbackend.service.Mail.ReceiverEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserMailService {

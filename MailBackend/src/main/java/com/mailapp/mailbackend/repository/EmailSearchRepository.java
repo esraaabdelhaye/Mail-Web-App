@@ -28,14 +28,15 @@ public class EmailSearchRepository {
             Pageable pageable,
             SearchHandler searchChain     // this will be the head of the search chain which will always be the global search handler
     ) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder(); // Used to build our search query
 
-        CriteriaQuery<UserMail> query = cb.createQuery(UserMail.class);
-        Root<UserMail> root = query.from(UserMail.class);
+        CriteriaQuery<UserMail> query = cb.createQuery(UserMail.class); // Our Query Object
+        Root<UserMail> root = query.from(UserMail.class); // Used to make the query sepecific to a certain user
 
+        // These are our criteria like which folder it belongs to, does the email has attachments or not,...
         List<Predicate> predicates = new ArrayList<>();
 
-        // add the first predicate to be that user id matches the registered user
+        // Add the first predicate to be that user id matches the registered user
         predicates.add(cb.equal(root.get("user").get("id"), userId));
 
         // predicates will be added to the list using the handlers chain
