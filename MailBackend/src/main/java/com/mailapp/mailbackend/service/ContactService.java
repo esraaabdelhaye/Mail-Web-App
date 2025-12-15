@@ -135,4 +135,44 @@ public class ContactService {
         }
         contactRepo.deleteById(contactId);
     }
+
+    public List<ContactDTO> searchContacts(Long userId, String searchTerm) {
+        List<ContactDTO> contactDtos = new ArrayList<>();
+        List<Contact> contacts = contactRepo.searchByNameOrEmail(userId, searchTerm);
+        for (Contact contact : contacts) {
+            List<String> emailList = contact.getEmails().stream()
+                    .map(ContactEmail::getEmailAddress)
+                    .collect(Collectors.toList());
+            contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
+        }
+        return contactDtos;
+
+    }
+
+    public List<ContactDTO> searchContactsByName(Long userId, String searchTerm) {
+        List<ContactDTO> contactDtos = new ArrayList<>();
+        List<Contact> contacts = contactRepo.searchByName(userId, searchTerm);
+        for (Contact contact : contacts) {
+            List<String> emailList = contact.getEmails().stream()
+                    .map(ContactEmail::getEmailAddress)
+                    .collect(Collectors.toList());
+            contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
+        }
+        return contactDtos;
+
+    }
+
+
+    public List<ContactDTO> searchContactsByEmail(Long userId, String searchTerm) {
+        List<ContactDTO> contactDtos = new ArrayList<>();
+        List<Contact> contacts = contactRepo.searchByEmail(userId, searchTerm);
+        for (Contact contact : contacts) {
+            List<String> emailList = contact.getEmails().stream()
+                    .map(ContactEmail::getEmailAddress)
+                    .collect(Collectors.toList());
+            contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
+        }
+        return contactDtos;
+
+    }
 }

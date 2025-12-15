@@ -40,4 +40,33 @@ public class ContactController {
         contactService.deleteContact(id);
         return ResponseEntity.ok().build();
     }
+
+
+    // general search
+    @GetMapping("/search")
+    public List<ContactDTO> searchContacts(
+            @RequestParam Long userId,
+            @RequestParam String searchTerm){
+        return contactService.searchContacts(userId, searchTerm);
+    }
+
+
+     // Search contacts by name only
+    @GetMapping("/search/name")
+    public List<ContactDTO> searchContactsByName(
+            @RequestParam Long userId,
+            @RequestParam String searchTerm)
+            {
+        return contactService.searchContactsByName(userId, searchTerm);
+    }
+
+
+     //Search contacts by email only
+    @GetMapping("/search/email")
+    public List<ContactDTO> searchContactsByEmail(
+            @RequestParam Long userId,
+            @RequestParam String searchTerm
+            ) {
+        return contactService.searchContactsByEmail(userId, searchTerm);
+    }
 }

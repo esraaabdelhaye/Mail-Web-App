@@ -125,7 +125,7 @@ public class MailService {
 
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
         Mail mail;
-        
+
         // If draftId exists, use the existing draft mail (with attachments)
         if (emailRequest.getDraftId() != null) {
             mail = mailRepository.findById(emailRequest.getDraftId())
