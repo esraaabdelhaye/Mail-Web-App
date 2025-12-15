@@ -1,9 +1,16 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-// import { MatIcon } from '@angular/material/icon';
-import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
-import { ButtonComponent } from '../../shared/button/button';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from './../../services/auth/auth-service';
+import { ButtonComponent } from '../../shared/button/button';
+import { Observable, of } from 'rxjs';
 
 export interface EmailData {
   senderId: number;
@@ -19,45 +26,50 @@ export interface EmailData {
 export interface PriorityOption {
   value: string;
   label: string;
-  color: string; // The color associated with the priority
+  color: string;
+}
+
+interface Recipient {
+  id?: number; // the MailReceiver id assigned by backend
+  email: string;
+  type: 'to' | 'cc' | 'bcc';
 }
 
 @Component({
   selector: 'app-compose-email',
   templateUrl: './compose-email.html',
-  styleUrls: ['./compose-email.css'], // Placeholder for styling
+  styleUrls: ['./compose-email.css'],
   imports: [FormsModule, ButtonComponent],
 })
-export class ComposeEmail {
-  // --- Inputs and Outputs (If used as a nested component) ---
-  // If using Angular Material Dialog, inputs/outputs are often passed
-  // via MatDialog data/result, but we'll include them for component parity.
-
+export class ComposeEmail implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() send = new EventEmitter<EmailData>();
   @Output() saveDraft = new EventEmitter<void>();
 
-  // --- Component State ---
+  draftId: number | null = null;
   senderId = 0;
-  to: string[] = [];
-  toInput: string = '';
-  cc: string[] = [];
-  ccInput: string = '';
-  bcc: string[] = [];
-  bccInput: string = '';
-  subject: string = '';
-  body: string = '';
-  priority: string = '3'; // Stored as string, parsed to number on send/save
+  to: Recipient[] = [];
+  toInput = '';
+  cc: Recipient[] = [];
+  ccInput = '';
+  bcc: Recipient[] = [];
+  bccInput = '';
+  subject = '';
+  body = '';
+  priority = '3';
   attachments: File[] = [];
-  isMinimized: boolean = false;
-  isCcOpen: boolean = false;
-  isBccOpen: boolean = false;
+
+  isMinimized = false;
+  isCcOpen = false;
+  isBccOpen = false;
+
   duplicateMessages: { text: string; id: number }[] = [];
   private duplicateMessageIdCounter = 0;
-  autoSaveInterval: any;
-  lastAutoSavedState: string = '';
+
+  private readonly apiUrl = 'http://localhost:8080';
+  private autoSaveInterval: any;
+  private lastAutoSavedState = '';
   showSavedToast = false;
-  private readonly apiUrl: string = 'http://localhost:8080';
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -65,180 +77,314 @@ export class ComposeEmail {
     private auth: AuthService
   ) {}
 
-  // Map the priority values (1-4) to their details
+  // Priority mapping
   priorityMap: Record<string, Omit<PriorityOption, 'value'>> = {
-    '1': { label: 'Urgent', color: 'var(--color-priority-urgent, red)' },
-    '2': { label: 'High', color: 'var(--color-priority-high, orange)' },
-    '3': { label: 'Normal', color: 'var(--color-priority-normal, black)' },
-    '4': { label: 'Low', color: 'var(--color-priority-low, green)' },
+    '1': { label: 'Urgent', color: 'red' },
+    '2': { label: 'High', color: 'orange' },
+    '3': { label: 'Normal', color: 'black' },
+    '4': { label: 'Low', color: 'green' },
   };
 
-  getPriorityOption(value: string): PriorityOption {
-    const details = this.priorityMap[value];
-    return {
-      value,
-      label: details.label,
-      color: details.color,
-    };
+  get priorityLevels(): PriorityOption[] {
+    return Object.keys(this.priorityMap).map((key) => ({
+      value: key,
+      label: this.priorityMap[key].label,
+      color: this.priorityMap[key].color,
+    }));
   }
 
-  // A list to use for the @for loop in the template
-  priorityLevels: PriorityOption[] = Object.keys(this.priorityMap).map((key) =>
-    this.getPriorityOption(key)
-  );
-
   ngOnInit(): void {
-    // Auto save every 3 seconds
-    this.autoSaveInterval = setInterval(() => {
-      this.performAutoSave();
-    }, 3000);
+    const senderId = this.auth.getCurrentUserId();
+
+    if (!senderId) {
+      console.error('No sender id');
+      return;
+    }
+
+    this.senderId = senderId;
+
+    this.http
+      .post<{ draftId: number }>(`${this.apiUrl}/email/draft/create`, { senderId })
+      .subscribe({
+        next: (res) => (this.draftId = res.draftId),
+        error: (err) => console.error('Draft creation failed', err),
+      });
+
+    this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
   }
 
   ngOnDestroy(): void {
-    if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval);
-    }
+    clearInterval(this.autoSaveInterval);
   }
 
   performAutoSave() {
-    const currentState = JSON.stringify(this.emailData);
+    if (!this.draftId) return;
 
-    // Only save if something changed
+    const currentState = JSON.stringify(this.draftAutoSaveData);
     if (currentState !== this.lastAutoSavedState) {
-      console.log('saving..');
       this.lastAutoSavedState = currentState;
+      this.http
+        .post(`${this.apiUrl}/email/draft/save`, this.draftAutoSaveData, { responseType: 'text' })
+        .subscribe({
+          next: (res: string) => {
+            console.log(res);
+            this.showSavedToast = true;
+            setTimeout(() => (this.showSavedToast = false), 1500);
+          },
+          error: (err) => console.error('Draft save error', err),
+        });
     }
-
-    // this.saveDraft.emit();
   }
 
-  // --- Handlers ---
+  get draftAutoSaveData() {
+    return {
+      draftId: this.draftId,
+      subject: this.subject,
+      body: this.body,
+      priority: parseInt(this.priority),
+    };
+  }
 
-  handleAddRecipient(
+  // handleAddRecipient(
+  //   event: KeyboardEvent,
+  //   list: Recipient[],
+  //   inputModel: 'toInput' | 'ccInput' | 'bccInput',
+  //   type: 'to' | 'cc' | 'bcc'
+  // ) {
+  //   if (event.key === 'Enter' || event.key === ',') {
+  //     event.preventDefault();
+  //     const email = this[inputModel].trim().replace(',', '');
+
+  //     console.log(this.isValidEmail(email));
+
+  //     // Check if the email is already in the list
+  //     if (this.isValidEmail(email) && !list.some((r) => r.email === email)) {
+
+        
+  //       // Create a Recipient object
+  //       const recipient: Recipient = { email, type };
+
+  //       // Push it to the list
+  //       list.push(recipient);
+
+  //       // Clear input
+  //       this[inputModel] = '';
+
+  //       // Call backend to save draft and get id
+  //       this.addDraftRecipient(type, recipient);
+  //     }
+  //   }
+  // }
+
+  // Assuming your service method is now: isValidEmail(email: string): Observable<boolean>
+
+handleAddRecipient(
     event: KeyboardEvent,
-    list: string[],
-    inputModel: 'toInput' | 'ccInput' | 'bccInput'
-  ) {
+    list: Recipient[],
+    inputModel: 'toInput' | 'ccInput' | 'bccInput',
+    type: 'to' | 'cc' | 'bcc'
+) {
     if (event.key === 'Enter' || event.key === ',') {
-      event.preventDefault();
-      const email = this[inputModel].trim().replace(',', '');
-      // if (email && !this.to.includes(email)) {
-      //   this.to.push(email);
-      //   this.toInput = '';
-      // }
-      if (this.isValidEmail(email) && !list.includes(email)) {
-        list.push(email);
-        this[inputModel] = ''; // Return empty string to clear the input
+        event.preventDefault();
+        const email = this[inputModel].trim().replace(',', '');
+
+        if (!email) {
+            return; // Exit if the email is empty
+        }
+
+        // 1. Check if the email is already in the list (synchronous check)
+        const isAlreadyInList = list.some((r) => r.email === email);
+
+        if (isAlreadyInList) {
+            console.log(`Email ${email} is already in the list.`);
+            this[inputModel] = ''; // Clear input if it's a duplicate
+            return;
+        }
+
+        // 2. Call the asynchronous validation service and SUBSCRIBE
+        this.isValidEmail(email).subscribe({
+            next: (isValid: boolean) => {
+                // 3. All subsequent logic now executes ONLY when the boolean result arrives
+                if (isValid) {
+                    console.log(`Validation successful for ${email}`);
+
+                    // Create a Recipient object
+                    const recipient: Recipient = { email, type };
+                    console.log("after recipient");
+
+                    // Push it to the list
+                    list.push(recipient);
+                    this.cdr.markForCheck();
+                    console.log("after push")
+
+
+                    // Clear input
+                    this[inputModel] = '';
+                    console.log("afetr input")
+
+                    // Call backend to save draft and get id
+                    this.addDraftRecipient(type, recipient);
+                    console.log("after backend");
+                } else {
+                    console.log(`Validation failed: User not found for ${email}`);
+                    // Optional: Display an error message to the user
+                    // this.showValidationError = true;
+                }
+            },
+            error: (err) => {
+                console.error('Validation API failed:', err);
+                // Handle network error (e.g., show a network error message)
+            }
+        });
+    }
+}
+
+
+
+
+  handleRemoveRecipient(recipient: Recipient) {
+  if (!recipient.id) return;
+
+
+  switch (recipient.type) {
+    case 'to':
+      this.to = this.to.filter((r) => r.id !== recipient.id);
+      break;
+    case 'cc':
+      this.cc = this.cc.filter((r) => r.id !== recipient.id);
+      break;
+    case 'bcc':
+      this.bcc = this.bcc.filter((r) => r.id !== recipient.id);
+      break;
+  }
+
+
+  this.http.delete(`${this.apiUrl}/email/draft/recipient/${recipient.id}`).subscribe({
+    next: () => {
+      console.log('Recipient deleted on backend');
+    },
+    error: (err) => {
+      // If 404, it was already deleted, ignore
+      if (err.status === 404) {
+        console.warn('Recipient was already deleted');
+      } else {
+        console.error('Failed to delete recipient:', err);
+        // Optionally: revert frontend state if needed
       }
     }
+  });
+}
+
+
+isValidEmail(email: string): Observable<boolean> {
+  if (!email) {
+    // Return an Observable of false immediately if input is empty
+    return of(false); 
   }
 
-  isValidEmail(email: string): boolean {
-    if (!email) return false;
-    // Basic Regex for client-side check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  // 3. The post method must be typed to expect a boolean response
+  return this.http.post<boolean>(
+    // Fix: Assuming your backend controller path is just "recipient/validate"
+    `${this.apiUrl}/email/draft/recipient/validate`, 
+    email // Pass the email string as the request body
+  );
+}
+
+
+  addDraftRecipient(type: 'to' | 'cc' | 'bcc', recipient: Recipient) {
+    if (!this.draftId) return;
+
+    this.http
+      .post<{ id: number }>(`${this.apiUrl}/email/draft/recipient/add`, {
+        draftId: this.draftId,
+        type,
+        recipientEmail: recipient.email,
+      })
+      .subscribe((res) => {
+        // Store the returned id in the recipient object
+        recipient.id = res.id;
+      });
   }
 
-  handleRemoveRecipient(email: string, listType: 'to' | 'cc' | 'bcc'): void {
-    // Use a switch statement to select the correct array based on the listType
-    switch (listType) {
-      case 'to':
-        this.to = this.to.filter((e) => e !== email);
-        break;
-      case 'cc':
-        this.cc = this.cc.filter((e) => e !== email);
-        break;
-      case 'bcc':
-        this.bcc = this.bcc.filter((e) => e !== email);
-        break;
-      default:
-        console.error('Invalid recipient list type provided.');
-    }
-  }
+// deleteDraftRecipient(type: 'to' | 'cc' | 'bcc', recipientId: number) {
+//   if (!this.draftId) return;
+//   this.http
+//     .post(`${this.apiUrl}/email/draft/recipient/delete`, { draftId: this.draftId, type, recipientId })
+//     .subscribe();
+// }
 
+
+  // --- Attachments ---
   handleFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    const newFiles = input.files ? Array.from(input.files) : [];
+    if (!input.files) return;
+    const newFiles = Array.from(input.files);
 
-    if (newFiles.length > 0) {
-      // 1. Create a Set of unique identifiers (name + size) for existing attachments
-      const existingFileKeys = new Set(this.attachments.map((file) => `${file.name}-${file.size}`));
+    const existingKeys = new Set(this.attachments.map((f) => `${f.name}-${f.size}`));
+    const uniqueFiles = newFiles.filter((f) => {
+      const key = `${f.name}-${f.size}`;
+      if (existingKeys.has(key)) {
+        this.addMessage(`File already attached: ${f.name}`);
+        return false;
+      }
+      existingKeys.add(key);
+      return true;
+    });
 
-      // 2. Filter the new files to include only those not already in the Set
-      const uniqueNewFiles = newFiles.filter((file) => {
-        const key = `${file.name}-${file.size}`;
-
-        // Check if the key already exists
-        if (existingFileKeys.has(key)) {
-          // Log a message or show a notification for the user
-          this.addMessage(`File already attached and skipped: ${file.name}`);
-          return false; // Skip this file (it's a duplicate)
-        }
-        // this.duplicateMessage = '';
-
-        // Add the key to the Set and keep the file
-        existingFileKeys.add(key); // Important: In case the user selects the same file multiple times in one go
-        return true; // Keep this file (it's unique)
-      });
-
-      // 3. Update the attachments array with the unique new files
-      this.attachments = [...this.attachments, ...uniqueNewFiles];
-    }
-    // Reset file input value to allow selecting the same file again
+    this.attachments.push(...uniqueFiles);
+    uniqueFiles.forEach((f) => this.uploadAttachment(f));
     input.value = '';
   }
 
-  addMessage(text: string) {
-    const id = this.duplicateMessageIdCounter++;
-    this.duplicateMessages.push({ text, id });
-
-    // Remove message after 5 seconds
-    setTimeout(() => {
-      this.duplicateMessages = [];
-      this.cdr.detectChanges();
-    }, 3000);
-  }
-
   handleRemoveAttachment(index: number) {
-    this.attachments.splice(index, 1);
+    if (!this.attachments[index]) return;
+    const file = this.attachments[index];
+    this.http.delete(`${this.apiUrl}/email/draft/attachment/${file.name}`).subscribe({
+      next: () => this.attachments.splice(index, 1),
+      error: (err) => console.error(err),
+    });
   }
 
-  get emailData(): EmailData {
-    return {
+  uploadAttachment(file: File) {
+    if (!this.draftId) return;
+    const form = new FormData();
+    form.append('file', file);
+    form.append('draftId', this.draftId.toString());
+    this.http.post(`${this.apiUrl}/email/draft/attachment`, form).subscribe();
+  }
+
+  // --- Sending / Saving ---
+  handleSend() {
+    if (!this.auth.getCurrentUserId()) return;
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) {
+      console.error('No logged-in user');
+      return;
+    }
+    this.senderId = userId;
+
+    const data: EmailData = {
       senderId: this.senderId,
-      to: this.to,
-      cc: this.cc,
-      bcc: this.bcc,
+      to: this.to.map((r) => r.email),
+      cc: this.cc.map((r) => r.email),
+      bcc: this.bcc.map((r) => r.email),
       subject: this.subject,
       body: this.body,
       priority: parseInt(this.priority),
       attachments: this.attachments,
     };
-  }
-
-  handleSend() {
-    this.send.emit(this.emailData);
-    const id = this.auth.getCurrentUserId();
-    if (!id) {
-      console.error('No logged-in user');
-      return;
-    }
-    this.senderId = id; 
-
-    const data = this.emailData;
 
     const form = new FormData();
     form.append('email', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    this.attachments.forEach((f) => form.append('files', f));
 
-    data.attachments.forEach((file) => {
-      form.append('files', file);
-    });
+    this.http
+      .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
+      .subscribe({
+        next: (res) => console.log('sent', res),
+        error: (err) => console.error(err),
+      });
 
-    this.http.post(`${this.apiUrl}/email/send`, form, {responseType: 'text' as 'json'}).subscribe({
-      next: (res) => console.log('sent', res),
-      error: (err) => console.error('ERR', err),
-    });
     this.resetForm();
   }
 
@@ -249,50 +395,44 @@ export class ComposeEmail {
 
   resetForm() {
     this.to = [];
-    this.toInput = '';
     this.cc = [];
-    this.ccInput = '';
     this.bcc = [];
+    this.toInput = '';
+    this.ccInput = '';
     this.bccInput = '';
     this.subject = '';
     this.body = '';
     this.priority = '3';
     this.attachments = [];
     this.onclose();
-
-    // Close the dialog/component
   }
 
-  // --- Utility Functions ---
+  // --- Utilities ---
+  addMessage(text: string) {
+    const id = this.duplicateMessageIdCounter++;
+    this.duplicateMessages.push({ text, id });
+    setTimeout(() => {
+      this.duplicateMessages = [];
+      this.cdr.detectChanges();
+    }, 3000);
+  }
 
-  formatFileSize(bytes: number): string {
+  formatFileSize(bytes: number) {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  getPriorityLabel(p: string): string {
-    switch (p) {
-      case '1':
-        return 'Highest';
-      case '2':
-        return 'High';
-      case '3':
-        return 'Normal';
-      case '4':
-        return 'Low';
-      default:
-        return 'Normal';
-    }
+  getPriorityOption(value: string): PriorityOption {
+    const details = this.priorityMap[value];
+    return { value, label: details.label, color: details.color };
   }
 
-  onclose(): void {
+  onclose() {
     this.close.emit();
   }
 
-  onOverlayClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.onclose();
-    }
+  onOverlayClick(event: MouseEvent) {
+    if (event.target === event.currentTarget) this.onclose();
   }
 }

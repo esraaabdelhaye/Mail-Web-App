@@ -18,6 +18,7 @@
 
       <!-- Sort Dropdown (Native) -->
       <select [(ngModel)]="sortBy" class="sort-select">
+        <option value="" disabled selected>Sort by</option>
         <option value="date">Date</option>
         <option value="sender">Sender</option>
         <option value="importance">Importance</option>
