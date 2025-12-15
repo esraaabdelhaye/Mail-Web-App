@@ -299,13 +299,24 @@ position: fixed;
 }
 
 .popup-message {
-  background-color: #ffcccc;
-  border: 1px solid #ff0000;
+  /* background-color: #ffcccc;
+  border: 1px solid #ff0000; */
   border-radius: 5px;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   animation: fadeInOut 0.3s;
 }
+
+.success {
+  background-color: rgb(133, 231, 133);
+  border: 1px solid green;
+}
+
+.error {
+  background-color: #ffcccc;
+  border: 1px solid #ff0000;
+}
+
 @keyframes fadeInOut {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }

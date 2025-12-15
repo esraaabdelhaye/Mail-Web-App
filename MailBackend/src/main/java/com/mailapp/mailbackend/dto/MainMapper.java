@@ -161,7 +161,7 @@ public abstract class MainMapper {
         return attachments.stream()
                 .map(att -> new AttachmentDTO(
                         att.getId().toString(),
-                        att.getFileName(),
+                        att.getOriginalFileName(),
                         formatFileSize(att.getFileSize()),
                         att.getFileType()
                 ))

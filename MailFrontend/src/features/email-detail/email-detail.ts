@@ -13,6 +13,7 @@ import {
 } from 'lucide-angular';
 import { AttachmentDTO, MailDetailsDTO } from '../../app/models/DetailedMail';
 import { ButtonComponent } from '../../shared/button/button';
+import { EmailHandler } from '../../services/emails-handler/email-handler';
 
 @Component({
   selector: 'app-email-detail',
@@ -26,6 +27,8 @@ export class EmailDetailComponent {
   @Output() back = new EventEmitter<void>();
   @Output() deleteAttachment = new EventEmitter<string>();
 
+  private emailHandler = inject(EmailHandler);
+
   // detailedEmail = signal
   // --- State ---
   // isSummarizing = signal(false);
@@ -35,7 +38,9 @@ export class EmailDetailComponent {
 
   // --- Actions ---
 
-  downloadAttachment(file: AttachmentDTO) {}
+  downloadAttachment(file: AttachmentDTO) {
+    this.emailHandler.downloadAttachment(file.id);
+  }
 
   // async handleSummarize() {
   //   this.isSummarizing.set(true);

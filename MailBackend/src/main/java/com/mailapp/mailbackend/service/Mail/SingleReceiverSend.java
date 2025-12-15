@@ -27,7 +27,7 @@ public class SingleReceiverSend implements SendStrategy{
     public void sendMail(Mail mail, EmailRequest req){
         ReceiverEntry entry = findSingleReceiver(req);
         try {
-            mailReceiverService.save(mail, entry);
+//            mailReceiverService.save(mail, entry);
             userMailService.save(mail, entry);
         }
         catch (Exception e){

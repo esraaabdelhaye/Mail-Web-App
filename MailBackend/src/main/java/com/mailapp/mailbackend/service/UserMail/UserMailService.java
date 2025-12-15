@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class UserMailService {
@@ -35,6 +36,11 @@ public class UserMailService {
         User sender = mail.getSender();
         Folder senderFolder = folderService.getSent(sender);
         save(mail, sender, senderFolder, true);
+
+        Folder draftFolder = folderService.getDrafts(sender);
+        Optional<UserMail> draftEntry = userMailRepo.findByMailAndUserAndFolder(mail, sender, draftFolder);
+        draftEntry.ifPresent(userMailRepo::delete);
+
         User receiver = userRepo.findByEmail(entry.getReceiverEmail());
         Folder receiverFolder = folderService.getInbox(receiver);
         save(mail, receiver, receiverFolder, false);
@@ -44,6 +50,7 @@ public class UserMailService {
         Folder senderFolder = folderService.getDrafts(sender);
         save(mail, sender, senderFolder, true);
     }
+
 
     private void save(Mail mail, User user, Folder folder, boolean isRead) {
         UserMail userMail = UserMail.builder()
@@ -56,7 +63,15 @@ public class UserMailService {
                 .isArchived(false)
                 .build();
         userMailRepo.save(userMail);
+    }
 
 
+    public void updateDraftInUserMail(Mail mail, int priority) {
+        UserMail userMail = userMailRepo.findUserMailByMail(mail)
+                .orElseThrow(() -> new RuntimeException("usermail not found"));
+
+        userMail.setImportance(Priority.fromValue(priority));
+        userMailRepo.save(userMail);
     }
 }
+

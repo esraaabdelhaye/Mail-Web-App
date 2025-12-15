@@ -2,15 +2,15 @@ package com.mailapp.mailbackend.dto;
 
 public class AttachmentDTO {
     public String id;
-    public String name;
-    public String size;
-    public String type;
+    public String fileName;
+    public String fileSize;
+    public String fileType;
 
     public AttachmentDTO() {}
-    public AttachmentDTO(String id, String name, String size, String type) {
+    public AttachmentDTO(String id, String fileName, String fileSize, String fileType) {
         this.id = id;
-        this.name = name;
-        this.size = size;
-        this.type = type;
+        this.fileName = fileName;
+        this.fileSize = fileSize;
+        this.fileType = fileType;
     }
 }

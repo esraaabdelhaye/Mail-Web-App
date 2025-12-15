@@ -124,17 +124,30 @@ public class MailService {
 
 
     public void sendEmail(EmailRequest emailRequest, List<MultipartFile> files) {
-        Mail mail = buildMail(emailRequest);
-        mailRepository.save(mail);
-        if (files != null && !files.isEmpty())
-        {
-            try {
-                saveAttachments(mail, files);
-            }
-            catch (IOException e)
+        Mail mail;
+        
+        // If draftId exists, use the existing draft mail (with attachments)
+        if (emailRequest.getDraftId() != null) {
+            mail = mailRepository.findById(emailRequest.getDraftId())
+                    .orElseThrow(() -> new RuntimeException("Draft not found"));
+            // Update the draft with final details
+            mail.setIsDraft(false);
+            mail.setSentAt(new Date());
+        } else {
+            // Create new mail if no draft
+            mail = buildMail(emailRequest);
+            mailRepository.save(mail);
+
+            if (files != null && !files.isEmpty())
             {
-                e.printStackTrace();
-                throw new RuntimeException("Failed to save attachments", e);
+                try {
+                    saveAttachments(mail, files);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    throw new RuntimeException("Failed to save attachments", e);
+                }
             }
         }
 

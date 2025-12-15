@@ -3,7 +3,9 @@ package com.mailapp.mailbackend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "mails")
@@ -47,4 +49,6 @@ public class Mail {
     @Column(name = "priority")
     private int priority;
 
+    @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attachment> attachments = new ArrayList<>();
 }

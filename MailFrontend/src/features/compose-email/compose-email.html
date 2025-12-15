@@ -348,7 +348,7 @@
 
         <div class="popup-container">
           @for (msg of duplicateMessages; track $index) {
-          <div class="popup-message">
+          <div class="popup-message {{msg.type}}" >
             {{ msg.text }}
           </div>
           }

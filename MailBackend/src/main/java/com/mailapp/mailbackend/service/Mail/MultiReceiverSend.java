@@ -29,7 +29,7 @@ public class MultiReceiverSend implements SendStrategy{
         while (!queue.isEmpty()){
             ReceiverEntry entry = queue.poll();
             try {
-                mailReceiverService.save(mail, entry);
+//                mailReceiverService.save(mail, entry);
                 userMailService.save(mail, entry);
             }
             catch (Exception e)
