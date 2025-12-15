@@ -21,12 +21,14 @@
       </div>
 
       <!-- Sort Dropdown (Native) -->
-      <select [(ngModel)]="sortBy" class="sort-select">
-        <option value="sentAt">Date</option>
-        <!-- <option value="sender">Sender</option> -->
-
-        <option value="importance">Importance</option>
-        <!-- <option value="subject">Subject</option> -->
+      <select [(ngModel)]="sortBy" class="sort-select" (change)="fetchMail()">
+        <option selected value="DATE_DESC">DATE_DESC</option>
+        <option value="DATE_ASC">DATE_ASC</option>
+        <option value="PRIORITY">PRIORITY</option>
+        <option value="SENDER">SENDER</option>
+        <option value="UNREAD_FIRST">UNREAD_FIRST</option>
+        <option value="SUBJECT">SUBJECT</option>
+        <option value="BODY">BODY</option>
       </select>
 
       <!-- Refresh Button -->

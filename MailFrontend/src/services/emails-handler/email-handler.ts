@@ -7,7 +7,7 @@ import { PaginationRequest } from '../../app/models/PaginationRequest';
 import { AuthService } from '../auth/auth-service';
 import { NotificationService } from '../notification/notification-service';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
-import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 
 @Injectable({
   providedIn: 'root',
@@ -33,9 +33,10 @@ export class EmailHandler {
       .set('page', request.page.toString())
       .set('size', request.size.toString());
 
-    if (request.sortBy && request.sortDirection) {
-      params = params.set('sort', `${request.sortBy},${request.sortDirection}`);
+    if (request.sortBy) {
+      params = params.set('sortBy', `${request.sortBy}`);
     }
+    console.log(params);
 
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/page`, { params });
   }
@@ -46,39 +47,40 @@ export class EmailHandler {
     return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
   }
 
-  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO>{
-    let params = new HttpParams()
-      .set('userId', this.auth.getCurrentUserId()!);
-      // .set('criteria', request);
+  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
+    let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);
+    // .set('criteria', request);
 
-    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {params});
+    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
+      params,
+    });
   }
 
-  moveEmailsToFolder(mailIds: Set<Number>, targetFolderName: string, onSuccess?: () =>void): void {
+  moveEmailsToFolder(mailIds: Set<Number>, targetFolderName: string, onSuccess?: () => void): void {
     const userId = this.auth.getCurrentUserId();
 
-    let params = new HttpParams()
-      .set('userId', userId!)
-      .set('targetFolder', targetFolderName);
+    let params = new HttpParams().set('userId', userId!).set('targetFolder', targetFolderName);
 
-    mailIds.forEach(id => {
+    mailIds.forEach((id) => {
       params = params.append('mailId', id.toString());
     });
 
-    this.http.put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' }).subscribe({
-      next: (response) => {
-        this.notificationService.show('Emails moved successfully', 'success');
-        this.opStatus.set(true);
-        this.opMessage.set('Emails moved successfully');
-        if(onSuccess) onSuccess();
-      },
-      error: (error) => {
-        this.notificationService.show('Failed to move emails', 'error');
-        this.opStatus.set(false);
-        this.opMessage.set(error.message || 'Failed to move emails');
-        console.error('Error moving emails:', error);
-      }
-    });
+    this.http
+      .put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' })
+      .subscribe({
+        next: (response) => {
+          this.notificationService.show('Emails moved successfully', 'success');
+          this.opStatus.set(true);
+          this.opMessage.set('Emails moved successfully');
+          if (onSuccess) onSuccess();
+        },
+        error: (error) => {
+          this.notificationService.show('Failed to move emails', 'error');
+          this.opStatus.set(false);
+          this.opMessage.set(error.message || 'Failed to move emails');
+          console.error('Error moving emails:', error);
+        },
+      });
   }
 
   // readonly filteredEmails = computed(() => {
@@ -101,7 +103,6 @@ export class EmailHandler {
 
   //   return counts;
   // });
-
 
   // --------------------- Folder actions ----------------------
 
@@ -133,15 +134,15 @@ export class EmailHandler {
     });
   }
 
-  private emailListComp : any;
+  private emailListComp: any;
 
-  regList(component: any){
+  regList(component: any) {
     this.emailListComp = component;
   }
 
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
-    if (this.emailListComp != null){
+    if (this.emailListComp != null) {
       this.emailListComp.fetchMail();
     }
     console.log('Load emails for:', folderName);

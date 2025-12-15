@@ -25,8 +25,8 @@ import {
 import { ButtonComponent } from '../../shared/button/button';
 import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
-import {SearchOptionsModalComponent} from '../search-options-modal/search-options-modal';
-import {SearchRequestDTO} from '../../app/models/SearchRequestDTO';
+import { SearchOptionsModalComponent } from '../search-options-modal/search-options-modal';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 
 interface CustomFolder {
   id: number;
@@ -36,7 +36,13 @@ interface CustomFolder {
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent, SearchOptionsModalComponent],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    FormsModule,
+    ButtonComponent,
+    SearchOptionsModalComponent,
+  ],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,7 +70,7 @@ export class EmailListComponent implements OnInit {
   public processedEmails = signal<MailSummaryDTO[]>([]);
 
   public searchQuery = signal('');
-  public sortBy = signal('sentAt');
+  public sortBy = signal('DATE_DESC');
   public viewMode = signal<'default' | 'priority'>('default');
 
   public selectedIds = signal(new Set<Number>());
@@ -116,7 +122,7 @@ export class EmailListComponent implements OnInit {
     // this is very very very very very very very very very very bad design, this should be changed but i'll leave it cause I only want to test the concept
     // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
     this.emailHandler.regList(this);
-
+    // this.sortBy.set('DATE_DESC');
     this.fetchMail();
   }
 
@@ -132,7 +138,7 @@ export class EmailListComponent implements OnInit {
       page: apiPage,
       size: this.itemsPerPage(),
       sortBy: this.sortBy(),
-      sortDirection: 'desc',
+      // sortDirection: 'desc',
     };
 
     this.emailHandler.getMailPage(request).subscribe({
@@ -191,9 +197,9 @@ export class EmailListComponent implements OnInit {
     });
   }
 
-  handleAdvancedSearch(request: SearchRequestDTO){
+  handleAdvancedSearch(request: SearchRequestDTO) {
     this.emailHandler.doAdvancedSearch(request).subscribe({
-      next: (data)=> {
+      next: (data) => {
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
 
@@ -204,25 +210,24 @@ export class EmailListComponent implements OnInit {
         this.currentFolder.set('Search Results');
 
         this.isLoading.set(false);
-        console.log("Search result: ", data);
+        console.log('Search result: ', data);
       },
       error: (err) => {
-        console.log("Advanced search failed, Error: ");
+        console.log('Advanced search failed, Error: ');
         console.log(err);
-      }
-    })
+      },
+    });
   }
 
   // --- BULK ACTION HANDLERS ---
 
   handleMove(targetFolderName: string): void {
     console.log(`Moving ${this.selectedIds().size} emails to folder: ${targetFolderName}`);
-    this.emailHandler.moveEmailsToFolder(this.selectedIds(),targetFolderName, () =>{
+    this.emailHandler.moveEmailsToFolder(this.selectedIds(), targetFolderName, () => {
       this.selectedIds.set(new Set());
 
       this.onRefresh();
     });
-
   }
 
   handleDelete(): void {
