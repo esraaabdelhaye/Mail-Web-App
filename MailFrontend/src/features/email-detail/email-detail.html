@@ -81,7 +81,7 @@
 
           <!-- Actions (Download/Delete) -->
           <div class="file-actions">
-            <button app-button variant="ghost" size="icon" (click)="downloadAttachment(file)">
+            <button app-button variant="ghost" size="icon" (click)="downloadAttachment(file); $event.stopPropagation()">
               <lucide-icon [img]="icons.Download"></lucide-icon>
             </button>
             <button
@@ -89,7 +89,7 @@
               variant="ghost"
               size="icon"
               class="delete-btn"
-              (click)="deleteAttachment.emit(file.id.toString())"
+              (click)="deleteAttachment.emit(file.id.toString()); $event.stopPropagation()"
             >
               <lucide-icon [img]="icons.Trash2"></lucide-icon>
             </button>

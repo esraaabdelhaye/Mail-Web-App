@@ -2,7 +2,7 @@ import { SenderDTO } from './SenderDTO';
 export interface AttachmentDTO {
   id: number;
   fileName: string;
-  fileSize: number; // Size in bytes
+  fileSize: string; // Formatted size like "1.2 MB"
   fileType: string; // MIME type
 }
 

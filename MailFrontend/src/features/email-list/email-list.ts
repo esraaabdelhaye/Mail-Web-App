@@ -91,7 +91,9 @@ export class EmailListComponent implements OnInit {
     this.emailHandler.getMailDetails(Number(userId), emailId).subscribe({
       next: (data) => {
         this.currentlyOpened.set(data);
-        console.log(data);
+        console.log('Email details received:', data);
+        console.log('Attachments:', data.attachments);
+        console.log('Attachments length:', data.attachments?.length);
         console.log('from email List: ', this.currentlyOpened);
       },
       error: (err) => {
