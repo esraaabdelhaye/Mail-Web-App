@@ -27,13 +27,14 @@ public class MailController {
 
 
     @GetMapping("/page")
-    public ResponseEntity<MailPageDTO> getInbox(
+    public ResponseEntity<MailPageDTO> getEmails(
             @RequestParam Long userId,
             @RequestParam(defaultValue = "Inbox") String folderName,
-            @PageableDefault(size = 10, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable)
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "DATE_DESC") String sortBy)
     {
-
-        MailPageDTO pageDTO = mailService.getPaginatedMail(userId, folderName, pageable);
+        MailPageDTO pageDTO = mailService.getPaginatedMail(userId, folderName, page, size, sortBy);
         return ResponseEntity.ok(pageDTO);
     }
 
