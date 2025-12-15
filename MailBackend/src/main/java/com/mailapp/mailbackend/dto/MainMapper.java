@@ -93,7 +93,14 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.importance", target = "priority")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
     @Mapping(target = "hasAttachments", expression = "java(hasAttachments(userMail.getMail()))")
-    @Mapping(target = "preview", expression = "java(userMail.getMail().getBody().split(\"\\\\n\")[0])")
+    @Mapping(
+            target = "preview",
+            expression = "java(" +
+                    "userMail.getMail() != null && userMail.getMail().getBody() != null " +
+                    "? userMail.getMail().getBody().split(\"\\\\n\")[0] " +
+                    ": \"\"" + // Return an empty string if the body is null
+                    ")"
+    )
     public abstract MailSummaryDTO toMailSummaryDTO(UserMail userMail);
 
 
