@@ -166,10 +166,10 @@ public abstract class MainMapper {
         if (value == null) return 0;
 
         return switch (value) {
-            case URGENT -> 1;
-            case HIGH -> 2;
-            case NORMAL -> 3;
-            case LOW -> 4;
+            case URGENT -> 4;
+            case HIGH -> 3;
+            case NORMAL -> 2;
+            case LOW -> 1;
         };
     }
 
