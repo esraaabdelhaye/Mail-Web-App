@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -117,5 +118,20 @@ public class FolderService {
 
     public Folder getDrafts(User user) {
         return folderRepo.findByUserAndFolderName(user, "Drafts");
+    }
+
+
+
+    public Map<Long, Long> getFolderCounts(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Folder> folders = folderRepo.findByUserId(userId);
+        
+        return folders.stream()
+                .collect(Collectors.toMap(
+                        Folder::getFolderId,
+                        folder -> userMailRepo.countByUserAndFolder(user, folder)
+                ));
     }
 }

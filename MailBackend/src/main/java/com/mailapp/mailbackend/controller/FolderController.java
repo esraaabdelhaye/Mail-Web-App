@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/folders")
@@ -37,5 +38,10 @@ public class FolderController {
     public ResponseEntity<Void> deleteFolder(@PathVariable Long id){
         folderService.deleteFolder(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/counts")
+    public ResponseEntity<Map<Long, Long>> getFolderCounts(@RequestParam Long userId) {
+        return ResponseEntity.ok(folderService.getFolderCounts(userId));
     }
 }
