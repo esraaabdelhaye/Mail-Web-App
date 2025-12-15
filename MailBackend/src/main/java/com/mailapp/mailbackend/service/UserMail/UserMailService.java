@@ -45,6 +45,7 @@ public class UserMailService {
         save(mail, sender, senderFolder, true);
     }
 
+
     private void save(Mail mail, User user, Folder folder, boolean isRead) {
         UserMail userMail = UserMail.builder()
                 .user(user)
@@ -59,4 +60,13 @@ public class UserMailService {
 
 
     }
+
+    public void updateDraftInUserMail(Mail mail, int priority) {
+        UserMail userMail = userMailRepo.findUserMailByMail(mail)
+                .orElseThrow(() -> new RuntimeException("usermail not found"));
+
+        userMail.setImportance(Priority.fromValue(priority));
+        userMailRepo.save(userMail);
+    }
 }
+
