@@ -5,8 +5,10 @@ import com.mailapp.mailbackend.dto.DraftDTO;
 import com.mailapp.mailbackend.dto.RecipientDTO;
 import com.mailapp.mailbackend.service.Mail.DraftService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.Map;
@@ -54,6 +56,22 @@ public class DraftController {
         return ResponseEntity.ok(draftService.isValid(recipientEmail));
     }
 
+    @PostMapping(value = "/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadDraftAttachment(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("draftId") Long draftId) {
+
+        draftService.addAttachmentToDraft(draftId, file);
+        return ResponseEntity.ok("Attachment uploaded");
+    }
+
+    @DeleteMapping("/attachment")
+    public ResponseEntity<String> removeDraftAttachment(
+            @RequestParam String fileName,
+            @RequestParam Long draftId) {
+        draftService.removeAttachmentFromDraft(draftId, fileName);
+        return ResponseEntity.ok("Attachment deleted");
+    }
 
 
 }

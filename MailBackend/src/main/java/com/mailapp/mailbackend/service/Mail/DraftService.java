@@ -8,14 +8,17 @@ import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.enums.Priority;
 import com.mailapp.mailbackend.enums.ReceiverType;
 import com.mailapp.mailbackend.repository.*;
+import com.mailapp.mailbackend.service.Attachment.AttachmentService;
 import com.mailapp.mailbackend.service.MailReceiver.MailReceiverService;
 import com.mailapp.mailbackend.service.UserMail.UserMailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
@@ -44,6 +47,8 @@ public class DraftService {
     private MailReceiverService mailReceiverService;
     @Autowired
     private MailReceiverRepo mailReceiverRepo;
+    @Autowired
+    private AttachmentService attachmentService;
 
     public Long createDraft(Long userId){
         User sender = userRepo.findById(userId).orElseThrow();
@@ -107,4 +112,24 @@ public class DraftService {
         }
     }
 
+    public void addAttachmentToDraft(Long draftId, MultipartFile file) {
+        Mail mail = mailRepo.findById(draftId)
+                .orElseThrow(() -> new RuntimeException("Draft not found"));
+        try{
+            attachmentService.saveAttachment(mail, file);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to save attachments", e);
+        }
+
+    }
+
+    public void removeAttachmentFromDraft(Long draftId, String fileName) {
+        Mail mail = mailRepo.findById(draftId)
+                .orElseThrow(() -> new RuntimeException("Draft not found"));
+        Attachment attachment = attachmentRepo.findByFileName(fileName);
+        attachmentRepo.deleteByFileNameAndMail(fileName, mail);
+    }
 }
