@@ -122,7 +122,7 @@ export class LoginPage {
     this.userService.login(oldUser).subscribe({
       next: (response) => {
         console.log(response);
-        if (response.reqState) this.loginVerified(response.reqMessage, response.id);
+        if (response.reqState) this.loginVerified(response);
         else this.loginFailed(response.reqMessage);
       },
       error: (err) => {
@@ -186,13 +186,13 @@ export class LoginPage {
     this.validSignUp = false;
   }
 
-  private loginVerified(mess: any | '', id: any) {
+  private loginVerified(response: any) {
     this.isLoading.set(false);
     this.validLogin = true;
-    const message = 'User Logged In Successfully: ' + mess;
+    const message = 'User Logged In Successfully: ' + response.reqMessage;
     this.notificationService.showSuccess(message);
 
-    this.authService.saveAuthData(id);
+    this.authService.saveAuthData(response);
 
     // 2. Navigate away from the login page to the application dashboard
     this.router.navigate(['/home']);

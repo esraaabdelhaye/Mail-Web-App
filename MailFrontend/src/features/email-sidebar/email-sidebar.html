@@ -1,11 +1,15 @@
 <aside class="sidebar">
   <!-- Logo Section -->
-  <div class="logo-section">
-    <div class="logo-box">
-      <lucide-icon [img]="icons.Mail" class="logo-icon"></lucide-icon>
+
+  <div class="user-profile-section-horizontal">
+    <div class="avatar-box"></div>
+
+    <div class="user-text-info-vertical">
+      <span class="user-name">{{ authService.getCurrentUserName() || 'Guest' }}</span>
+      <span class="user-email">{{ authService.getCurrentEmail() || 'N/A' }}</span>
     </div>
-    <span class="app-name">MailFlow</span>
   </div>
+  <hr class="profile-separator" />
 
   <!-- Compose Button -->
   <div class="compose-section">

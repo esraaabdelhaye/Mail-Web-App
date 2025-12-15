@@ -11,6 +11,8 @@ export class AuthService {
   // --- STORAGE KEYS ---
   private readonly TOKEN_KEY = 'current_user_token';
   private readonly USER_ID_KEY = 'current_user_id';
+  private readonly USER_NAME_KEY = 'current_user_name';
+  private readonly USER_EMAIL_KEY = 'current_user_email';
 
   constructor() {
     // Attempt to load user data/ID from storage on service creation
@@ -21,21 +23,26 @@ export class AuthService {
     const userId = sessionStorage.getItem(this.USER_ID_KEY);
   }
 
-  public saveAuthData(userId: Number): void {
-    if (!userId) {
+  public saveAuthData(loginResponse: any): void {
+    if (!loginResponse.id) {
       console.error('Authentication Error: User ID is missing in the successful response.');
       return;
     }
+    console.log('login response: ', loginResponse.fullName);
 
-    const userIdString = userId.toString();
+    const userIdString = loginResponse.id.toString();
     sessionStorage.setItem(this.TOKEN_KEY, userIdString);
     sessionStorage.setItem(this.USER_ID_KEY, userIdString);
+    sessionStorage.setItem(this.USER_NAME_KEY, loginResponse.fullName);
+    sessionStorage.setItem(this.USER_EMAIL_KEY, loginResponse.email);
   }
 
   // (on error/logout)
   public clearAuthData(): void {
     sessionStorage.removeItem(this.TOKEN_KEY);
     sessionStorage.removeItem(this.USER_ID_KEY);
+    sessionStorage.removeItem(this.USER_EMAIL_KEY);
+    sessionStorage.removeItem(this.USER_NAME_KEY);
   }
 
   // Called by other services (like MailService) to get the necessary ID
@@ -43,6 +50,16 @@ export class AuthService {
     const id = sessionStorage.getItem(this.USER_ID_KEY);
     // Convert to number or return null
     return id ? parseInt(id, 10) : null;
+  }
+
+  public getCurrentUserName(): string | null {
+    const userName = sessionStorage.getItem(this.USER_NAME_KEY);
+    return userName ? userName : null;
+  }
+
+  public getCurrentEmail(): string | null {
+    const userEmail = sessionStorage.getItem(this.USER_EMAIL_KEY);
+    return userEmail ? userEmail : null;
   }
 
   public isAuthenticated(): boolean {

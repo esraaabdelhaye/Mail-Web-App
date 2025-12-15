@@ -1,4 +1,4 @@
-import {Component, inject, computed, OnInit, EventEmitter, Output} from '@angular/core';
+import { Component, inject, computed, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,6 +20,7 @@ import { FolderDTO } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 import { ComposeEmail } from '../compose-email/compose-email';
 import { NotificationService } from '../../services/notification/notification-service';
+import { AuthService } from '../../services/auth/auth-service';
 
 @Component({
   selector: 'app-email-sidebar',
@@ -33,6 +34,7 @@ export class EmailSidebarComponent implements OnInit {
 
   protected emailHandler = inject(EmailHandler);
   protected notificationService = inject(NotificationService);
+  protected authService = inject(AuthService);
   showComposeEmailDialog = false;
 
   ngOnInit() {
@@ -74,6 +76,17 @@ export class EmailSidebarComponent implements OnInit {
   // getFolderCount(folderId: string) {
   //   return this.emailHandler.folderCounts()[folderId] || 0;
   // }
+
+  private readonly USER_AVATAR_KEY = 'current_user_avatar_url';
+
+  // ... in saveAuthData()
+  public saveAuthData(loginResponse: any): void {
+    // ... existing code ...
+    sessionStorage.setItem(
+      this.USER_AVATAR_KEY,
+      loginResponse.avatarUrl || 'assets/default-avatar.png'
+    ); // <-- Save the URL
+  }
 
   // Helper to map system IDs to Icons
   getIconForFolder(id: string): any {

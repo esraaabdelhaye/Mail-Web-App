@@ -9,31 +9,66 @@
 }
 
 /* Logo */
-.logo-section {
-  padding: 1rem;
-  border-bottom: 1px solid hsl(var(--border));
+/* --- PRIMARY CONTAINER: Sets the avatar beside the text block --- */
+.user-profile-section-horizontal {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: row; /* Arrange items side-by-side */
+  align-items: center; /* Vertically align the avatar and text block */
+  gap: 12px; /* Space between the avatar and the text */
+  padding: 8px; /* Optional padding around the whole profile section */
+  padding-top: 15px;
 }
 
-.logo-box {
-  width: 2rem;
-  height: 2rem;
-  background-color: hsl(var(--primary)); /* Uses Global Primary */
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: hsl(var(--primary-foreground));
+.avatar-box {
+  /* Style for the avatar image container */
+  width: 40px; /* Smaller, more typical size for a sidebar profile */
+  height: 40px;
+  min-width: 40px; /* Ensure it doesn't shrink */
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url('../../assets/cat.png');
 }
 
-.app-name {
+/* --- TEXT CONTAINER: Stacks the name and email vertically --- */
+.user-text-info-vertical {
+  display: flex;
+  flex-direction: column; /* Stack the name and email */
+  /* Note: We typically align items to the start (left) in a vertical stack */
+  align-items: flex-start;
+  overflow: hidden; /* Ensures long names/emails don't break the layout */
+}
+
+.user-name {
+  /* Styles for the Name */
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 1.125rem;
-  color: hsl(var(--foreground));
+  color: var(--text-color-dark, #333); /* Use CSS custom property or fallback */
+  white-space: nowrap; /* Prevents wrapping if name is short */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Truncate if too long */
+  text-transform: capitalize;
 }
 
+.user-email {
+  /* Styles for the Email */
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-color-muted, #777);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-separator {
+  border: none;
+  height: 1px; /* Thickness of the line */
+  background-color: #ddd; /* Light gray color */
+  margin: 10px 0; /* Space above and below the line */
+  width: 100%; /* Ensure it spans the full width */
+}
 /* Compose */
 .compose-section {
   padding: 1rem;
@@ -42,7 +77,7 @@
 .compose-btn {
   width: 100%;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s;
 }
 
@@ -61,9 +96,8 @@
   border-radius: 0;
 }
 
-
 .shadow-hover:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Navigation */
@@ -90,7 +124,6 @@
   font-size: 0.875rem;
   transition: background-color 0.15s, color 0.15s;
   text-align: left;
-
 }
 
 .nav-item lucide-icon {
@@ -111,14 +144,13 @@
   background-color: hsl(var(--secondary));
   color: hsl(var(--secondary-foreground));
   font-weight: 500;
-  filter: brightness(0.8); 
+  filter: brightness(0.8);
   /* Gives it a slightly darker background color */
 }
 
 .nav-icon {
   width: 1rem;
   height: 1rem;
-
 }
 
 .nav-label {
@@ -126,7 +158,6 @@
   display: flex;
   align-items: center;
 }
-
 
 /* Badges */
 .badge {
@@ -155,7 +186,6 @@
   justify-content: center;
 }
 
-
 .section-header {
   width: 100%;
   display: flex;
@@ -179,7 +209,7 @@
 .chevron {
   width: 1rem;
   height: 1rem;
-    width: 16px;
+  width: 16px;
   height: 16px;
   min-width: 16px; /* prevents shifting */
   display: flex;
@@ -276,10 +306,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-
 
 .toast {
   position: fixed;
@@ -300,8 +335,19 @@
 }
 
 @keyframes fadeInOut {
-  0%   { opacity: 0; transform: translateY(10px); }
-  10%  { opacity: 1; transform: translateY(0); }
-  90%  { opacity: 1; }
-  100% { opacity: 0; transform: translateY(10px); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
