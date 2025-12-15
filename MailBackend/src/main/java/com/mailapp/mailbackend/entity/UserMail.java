@@ -44,4 +44,7 @@ public class UserMail {
 
     @Column(name = "is_archived")
     private Boolean isArchived;
+
+    @Column(name = "moved_at")
+    private Date movedAt;
 }

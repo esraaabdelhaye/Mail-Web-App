@@ -220,8 +220,32 @@ public class MailService {
 
         Folder targetFolder = folderRepo.findByUserAndFolderName(user, targetFolderName);
 
-        // 3. Update the folder reference
+        if (targetFolder == null) {
+            throw new RuntimeException("Target folder not found: " + targetFolderName);
+        }
+
+        // Update the folder reference
         userMail.setFolder(targetFolder);
+        userMail.setMovedAt(new Date());
         userMailRepo.save(userMail);
+    }
+
+    public void permanentlyDeleteEmails(Long userId, List<Long> userMailIds) {
+        for (Long userMailId : userMailIds) {
+            UserMail userMail = userMailRepo.findById(userMailId)
+                    .orElseThrow(() -> new RuntimeException("Email not found with ID: " + userMailId));
+
+            // Security check
+            if (!userMail.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Access denied: Email does not belong to user.");
+            }
+
+            // Only allow deletion from Trash
+            if (userMail.getFolder() != null && !"Trash".equals(userMail.getFolder().getFolderName())) {
+                throw new RuntimeException("Can only permanently delete emails from Trash folder");
+            }
+
+            userMailRepo.delete(userMail);
+        }
     }
 }
