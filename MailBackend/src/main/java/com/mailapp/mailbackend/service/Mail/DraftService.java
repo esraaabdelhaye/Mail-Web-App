@@ -49,6 +49,7 @@ public class DraftService {
         Mail mail = Mail.builder()
                 .sender(sender)
                 .priority(3)
+                .isDraft(true)
                 .build();
 
         mailRepo.save(mail);

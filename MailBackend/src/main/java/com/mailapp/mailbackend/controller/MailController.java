@@ -51,5 +51,14 @@ public class MailController {
         return ResponseEntity.ok(("Email processed successfully"));
     }
 
+    @PutMapping("/move")
+    public ResponseEntity<String> moveEmails(
+            @RequestParam Long userId,
+            @RequestParam List<Long> mailId,
+            @RequestParam String targetFolder) {
+
+        mailService.moveEmailsToFolder(userId, mailId, targetFolder);
+        return ResponseEntity.ok("Emails moved successfully");
+    }
 
 }

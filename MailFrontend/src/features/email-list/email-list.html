@@ -24,6 +24,7 @@
       <select [(ngModel)]="sortBy" class="sort-select">
         <option value="sentAt">Date</option>
         <!-- <option value="sender">Sender</option> -->
+
         <option value="importance">Importance</option>
         <!-- <option value="subject">Subject</option> -->
       </select>
@@ -71,8 +72,8 @@
         (change)="handleMove($any($event.target).value); $any($event.target).value = ''"
       >
         <option value="" disabled selected>Move to...</option>
-        @for (folder of customFolders; track folder.id) {
-        <option [value]="folder.id">{{ folder.name }}</option>
+        @for (folder of emailHandler.folders(); track folder.folderID) {
+        <option [value]="folder.folderName">{{ folder.folderName }}</option>
         }
       </select>
 

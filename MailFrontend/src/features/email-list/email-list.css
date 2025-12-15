@@ -1,3 +1,7 @@
+*{
+  box-sizing: border-box;
+}
+
 :host {
   /* Priority Colors */
   --color-priority-urgent: #ef4444; /* Red */
@@ -16,8 +20,8 @@
 /* Toolbar */
 .toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  /* flex-direction: column; */
+  gap: 2rem;
   padding: 1rem;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -25,7 +29,7 @@
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   flex-wrap: nowrap;
   width: 100%;
 }
@@ -40,7 +44,7 @@
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   color: hsl(var(--muted-foreground));
   width: 1rem;
@@ -50,11 +54,12 @@
 .search-options-icon {
   position: absolute;
   right: 0.5rem;
-  top: 50%;
+  top: 40%;
   /*transform: translateY(-50%);*/
   color: hsl(var(--muted-foreground));
   width: 1rem;
   height: 1rem;
+  margin-right: 15px;
 }
 
 .search-input {

@@ -113,7 +113,7 @@ export class EmailListComponent implements OnInit {
   constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
-    // this is very very very very very very very very very very bad design, this should be changed but i'll leave cause I only want to test the concept
+    // this is very very very very very very very very very very bad design, this should be changed but i'll leave it cause I only want to test the concept
     // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
     this.emailHandler.regList(this);
 
@@ -215,10 +215,14 @@ export class EmailListComponent implements OnInit {
 
   // --- BULK ACTION HANDLERS ---
 
-  handleMove(folderId: number): void {
-    console.log(`Moving ${this.selectedIds().size} emails to folder ID: ${folderId}`);
-    this.selectedIds.set(new Set());
-    this.fetchMail();
+  handleMove(targetFolderName: string): void {
+    console.log(`Moving ${this.selectedIds().size} emails to folder: ${targetFolderName}`);
+    this.emailHandler.moveEmailsToFolder(this.selectedIds(),targetFolderName, () =>{
+      this.selectedIds.set(new Set());
+
+      this.onRefresh();
+    });
+
   }
 
   handleDelete(): void {

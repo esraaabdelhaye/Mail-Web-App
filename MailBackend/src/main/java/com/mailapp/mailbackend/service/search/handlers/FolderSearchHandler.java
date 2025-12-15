@@ -22,6 +22,7 @@ public class FolderSearchHandler extends SearchHandler {
             CriteriaBuilder cb,
             List<Predicate> predicates
     ) {
+
         Join<Object, Object> folderJoin = root.join("folder", JoinType.LEFT);
 
         Predicate predicate = cb.equal(
