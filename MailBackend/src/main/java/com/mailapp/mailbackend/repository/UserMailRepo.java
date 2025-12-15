@@ -7,7 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     Page<UserMail> findByUserAndFolder(User user, Folder folder, Pageable pageable);
     UserMail findByUserAndId(User user, Long mailId);
+    List<UserMail> findByFolder(Folder folder);
 }

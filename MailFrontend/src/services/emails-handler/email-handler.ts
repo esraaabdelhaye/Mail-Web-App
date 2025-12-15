@@ -54,7 +54,28 @@ export class EmailHandler {
     return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {params});
   }
 
-  moveEmailsToFolder(mailIds: Set<Number>, targetFolderName: string, onSuccess?: () =>void): void {
+  permanentlyDeleteEmails(mailIds: Number[], onSuccess?: () => void): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams().set('userId', userId!);
+
+    mailIds.forEach(id => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http.delete<string>(`${this.apiUrl}/email/delete`, { params, responseType: 'text' as 'json' }).subscribe({
+      next: (response) => {
+        this.notificationService.show('Emails permanently deleted', 'success');
+        if (onSuccess) onSuccess();
+      },
+      error: (error) => {
+        this.notificationService.show('Failed to permanently delete emails', 'error');
+        console.error('Error deleting emails:', error);
+      }
+    });
+  }
+
+  moveEmailsToFolder(mailIds: Number[], targetFolderName: string, successMsg?:string, onSuccess?: () =>void): void {
     const userId = this.auth.getCurrentUserId();
 
     let params = new HttpParams()
@@ -68,8 +89,10 @@ export class EmailHandler {
     this.http.put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' }).subscribe({
       next: (response) => {
         this.notificationService.show('Emails moved successfully', 'success');
-        this.opStatus.set(true);
-        this.opMessage.set('Emails moved successfully');
+        if (successMsg){
+          this.opStatus.set(true);
+          this.opMessage.set(successMsg);
+        }
         if(onSuccess) onSuccess();
       },
       error: (error) => {
@@ -187,9 +210,13 @@ export class EmailHandler {
     this.http.delete(`${this.apiUrl}/folders/${folderId}`).subscribe({
       next: () => {
         console.log('Deleted folder with id: ' + folderId);
-        this.notificationService.showSuccess(`Successfully Deleted`);
+        this.notificationService.showSuccess(`Successfully Deleted folder`);
         // Refresh the List (Remove it from the screen)
         this.loadFolders();
+
+        // Take him back to the inbox
+        this.currentFolderName.set('Inbox');
+        this.emailListComp.fetchMail(); // Update the email list
       },
 
       error: (err) => {

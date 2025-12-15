@@ -68,7 +68,7 @@ export class EmailListComponent implements OnInit {
   public viewMode = signal<'default' | 'priority'>('default');
 
   public selectedIds = signal(new Set<Number>());
-  public currentFolder = signal('Inbox');
+  // public currentFolder = signal('Inbox');
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
@@ -80,10 +80,6 @@ export class EmailListComponent implements OnInit {
   public totalPages = computed(() => this.emailPage()?.totalPages || 1);
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
 
-  public customFolders: CustomFolder[] = [
-    { id: 101, name: 'Work' },
-    { id: 102, name: 'Personal' },
-  ];
 
   public onRefresh(): void {
     this.fetchMail(true);
@@ -197,11 +193,11 @@ export class EmailListComponent implements OnInit {
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
 
-        // 2. Reset Pagination
+        // Reset Pagination
         this.currentPage.set(1);
 
-        // 3. UI Feedback: Maybe update title to "Search Results"?
-        this.currentFolder.set('Search Results');
+
+        // this.currentFolder.set('Search Results');
 
         this.isLoading.set(false);
         console.log("Search result: ", data);
@@ -216,8 +212,10 @@ export class EmailListComponent implements OnInit {
   // --- BULK ACTION HANDLERS ---
 
   handleMove(targetFolderName: string): void {
-    console.log(`Moving ${this.selectedIds().size} emails to folder: ${targetFolderName}`);
-    this.emailHandler.moveEmailsToFolder(this.selectedIds(),targetFolderName, () =>{
+    const mailIds = Array.from(this.selectedIds());
+
+    console.log(`Moving ${mailIds.length} emails to folder: ${targetFolderName}`);
+    this.emailHandler.moveEmailsToFolder(mailIds,targetFolderName,'Emails moved successfully',() =>{
       this.selectedIds.set(new Set());
 
       this.onRefresh();
@@ -226,11 +224,29 @@ export class EmailListComponent implements OnInit {
   }
 
   handleDelete(): void {
-    if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
-      console.log(`Deleting ${this.selectedIds().size} emails...`);
-      this.selectedIds.set(new Set());
-      this.fetchMail();
+    const mailIds = Array.from(this.selectedIds());
+
+    if(this.emailHandler.currentFolderName() == "Trash"){
+      if (confirm(`Are you sure you want to PERMANENTLY delete ${this.selectedIds().size} emails?`)){
+        this.emailHandler.permanentlyDeleteEmails(mailIds, () => {
+          this.selectedIds.set(new Set());
+          this.onRefresh();
+        });
+      }
     }
+    else{
+      if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
+        // console.log(`Deleting ${this.selectedIds().size} emails...`);
+        // this.selectedIds.set(new Set());
+        // this.fetchMail();
+        this.emailHandler.moveEmailsToFolder(mailIds,'Trash','Emails deleted to Trash successfully',() =>{
+          this.selectedIds.set(new Set());
+
+          this.onRefresh();
+        });
+      }
+    }
+
   }
 
   // --- UTILITIES (Referenced in HTML) ---
