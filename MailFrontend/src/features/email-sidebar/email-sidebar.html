@@ -34,11 +34,11 @@
         ></lucide-icon>
         <span class="nav-label">{{ folder.folderName }}</span>
 
-        <!-- @if (getFolderCount(emailHandler.currentFolderId()) > 0) {
-           <span class="badge" [class.active-badge]="emailHandler.currentFolderId() === folder.folderID">
+        @if (getFolderCount(folder.folderID) > 0) {
+           <span class="badge" [class.active-badge]="emailHandler.currentFolderName() === folder.folderName.toString()">
              {{ getFolderCount(folder.folderID) }}
            </span>
-                    } -->
+        }
       </button>
       }
     </div>
@@ -92,6 +92,12 @@
           >
             <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
             <span class="nav-label">{{ folder.folderName }}</span>
+            
+            @if (getFolderCount(folder.folderID) > 0) {
+              <span class="badge" [class.active-badge]="emailHandler.currentFolderName() === folder.folderName.toString()">
+                {{ getFolderCount(folder.folderID) }}
+              </span>
+            }
 
             <div class="folder-actions">
               <button class="action-btn" (click)="startEditing(folder, $event)">

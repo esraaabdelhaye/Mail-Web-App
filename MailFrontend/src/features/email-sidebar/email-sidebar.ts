@@ -73,9 +73,9 @@ export class EmailSidebarComponent implements OnInit {
     return this.emailHandler.folders().filter((f) => f.isCustom);
   });
 
-  // getFolderCount(folderId: string) {
-  //   return this.emailHandler.folderCounts()[folderId] || 0;
-  // }
+  getFolderCount(folderId: number): number {
+    return this.emailHandler.folderCounts()[folderId] || 0;
+  }
 
   private readonly USER_AVATAR_KEY = 'current_user_avatar_url';
 

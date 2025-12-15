@@ -16,6 +16,9 @@ export class EmailHandler {
   private folderSignal = signal<FolderDTO[]>([]);
   readonly folders = this.folderSignal.asReadonly();
 
+  private folderCountsSignal = signal<Record<number, number>>({}); // {"folderId":"count"}
+  readonly folderCounts = this.folderCountsSignal.asReadonly();
+
   private readonly apiUrl: string = 'http://localhost:8080';
   constructor(private http: HttpClient, private auth: AuthService) {}
   readonly currentFolderName = signal<string>('Inbox');
@@ -117,21 +120,7 @@ export class EmailHandler {
   //   return this.emails().filter((e) => e.folder === folderId);
   // });
 
-  // readonly folderCounts = computed(() => {
-  //   const counts: Record<string, number> = {};
-  //   const allEmails = this.emails();
 
-  //   // Inbox counts unread, others count total
-  //   this.folders.forEach((f) => {
-  //     if (f.id === 'inbox') {
-  //       counts[f.id] = allEmails.filter((e) => e.folder === 'inbox' && !e.isRead).length;
-  //     } else {
-  //       counts[f.id] = allEmails.filter((e) => e.folder === f.id).length;
-  //     }
-  //   });
-
-  //   return counts;
-  // });
 
 
   // Attachment actions
@@ -176,12 +165,30 @@ export class EmailHandler {
         }));
 
         this.folderSignal.set(mappedFolders as FolderDTO[]);
-        console.log('here');
-
         console.log('Read folders: ' + JSON.stringify(this.folderSignal(), null, 2));
+
+        // Load counts after folders are loaded
+        this.loadFolderCounts();
       },
       error: (err) => {
         console.log('Error in retrieving folders: ' + err);
+      },
+    });
+  }
+
+  public loadFolderCounts(): void {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) return;
+
+    let params = new HttpParams().set('userId', userId);
+
+    this.http.get<Record<number, number>>(`${this.apiUrl}/folders/counts`, { params }).subscribe({
+      next: (counts) => {
+        this.folderCountsSignal.set(counts);
+        console.log('Folder counts:', counts);
+      },
+      error: (err) => {
+        console.error('Error loading folder counts:', err);
       },
     });
   }
