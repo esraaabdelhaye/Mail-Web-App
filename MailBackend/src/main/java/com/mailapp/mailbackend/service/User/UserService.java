@@ -42,7 +42,7 @@ public class UserService {
         if(chainFactory.getChain(ChainType.Login).handle(userDTO)) {
             User user = userRepo.findByEmail(userDTO.email);
             userDTO.id = user.getId();
-
+            userDTO.fullName = user.getFullName();
             return userDTO;
         }
         return userDTO;
