@@ -48,7 +48,7 @@ public class DraftService {
 
         Mail mail = Mail.builder()
                 .sender(sender)
-                .priority(3)
+                .priority(2)
                 .isDraft(true)
                 .build();
 
