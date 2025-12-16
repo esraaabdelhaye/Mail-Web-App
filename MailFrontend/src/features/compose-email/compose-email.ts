@@ -104,6 +104,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     }));
   }
 
+
   ngOnInit(): void {
     const senderId = this.auth.getCurrentUserId();
 
@@ -121,14 +122,14 @@ export class ComposeEmail implements OnInit, OnDestroy {
       if (this.draft.attachments && this.draft.attachments.length > 0) {
         // Store original attachment metadata from backend
         this.draftAttachments = this.draft.attachments;
-        
+
         // Create placeholder File objects with proper names for the UI
         this.attachments = this.draft.attachments.map(
           (att) => new File([], att.fileName, { type: att.fileType })
         );
 
         // Store the backend IDs separately (backend sends as string, but TypeScript converts to number)
-        this.attachmentIds = this.draft.attachments.map((att) => 
+        this.attachmentIds = this.draft.attachments.map((att) =>
           typeof att.id === 'string' ? parseInt(att.id) : att.id
         );
       } else {
@@ -145,7 +146,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     if (this.draftId) {
       console.log('already created' + this.draftId);
       console.log(this.draft);
-      
+
       return;
     }
 
@@ -477,8 +478,17 @@ export class ComposeEmail implements OnInit, OnDestroy {
     this.http
       .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
       .subscribe({
-        next: (res) => console.log('sent', res),
-        error: (err) => console.error(err),
+        next: (res) => {
+          console.log('sent', res);
+          this.emailHandler.notificationService.show('Email sent successfully!', 'success');
+          // Refresh folder counts and email list after successful send
+          this.emailHandler.loadFolderCounts();
+          this.emailHandler.fetchMail();
+        },
+        error: (err) => {
+          console.error(err);
+          this.emailHandler.notificationService.show('Failed to send email', 'error');
+        },
       });
 
     this.resetForm();
@@ -487,6 +497,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   handleSaveDraft() {
     this.saveDraft.emit();
     this.resetForm();
+    this.emailHandler.fetchMail();
   }
 
   resetForm() {

@@ -32,6 +32,12 @@ export class EmailHandler {
   public isComposeOpen = signal(false);
   public composeDraft = signal<ComposeDraftDTO | null>(null);
 
+  private emailListComp: any;
+
+  fetchMail(){
+    this.emailListComp.fetchMail();
+  }
+
   getMailPage(request: PaginationRequest): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
     let params = new HttpParams()
@@ -94,6 +100,7 @@ export class EmailHandler {
       .subscribe({
         next: (response) => {
           this.notificationService.show('Emails permanently deleted', 'success');
+          this.loadFolderCounts();
           if (onSuccess) onSuccess();
         },
         error: (error) => {
@@ -125,6 +132,7 @@ export class EmailHandler {
             this.opStatus.set(true);
             this.opMessage.set(successMsg);
           }
+          this.loadFolderCounts();
           if (onSuccess) onSuccess();
         },
         error: (error) => {
@@ -214,8 +222,6 @@ export class EmailHandler {
     });
   }
 
-  private emailListComp: any;
-
   regList(component: any) {
     this.emailListComp = component;
   }
@@ -223,7 +229,7 @@ export class EmailHandler {
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
     if (this.emailListComp != null) {
-      this.emailListComp.fetchMail();
+      this.fetchMail();
     }
     console.log('Load emails for:', folderName);
     // In real app: this.emailService.loadEmails(folderId);
