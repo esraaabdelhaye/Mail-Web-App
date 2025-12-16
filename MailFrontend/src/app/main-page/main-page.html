@@ -3,15 +3,17 @@
   <app-email-sidebar (contactsClick)="isContactsOpen.set(true)"></app-email-sidebar>
 
   <main class="main-content">
+    <app-email-list [style.display]="emailList?.selectedEmailId() !== null || isContactsOpen() ? 'none' : 'block'"></app-email-list>
+    
     @if (emailList?.selectedEmailId() !== null){
     <app-email-detail
       [mailDetail]="emailList.currentlyOpened()!"
       (back)="emailList.closeOpenedEmail()"
     ></app-email-detail>
-    } @else if (isContactsOpen()){
+    }
+    
+    @if (isContactsOpen()){
     <app-contacts (back)="isContactsOpen.set(false)" />
-    } @else{
-    <app-email-list></app-email-list>
     }
   </main>
 </div>

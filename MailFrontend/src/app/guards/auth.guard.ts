@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth/auth-service';
 
 /*
   - Guards are functions that determine whether we can access a specific route or not
+  - If the Guard returns true then we allow navigation to that route, if false no navigation to that route
   - Here we are controlling access to the homepage and to the login/signup page
 */
 
