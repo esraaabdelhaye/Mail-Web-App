@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,11 +29,11 @@ public class ContactService {
     private UserRepo userRepo;
 
 
-    public List<ContactDTO> getContacts(Long userId) {
+    public List<ContactDTO> getContacts(Long userId, String sortBy, String sortOrder) {
         List<Contact> contacts = contactRepo.findByUserId(userId);
 
-        // Loop through each contact
-        return contacts.stream().map(contact -> {
+        // Convert to DTOs first
+        List<ContactDTO> contactDTOs = contacts.stream().map(contact -> {
             // Extract the emails of the contact
             List<String> emailList = contact.getEmails().stream()
                     .map(ContactEmail::getEmailAddress)
@@ -44,6 +45,39 @@ public class ContactService {
                     emailList
             );
         }).collect(Collectors.toList());
+
+        // Sort the contacts based on the sortBy parameter
+        return sortContacts(contactDTOs, sortBy, sortOrder);
+    }
+
+    private List<ContactDTO> sortContacts(List<ContactDTO> contacts, String sortBy, String sortOrder) {
+        Comparator<ContactDTO> comparator;
+
+        // Choose comparator based on sortBy parameter
+        switch (sortBy.toLowerCase()) {
+            case "email":
+                comparator = Comparator.comparing(contact -> 
+                    contact.getEmails().isEmpty() ? "" : contact.getEmails().get(0),
+                    String.CASE_INSENSITIVE_ORDER
+                );
+                break;
+            case "name":
+            default:
+                comparator = Comparator.comparing(
+                    ContactDTO::getName,
+                    String.CASE_INSENSITIVE_ORDER
+                );
+                break;
+        }
+
+        // Reverse if descending order
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+
+        return contacts.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
 
@@ -136,7 +170,7 @@ public class ContactService {
         contactRepo.deleteById(contactId);
     }
 
-    public List<ContactDTO> searchContacts(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContacts(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByNameOrEmail(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -145,11 +179,11 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 
-    public List<ContactDTO> searchContactsByName(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContactsByName(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByName(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -158,12 +192,12 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 
 
-    public List<ContactDTO> searchContactsByEmail(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContactsByEmail(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByEmail(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -172,7 +206,7 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 }

@@ -14,11 +14,11 @@ public interface ContactRepo extends JpaRepository<Contact, Long> {
     @Query("SELECT c FROM Contact c WHERE c.user.id = :userId AND LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<Contact> searchByName(@Param("userId") Long userId, @Param("searchTerm") String searchTerm);
 
-    @Query("SELECT c FROM Contact c WHERE c.user.id = :userId AND LOWER(c.primaryEmail) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    @Query("SELECT DISTINCT c FROM Contact c LEFT JOIN c.emails e WHERE c.user.id = :userId AND LOWER(e.emailAddress) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<Contact> searchByEmail(@Param("userId") Long userId, @Param("searchTerm") String searchTerm);
 
-    @Query("SELECT c FROM Contact c WHERE c.user.id = :userId AND " +
+    @Query("SELECT DISTINCT c FROM Contact c LEFT JOIN c.emails e WHERE c.user.id = :userId AND " +
             "(LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(c.primaryEmail) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+            "LOWER(e.emailAddress) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     List<Contact> searchByNameOrEmail(@Param("userId") Long userId, @Param("searchTerm") String searchTerm);
 }

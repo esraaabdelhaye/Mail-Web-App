@@ -18,8 +18,11 @@ public class ContactController {
 
 
     @GetMapping
-    public List<ContactDTO> getContacts(@RequestParam Long userId) {
-        return contactService.getContacts(userId);
+    public List<ContactDTO> getContacts(
+            @RequestParam Long userId,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder) {
+        return contactService.getContacts(userId, sortBy, sortOrder);
     }
 
 
@@ -46,8 +49,10 @@ public class ContactController {
     @GetMapping("/search")
     public List<ContactDTO> searchContacts(
             @RequestParam Long userId,
-            @RequestParam String searchTerm){
-        return contactService.searchContacts(userId, searchTerm);
+            @RequestParam String searchTerm,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder){
+        return contactService.searchContacts(userId, searchTerm, sortBy, sortOrder);
     }
 
 
@@ -55,9 +60,11 @@ public class ContactController {
     @GetMapping("/search/name")
     public List<ContactDTO> searchContactsByName(
             @RequestParam Long userId,
-            @RequestParam String searchTerm)
+            @RequestParam String searchTerm,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder)
             {
-        return contactService.searchContactsByName(userId, searchTerm);
+        return contactService.searchContactsByName(userId, searchTerm, sortBy, sortOrder);
     }
 
 
@@ -65,8 +72,10 @@ public class ContactController {
     @GetMapping("/search/email")
     public List<ContactDTO> searchContactsByEmail(
             @RequestParam Long userId,
-            @RequestParam String searchTerm
+            @RequestParam String searchTerm,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder
             ) {
-        return contactService.searchContactsByEmail(userId, searchTerm);
+        return contactService.searchContactsByEmail(userId, searchTerm, sortBy, sortOrder);
     }
 }

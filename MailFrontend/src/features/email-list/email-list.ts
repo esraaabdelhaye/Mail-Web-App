@@ -77,7 +77,7 @@ export class EmailListComponent implements OnInit {
   public sortBy = signal('DATE_DESC');
   public viewMode = signal<'default' | 'priority'>('default');
 
-  public selectedIds = signal(new Set<Number>());
+  public selectedIds = signal(new Set<number>());
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
@@ -245,7 +245,7 @@ export class EmailListComponent implements OnInit {
     }
   }
 
-  toggleEmailSelection(id: Number, event: Event): void {
+  toggleEmailSelection(id: number, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.selectedIds.update((set) => {
       if (isChecked) {
@@ -310,8 +310,12 @@ export class EmailListComponent implements OnInit {
       'Emails moved successfully',
       () => {
         this.selectedIds.set(new Set());
-
-        this.onRefresh();
+        // Only reset to page 1 if current page will be empty
+        const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+        if (remainingOnPage <= 0) {
+          this.currentPage.set(1);
+        }
+        this.fetchMail();
       }
     );
   }
@@ -325,7 +329,12 @@ export class EmailListComponent implements OnInit {
       ) {
         this.emailHandler.permanentlyDeleteEmails(mailIds, () => {
           this.selectedIds.set(new Set());
-          this.onRefresh();
+          // Only reset to page 1 if current page will be empty
+          const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+          if (remainingOnPage <= 0) {
+            this.currentPage.set(1);
+          }
+          this.fetchMail();
         });
       }
     } else {
@@ -339,8 +348,12 @@ export class EmailListComponent implements OnInit {
           'Emails deleted to Trash successfully',
           () => {
             this.selectedIds.set(new Set());
-
-            this.onRefresh();
+            // Only reset to page 1 if current page will be empty
+            const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+            if (remainingOnPage <= 0) {
+              this.currentPage.set(1);
+            }
+            this.fetchMail();
           }
         );
       }
