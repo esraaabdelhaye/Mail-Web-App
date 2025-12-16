@@ -13,7 +13,7 @@ import { AuthService } from './../../services/auth/auth-service';
 import { ButtonComponent } from '../../shared/button/button';
 import { Observable, of } from 'rxjs';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
-import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import { AttachmentDTO, MailDetailsDTO } from '../../app/models/DetailedMail';
 import { ComposeDraftDTO } from '../../app/models/ComposeDraftDTO';
 
 export interface EmailData {
@@ -26,13 +26,6 @@ export interface EmailData {
   body: string;
   priority: number;
   attachments: File[];
-}
-
-export interface AttachmentDTO {
-  id: number;
-  name: string;
-  size: number;
-  type: string;
 }
 
 export interface PriorityOption {
@@ -73,6 +66,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   priority = '2';
   attachments: File[] = [];
   attachmentIds: (number | null)[] = [];
+  draftAttachments: AttachmentDTO[] = []; // Store original attachment metadata from backend
 
   isMinimized = false;
   isCcOpen = false;
@@ -110,6 +104,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     }));
   }
 
+
   ngOnInit(): void {
     const senderId = this.auth.getCurrentUserId();
 
@@ -124,17 +119,23 @@ export class ComposeEmail implements OnInit, OnDestroy {
       this.bcc = this.draft.bcc || [];
       this.subject = this.draft.subject || '';
       this.body = this.draft.body || '';
-      if (this.draft.attachments) {
-        // Create File objects for the UI
+      if (this.draft.attachments && this.draft.attachments.length > 0) {
+        // Store original attachment metadata from backend
+        this.draftAttachments = this.draft.attachments;
+
+        // Create placeholder File objects with proper names for the UI
         this.attachments = this.draft.attachments.map(
-          (att) => new File([], att.name, { type: att.type })
+          (att) => new File([], att.fileName, { type: att.fileType })
         );
 
-        // Store the backend IDs separately
-        this.attachmentIds = this.draft.attachments.map((att) => att.id);
+        // Store the backend IDs separately (backend sends as string, but TypeScript converts to number)
+        this.attachmentIds = this.draft.attachments.map((att) =>
+          typeof att.id === 'string' ? parseInt(att.id) : att.id
+        );
       } else {
         this.attachments = [];
         this.attachmentIds = [];
+        this.draftAttachments = [];
       }
 
       this.priority = this.draft.priority?.toString() || '2';
@@ -145,7 +146,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     if (this.draftId) {
       console.log('already created' + this.draftId);
       console.log(this.draft);
-      
+
       return;
     }
 
@@ -387,7 +388,9 @@ export class ComposeEmail implements OnInit, OnDestroy {
     if (!this.attachments[index]) return;
 
     const file = this.attachments[index];
+    const draftAtt = this.draftAttachments[index];
     const attachmentId = this.attachmentIds[index];
+    const displayName = draftAtt ? draftAtt.fileName : file.name;
 
     // If file has backend ID, delete from server
     if (attachmentId) {
@@ -395,21 +398,23 @@ export class ComposeEmail implements OnInit, OnDestroy {
         next: () => {
           this.attachments.splice(index, 1);
           this.attachmentIds.splice(index, 1);
+          this.draftAttachments.splice(index, 1);
           console.log('deleted');
 
-          this.addMessage(`${file.name} removed`, 'success');
+          this.addMessage(`${displayName} removed`, 'success');
           this.cdr.detectChanges();
         },
         error: (err: any) => {
           console.error('Delete failed:', err);
-          this.addMessage(`Failed to remove ${file.name}`, 'error');
+          this.addMessage(`Failed to remove ${displayName}`, 'error');
         },
       });
     } else {
-      // Just remove from both arrays if not uploaded yet
+      // Just remove from all arrays if not uploaded yet
       this.attachments.splice(index, 1);
       this.attachmentIds.splice(index, 1);
-      this.addMessage(`${file.name} removed`, 'success');
+      this.draftAttachments.splice(index, 1);
+      this.addMessage(`${displayName} removed`, 'success');
     }
   }
 
@@ -423,6 +428,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     const fileIndex = this.attachments.length;
     this.attachments.push(file);
     this.attachmentIds.push(null); // No ID yet
+    this.draftAttachments.push(null as any); // Placeholder for new upload
 
     this.emailHandler.uploadAttachment(this.draftId, file).subscribe({
       next: (response: any) => {
@@ -434,9 +440,10 @@ export class ComposeEmail implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         console.error('Upload failed:', err);
-        // Remove failed upload from both arrays
+        // Remove failed upload from all arrays
         this.attachments.splice(fileIndex, 1);
         this.attachmentIds.splice(fileIndex, 1);
+        this.draftAttachments.splice(fileIndex, 1);
         this.addMessage(`Failed to upload ${file.name}`, 'error');
       },
     });
@@ -471,8 +478,17 @@ export class ComposeEmail implements OnInit, OnDestroy {
     this.http
       .post(`${this.apiUrl}/email/send`, form, { responseType: 'text' as 'json' })
       .subscribe({
-        next: (res) => console.log('sent', res),
-        error: (err) => console.error(err),
+        next: (res) => {
+          console.log('sent', res);
+          this.emailHandler.notificationService.show('Email sent successfully!', 'success');
+          // Refresh folder counts and email list after successful send
+          this.emailHandler.loadFolderCounts();
+          this.emailHandler.fetchMail();
+        },
+        error: (err) => {
+          console.error(err);
+          this.emailHandler.notificationService.show('Failed to send email', 'error');
+        },
       });
 
     this.resetForm();
@@ -481,6 +497,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   handleSaveDraft() {
     this.saveDraft.emit();
     this.resetForm();
+    this.emailHandler.fetchMail();
   }
 
   resetForm() {
@@ -495,6 +512,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     this.priority = '3';
     this.attachments = [];
     this.attachmentIds = [];
+    this.draftAttachments = [];
     this.onclose();
   }
 
@@ -510,10 +528,46 @@ export class ComposeEmail implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  formatFileSize(bytes: number) {
+  formatFileSize(bytes: number | string): string {
+    // Handle string format from backend (backend sends bytes as string like "1024")
+    if (typeof bytes === 'string') {
+      const numBytes = parseInt(bytes);
+      if (isNaN(numBytes)) return bytes; // If can't parse, return as-is
+      bytes = numBytes;
+    }
+    // Handle number format
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  getAttachmentName(index: number): string {
+    // Prefer draft attachment metadata if available
+    if (this.draftAttachments[index]) {
+      return this.draftAttachments[index].fileName;
+    }
+    // Fall back to File object name
+    return this.attachments[index]?.name || 'Unknown';
+  }
+
+  getAttachmentSize(index: number): string {
+    // Prefer draft attachment metadata if available
+    if (this.draftAttachments[index]) {
+      return this.formatFileSize(this.draftAttachments[index].fileSize);
+    }
+    // Fall back to File object size
+    return this.formatFileSize(this.attachments[index]?.size || 0);
+  }
+
+  downloadAttachment(index: number) {
+    const attachmentId = this.attachmentIds[index];
+    if (attachmentId) {
+      this.emailHandler.downloadAttachment(attachmentId);
+    }
+  }
+
+  canDownloadAttachment(index: number): boolean {
+    return this.attachmentIds[index] !== null && this.attachmentIds[index] !== undefined;
   }
 
   getPriorityOption(value: string): PriorityOption {

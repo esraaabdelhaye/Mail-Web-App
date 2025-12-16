@@ -173,6 +173,8 @@ export class EmailListComponent implements OnInit {
 
         this.isLoading.set(false);
         this.isRefreshing.set(false);
+
+        this.emailHandler.loadFolderCounts();
       },
       error: (err) => {
         console.error('Failed to load emails:', err);

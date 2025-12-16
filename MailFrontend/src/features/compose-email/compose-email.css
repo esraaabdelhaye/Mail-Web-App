@@ -57,7 +57,7 @@ position: fixed;
 }
 
 /* The remove button within the badge (the 'X') */
-.recipient-badge button, .remove-attachment-button {
+.recipient-badge button, .remove-attachment-button, .download-attachment-button {
   background: none;
   border: none;
   cursor: pointer;
@@ -71,8 +71,16 @@ position: fixed;
   transition: color 0.1s ease-in-out;
 }
 
-.recipient-badge button:hover, .remove-attachment-button:hover {
+.recipient-badge button:hover, .remove-attachment-button:hover, .download-attachment-button:hover {
   color: #202124; 
+}
+
+.download-attachment-button {
+  margin-left: 4px;
+}
+
+.download-attachment-button:hover {
+  color: #1a73e8; /* Blue color on hover for download */
 }
 
 /* The actual text input field */
