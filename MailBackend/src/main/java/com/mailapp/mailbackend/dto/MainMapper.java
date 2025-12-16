@@ -129,9 +129,9 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.folder.folderName", target = "folder")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
     @Mapping(target = "cc", expression = "java(mapCcReceivers(userMail.getMail()))")
-    @Mapping(target = "bcc", expression = "java(mapBccReceivers(userMail.getMail()))")
+    @Mapping(target = "bcc", expression = "java(mapBccReceivers(userMail.getMail(), userId))")
     @Mapping(target = "attachments", expression = "java(mapAttachments(userMail.getMail()))")
-    public abstract MailDetailsDTO toDetailedEmailDTO(UserMail userMail);
+    public abstract MailDetailsDTO toDetailedEmailDTO(UserMail userMail, Long userId);
 
 
     @Mapping(source = "fullName", target = "name")
@@ -150,6 +150,7 @@ public abstract class MainMapper {
         return receivers.stream()
                 .filter(mr -> mr.getReceiverType() == ReceiverType.TO)
                 .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -164,11 +165,17 @@ public abstract class MainMapper {
         return receivers.stream()
                 .filter(mr -> mr.getReceiverType() == ReceiverType.CC)
                 .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
-    protected List<String> mapBccReceivers(Mail mail) {
+    protected List<String> mapBccReceivers(Mail mail, Long userId) {
         if (mail == null) {
+            return List.of();
+        }
+
+        // BCC should only be visible to the sender, not recipients
+        if (!mail.getSender().getId().equals(userId)) {
             return List.of();
         }
 
@@ -178,6 +185,7 @@ public abstract class MainMapper {
         return receivers.stream()
                 .filter(mr -> mr.getReceiverType() == ReceiverType.BCC)
                 .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
                 .collect(Collectors.toList());
     }
 

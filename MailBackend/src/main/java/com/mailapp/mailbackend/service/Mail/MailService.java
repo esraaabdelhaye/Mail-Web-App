@@ -116,8 +116,8 @@ public class MailService {
         }
 
         // 4. Map the full Mail entity to the MailDetailsDTO
-        // MapStruct should be configured to handle the nested mappings (Mail -> DTO, Attachment -> DTO).
-        MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail);
+        // Pass userId to hide BCC from recipients (only sender can see BCC)
+        MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail, userId);
 
         return dto;
     }
