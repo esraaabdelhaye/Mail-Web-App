@@ -125,9 +125,9 @@ public class FolderService {
     public Map<Long, Long> getFolderCounts(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         List<Folder> folders = folderRepo.findByUserId(userId);
-        
+
         return folders.stream()
                 .collect(Collectors.toMap(
                         Folder::getFolderId,

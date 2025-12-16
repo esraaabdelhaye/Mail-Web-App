@@ -8,6 +8,7 @@ import { AuthService } from '../auth/auth-service';
 import { NotificationService } from '../notification/notification-service';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
 import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
+import { ComposeDraftDTO } from '../../app/models/ComposeDraftDTO';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,9 @@ export class EmailHandler {
   public opStatus = signal(false);
   public opMessage = signal('');
   public notificationService = inject(NotificationService);
+
+  public isComposeOpen = signal(false);
+  public composeDraft = signal<ComposeDraftDTO | null>(null);
 
   getMailPage(request: PaginationRequest): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
@@ -49,6 +53,23 @@ export class EmailHandler {
 
     return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
   }
+
+  getDraftForCompose(draftId: number): Observable<ComposeDraftDTO> {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) throw new Error("User not logged in");
+
+    // let params = new HttpParams().set('userId', userId);
+
+    return this.http.get<ComposeDraftDTO>(
+      `${this.apiUrl}/email/draft/compose/${draftId}`
+    );
+  }
+
+  openComposeWithDraft(draft: ComposeDraftDTO) {
+  this.composeDraft.set(draft);
+    this.isComposeOpen.set(true);
+}
+
 
   doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
     let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);

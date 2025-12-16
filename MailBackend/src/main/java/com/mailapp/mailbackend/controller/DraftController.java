@@ -1,5 +1,6 @@
 package com.mailapp.mailbackend.controller;
 
+import com.mailapp.mailbackend.dto.ComposeDraftDTO;
 import com.mailapp.mailbackend.dto.CreateDraftDTO;
 import com.mailapp.mailbackend.dto.DraftDTO;
 import com.mailapp.mailbackend.dto.RecipientDTO;
@@ -54,6 +55,12 @@ public class DraftController {
     @PostMapping("recipient/validate")
     public ResponseEntity<Boolean> validateDraftRecipient(@RequestBody String recipientEmail) {
         return ResponseEntity.ok(draftService.isValid(recipientEmail));
+    }
+
+    @GetMapping("/compose/{draftId}")
+    public ResponseEntity<ComposeDraftDTO> getComposeDraft(@PathVariable Long draftId) {
+        ComposeDraftDTO draft = draftService.getDraftForCompose(draftId);
+        return ResponseEntity.ok(draft);
     }
 
 //    @PostMapping(value = "/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

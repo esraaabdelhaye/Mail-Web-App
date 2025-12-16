@@ -27,6 +27,7 @@ import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
 import { MailDetailsDTO } from '../../app/models/DetailedMail';
 import { SearchOptionsModalComponent } from '../search-options-modal/search-options-modal';
 import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
+import { ComposeEmail } from './../compose-email/compose-email';
 
 
 
@@ -34,11 +35,12 @@ import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
   selector: 'app-email-list',
   standalone: true,
   imports: [
-    CommonModule,
+  CommonModule,
     LucideAngularModule,
     FormsModule,
     ButtonComponent,
     SearchOptionsModalComponent,
+    ComposeEmail
   ],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
@@ -88,6 +90,13 @@ export class EmailListComponent implements OnInit {
     this.fetchMail(true);
   }
   public openEmail(emailId: number): void {
+    if (this.isDraftsFolder()) {
+      // this.selectedEmailId.set(emailId);
+      console.log(emailId);
+      
+    this.openDraftInCompose(emailId);
+    return;
+  }
     this.selectedEmailId.set(emailId);
     const userId = this.authService.getCurrentUserId();
     this.emailHandler.getMailDetails(Number(userId), emailId).subscribe({
@@ -103,6 +112,25 @@ export class EmailListComponent implements OnInit {
       },
     });
   }
+
+  private openDraftInCompose(emailId: number): void {
+  const userId = this.authService.getCurrentUserId();
+
+  this.emailHandler.getDraftForCompose(emailId).subscribe({
+    next: (draft) => {
+      this.emailHandler.openComposeWithDraft(draft);
+    },
+    error: (err) => {
+      console.log('failed to open draft', err);
+    },
+  });
+}
+
+
+  private isDraftsFolder(): boolean {
+  return this.emailHandler.currentFolderName() === 'Drafts';
+}
+
 
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);

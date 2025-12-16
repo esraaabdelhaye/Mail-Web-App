@@ -5,16 +5,19 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
+  Input,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './../../services/auth/auth-service';
 import { ButtonComponent } from '../../shared/button/button';
 import { Observable, of } from 'rxjs';
-import {EmailHandler} from '../../services/emails-handler/email-handler';
+import { EmailHandler } from '../../services/emails-handler/email-handler';
+import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import { ComposeDraftDTO } from '../../app/models/ComposeDraftDTO';
 
 export interface EmailData {
-  draftId: number | null;  // Optional draft ID (if sending from draft)
+  draftId: number | null; // Optional draft ID (if sending from draft)
   senderId: number;
   to: string[];
   cc: string[];
@@ -25,13 +28,20 @@ export interface EmailData {
   attachments: File[];
 }
 
+export interface AttachmentDTO {
+  id: number;
+  name: string;
+  size: number;
+  type: string;
+}
+
 export interface PriorityOption {
   value: string;
   label: string;
   color: string;
 }
 
-interface Recipient {
+export interface Recipient {
   id?: number; // the MailReceiver id assigned by backend
   email: string;
   type: 'to' | 'cc' | 'bcc';
@@ -42,9 +52,10 @@ interface Recipient {
   templateUrl: './compose-email.html',
   styleUrls: ['./compose-email.css'],
   imports: [FormsModule, ButtonComponent],
-  standalone: true
+  standalone: true,
 })
 export class ComposeEmail implements OnInit, OnDestroy {
+  @Input() draft: ComposeDraftDTO | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() send = new EventEmitter<EmailData>();
   @Output() saveDraft = new EventEmitter<void>();
@@ -80,7 +91,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     private auth: AuthService,
-    private emailHandler: EmailHandler,
+    private emailHandler: EmailHandler
   ) {}
 
   // Priority mapping
@@ -107,8 +118,34 @@ export class ComposeEmail implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.draft) {
+      this.to = this.draft.to || [];
+      this.cc = this.draft.cc || [];
+      this.bcc = this.draft.bcc || [];
+      this.subject = this.draft.subject || '';
+      this.body = this.draft.body || '';
+      if (this.draft.attachments) {
+        // Create File objects for the UI
+        this.attachments = this.draft.attachments.map(
+          (att) => new File([], att.name, { type: att.type })
+        );
+
+        // Store the backend IDs separately
+        this.attachmentIds = this.draft.attachments.map((att) => att.id);
+      } else {
+        this.attachments = [];
+        this.attachmentIds = [];
+      }
+
+      this.priority = this.draft.priority?.toString() || '2';
+      this.draftId = this.draft.draftId || null;
+      this.autoSaveInterval = setInterval(() => this.performAutoSave(), 3000);
+    }
+
     if (this.draftId) {
       console.log('already created' + this.draftId);
+      console.log(this.draft);
+      
       return;
     }
 
@@ -323,7 +360,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
   // --- Attachments ---
   handleFileChange(event: Event) {
     if (!this.draftId) {
-      this.addMessage('Please wait for draft to be created', "error");
+      this.addMessage('Please wait for draft to be created', 'error');
       return;
     }
     const input = event.target as HTMLInputElement;
@@ -334,7 +371,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     const uniqueFiles = newFiles.filter((f) => {
       const key = `${f.name}-${f.size}`;
       if (existingKeys.has(key)) {
-        this.addMessage(`File already attached: ${f.name}`, "error");
+        this.addMessage(`File already attached: ${f.name}`, 'error');
         return false;
       }
       existingKeys.add(key);
@@ -358,21 +395,21 @@ export class ComposeEmail implements OnInit, OnDestroy {
         next: () => {
           this.attachments.splice(index, 1);
           this.attachmentIds.splice(index, 1);
-          console.log("deleted");
-          
-          this.addMessage(`${file.name} removed`, "success");
-          this.cdr.detectChanges(); 
+          console.log('deleted');
+
+          this.addMessage(`${file.name} removed`, 'success');
+          this.cdr.detectChanges();
         },
         error: (err: any) => {
           console.error('Delete failed:', err);
-          this.addMessage(`Failed to remove ${file.name}`, "error");
+          this.addMessage(`Failed to remove ${file.name}`, 'error');
         },
       });
     } else {
       // Just remove from both arrays if not uploaded yet
       this.attachments.splice(index, 1);
       this.attachmentIds.splice(index, 1);
-      this.addMessage(`${file.name} removed`, "success");
+      this.addMessage(`${file.name} removed`, 'success');
     }
   }
 
@@ -392,16 +429,15 @@ export class ComposeEmail implements OnInit, OnDestroy {
         console.log('File uploaded successfully:', response);
         // Store backend attachment ID at the same index
         this.attachmentIds[fileIndex] = response.id;
-        this.addMessage(`${file.name} uploaded successfully`, "success");
-        this.cdr.detectChanges(); 
-        
+        this.addMessage(`${file.name} uploaded successfully`, 'success');
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('Upload failed:', err);
         // Remove failed upload from both arrays
         this.attachments.splice(fileIndex, 1);
         this.attachmentIds.splice(fileIndex, 1);
-        this.addMessage(`Failed to upload ${file.name}`, "error");
+        this.addMessage(`Failed to upload ${file.name}`, 'error');
       },
     });
   }
@@ -417,7 +453,7 @@ export class ComposeEmail implements OnInit, OnDestroy {
     this.senderId = userId;
 
     const data: EmailData = {
-      draftId: this.draftId,  // Include draft ID so backend uses existing draft
+      draftId: this.draftId, // Include draft ID so backend uses existing draft
       senderId: this.senderId,
       to: this.to.map((r) => r.email),
       cc: this.cc.map((r) => r.email),
@@ -464,16 +500,15 @@ export class ComposeEmail implements OnInit, OnDestroy {
 
   // --- Utilities ---
   addMessage(text: string, type: 'success' | 'error' = 'error') {
-  const id = this.duplicateMessageIdCounter++;
-  this.duplicateMessages.push({ text, id, type });
-  this.cdr.detectChanges();
-
-  setTimeout(() => {
-    this.duplicateMessages = [];
+    const id = this.duplicateMessageIdCounter++;
+    this.duplicateMessages.push({ text, id, type });
     this.cdr.detectChanges();
-  }, 3000);
-}
 
+    setTimeout(() => {
+      this.duplicateMessages = [];
+      this.cdr.detectChanges();
+    }, 3000);
+  }
 
   formatFileSize(bytes: number) {
     if (bytes < 1024) return `${bytes} B`;

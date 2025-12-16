@@ -41,7 +41,7 @@
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   color: hsl(var(--muted-foreground));
   width: 1rem;
@@ -49,10 +49,10 @@
 }
 
 .search-input {
-  width: 100%;
+  width: 90%;
   height: 2.5rem;
   padding-left: 2.5rem;
-  padding-right: 0.75rem;
+  /* padding-right: 0.75rem; */
   border: 1px solid hsl(var(--input));
   border-radius: 0.375rem;
   background-color: hsl(var(--background));

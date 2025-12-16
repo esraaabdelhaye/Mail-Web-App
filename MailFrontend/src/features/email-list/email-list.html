@@ -211,3 +211,10 @@
   </div>
   }
 </div>
+
+@if (emailHandler.isComposeOpen()) {
+  <app-compose-email
+    [draft]="emailHandler.composeDraft()"
+    (close)="emailHandler.isComposeOpen.set(false)"
+  ></app-compose-email>
+}

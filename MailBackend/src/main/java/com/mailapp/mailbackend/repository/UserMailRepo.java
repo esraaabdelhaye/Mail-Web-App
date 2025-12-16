@@ -26,4 +26,6 @@ public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     Optional<UserMail> findUserMailByMail(Mail mail);
 
     Optional<UserMail> findByMailAndUserAndFolder(Mail mail, User user, Folder folder);
+
+    Long countByUserAndFolder(User user, Folder folder);
 }

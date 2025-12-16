@@ -1,9 +1,7 @@
 package com.mailapp.mailbackend.service.Mail;
 
 
-import com.mailapp.mailbackend.dto.DraftDTO;
-import com.mailapp.mailbackend.dto.MainMapper;
-import com.mailapp.mailbackend.dto.RecipientDTO;
+import com.mailapp.mailbackend.dto.*;
 import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.enums.Priority;
 import com.mailapp.mailbackend.enums.ReceiverType;
@@ -15,12 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -111,6 +111,62 @@ public class DraftService {
             return false; // Not found, so it's invalid
         }
     }
+
+    @Transactional(readOnly = true)
+    public ComposeDraftDTO getDraftForCompose(Long draftId) {
+        System.out.println(draftId);
+        UserMail userMail = userMailRepo.findById(draftId).orElseThrow();
+        Mail draft =  userMail.getMail();
+
+        System.out.printf("subject" + draft.getSubject());
+        System.out.println("did you get here?");
+        ComposeDraftDTO dto = new ComposeDraftDTO();
+        dto.setDraftId(draft.getId());
+        dto.setSubject(draft.getSubject());
+        dto.setBody(draft.getBody());
+        dto.setPriority(draft.getPriority());
+        dto.setTo(toRecipientDTOList(draft, "to"));
+        dto.setCc(toRecipientDTOList(draft, "cc"));
+        dto.setBcc(toRecipientDTOList(draft, "bcc"));
+        List<Attachment> attachments = attachmentRepo.findByMailId(draft.getId());
+        List<AttachmentDTO> attachmentDTOs = attachments.stream()
+                .map(att -> new AttachmentDTO(
+                        att.getId().toString(),
+                        att.getOriginalFileName(),
+                        att.getFileSize() != null ? att.getFileSize().toString() : "0",
+                        att.getFileType()
+                ))
+                .toList();
+        dto.setAttachments(attachmentDTOs);
+
+        System.out.println("Draft: " + draft);
+        System.out.println("Subject: " + draft.getSubject());
+        System.out.println("Body: " + draft.getBody());
+        System.out.println("To: " + dto.getTo());
+        System.out.println("Cc: " + dto.getCc());
+        System.out.println("Bcc: " + dto.getBcc());
+        System.out.println("Attachments: " + attachmentDTOs);
+
+        return dto;
+    }
+
+    private List<RecipientComposeDTO> toRecipientDTOList(Mail mail, String type) {
+        List<MailReceiver> receivers = mailReceiverRepo.findByMailId(mail.getId());
+
+        return receivers.stream()
+                .filter(r -> r.getReceiverType().name().equalsIgnoreCase(type))
+                .map(r -> {
+                    RecipientComposeDTO dto = new RecipientComposeDTO();
+                    dto.setId(r.getId());
+                    dto.setEmail(r.getReceiver().getEmail()); // assuming User has getEmail()
+                    dto.setType(r.getReceiverType().name());
+                    return dto;
+                })
+                .toList();
+    }
+
+
+
 
 //    public void addAttachmentToDraft(Long draftId, MultipartFile file) {
 //        Mail mail = mailRepo.findById(draftId)
