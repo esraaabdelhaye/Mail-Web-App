@@ -225,6 +225,11 @@ export class EmailHandler {
     this.currentFolderName.set(folderName);
     this.auth.setCurrentFolder(folderName);
 
+    this.emailListComp.searchQuery.set('');
+  this.emailListComp.isSearchMode.set(false);
+  this.emailListComp.sortBy.set('DATE_DESC');
+
+
     if (this.emailListComp && folderName !== 'Inbox') {
     this.emailListComp.viewMode.set('default');
   }

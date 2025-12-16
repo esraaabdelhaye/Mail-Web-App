@@ -173,9 +173,8 @@ export class EmailListComponent implements OnInit {
   // }
 
   priorityChanged() {
-    if (this.searchQuery() == '') {
-      this.fetchMail();
-    } else this.onSearchChange(this.searchQuery());
+    this.currentPage.set(1);
+  this.fetchMail();
   }
 
   public fetchMail(isRefresh: boolean = false): void {
@@ -205,28 +204,28 @@ export class EmailListComponent implements OnInit {
       // sortDirection: 'desc',
     };
 
-    this.emailHandler.getMailPage(request).subscribe({
-      next: (data) => {
-        // Set the main page data
-        this.emailPage.set(data);
-        console.log('here emails: ', data.content);
-        this.paginatedEmails.set(data.content);
+    const observable = this.isSearchMode()
+    ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
+    : this.emailHandler.getMailPage(request);
 
-        this.currentPage.set(data.currentPage + 1);
-        this.isFirst.set(data.isFirst);
-        this.isLast.set(data.isLast);
+    observable.subscribe({
+    next: (data) => {
+      this.emailPage.set(data);
+      this.paginatedEmails.set(data.content);
+      this.currentPage.set(data.currentPage + 1);
+      this.isFirst.set(data.isFirst);
+      this.isLast.set(data.isLast);
+      this.isLoading.set(false);
+      this.isRefreshing.set(false);
 
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-
-        this.emailHandler.loadFolderCounts();
-      },
-      error: (err) => {
-        console.error('Failed to load emails:', err);
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-      },
-    });
+      this.emailHandler.loadFolderCounts();
+    },
+    error: (err) => {
+      console.error('Failed to load emails:', err);
+      this.isLoading.set(false);
+      this.isRefreshing.set(false);
+    },
+  });
   }
 
   setViewMode(mode: 'default' | 'priority') {
@@ -282,7 +281,8 @@ export class EmailListComponent implements OnInit {
   handleAdvancedSearch(request: SearchRequestDTO) {
     this.isLoading.set(true);
     this.paginatedEmails.set([]);
-    this.isSearchMode;
+    // this.isSearchMode.set(true);
+
 
     this.emailHandler.doAdvancedSearch(request).subscribe({
       next: (data) => {
@@ -349,38 +349,28 @@ export class EmailListComponent implements OnInit {
 
   // Quick Search
   onSearchChange(query: string) {
-    if (this.isSearchMode()) return;
-    const apiPage = this.currentPage() - 1;
-    const userId = this.authService.getCurrentUserId();
-
-    const request: PaginationRequest = {
-      userId: Number(userId),
-      folderName: this.emailHandler.currentFolderName(),
-      page: apiPage,
-      size: this.itemsPerPage(),
-      sortBy: this.viewMode() ? "PRIORITY" : this.sortBy(),
-    };
-
-    this.emailHandler.getQuickSearchResults(request, query).subscribe({
-      next: (data) => {
-        this.emailPage.set(data);
-        console.log('here are the search results ', data.content);
-        this.paginatedEmails.set(data.content);
-
-        this.currentPage.set(data.currentPage + 1);
-        this.isFirst.set(data.isFirst);
-        this.isLast.set(data.isLast);
-
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to search emails:', err);
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-      },
-    });
+    this.searchQuery.set(query);
+  
   }
+
+  onSearchEnter() {
+  const query = this.searchQuery().trim();
+
+  // If search box is empty → exit search mode
+  if (!query) {
+    this.isSearchMode.set(false);
+    this.currentPage.set(1);
+    this.fetchMail();
+    return;
+  }
+
+  // Enter search mode
+  this.isSearchMode.set(true);
+  this.currentPage.set(1);
+
+  this.fetchMail(); // pagination-safe
+}
+
 
   // --- UTILITIES (Referenced in HTML) ---
 

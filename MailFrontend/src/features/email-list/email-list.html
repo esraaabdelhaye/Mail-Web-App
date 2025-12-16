@@ -9,8 +9,9 @@
         <input
           type="text"
           placeholder="Search emails..."
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearchChange($event)"
+          [ngModel]="searchQuery()"
+  (ngModelChange)="onSearchChange($event)"
+  (keydown.enter)="onSearchEnter()"
           class="search-input"
         />
 
