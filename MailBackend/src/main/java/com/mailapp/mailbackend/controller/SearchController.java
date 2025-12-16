@@ -22,9 +22,12 @@ public class SearchController {
     public ResponseEntity<MailPageDTO> quickSearch(
             @RequestParam Long userId,
             @RequestParam String q,
-            @PageableDefault(size = 20, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "Inbox") String folderName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "DATE_DESC") String sortBy
     ) {
-        MailPageDTO results = emailSearchService.quickSearch(userId, q, pageable);
+        MailPageDTO results = emailSearchService.quickSearch(userId, folderName, q, page, size, sortBy);
         return ResponseEntity.ok(results);
     }
 
@@ -32,9 +35,11 @@ public class SearchController {
     public ResponseEntity<MailPageDTO> advancedSearch(
             @RequestParam Long userId,
             @RequestBody SearchCriteria criteria,
-            @PageableDefault(size = 20, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "DATE_DESC") String sortBy
     ) {
-        MailPageDTO results = emailSearchService.advancedSearch(userId, criteria, pageable);
+        MailPageDTO results = emailSearchService.advancedSearch(userId,page, size, sortBy, criteria);
         return ResponseEntity.ok(results);
     }
 }

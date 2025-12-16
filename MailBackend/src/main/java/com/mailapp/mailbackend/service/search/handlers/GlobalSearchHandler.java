@@ -56,7 +56,7 @@ public class GlobalSearchHandler extends SearchHandler {
                 subjectPredicate,
                 bodyPredicate
         );
-
+        System.out.println("global search succeeded: "+ globalPredicate);
         predicates.add(globalPredicate);
     }
 }

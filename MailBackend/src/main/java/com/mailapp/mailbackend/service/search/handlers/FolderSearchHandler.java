@@ -29,7 +29,7 @@ public class FolderSearchHandler extends SearchHandler {
                 folderJoin.get("folderName"),
                 criteria.getFolder()
         );
-
+        System.out.println("searching folder: " + criteria.getFolder());
         predicates.add(predicate);
     }
 }

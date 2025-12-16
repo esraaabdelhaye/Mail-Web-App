@@ -31,7 +31,7 @@ public class FromSearchHandler extends SearchHandler {
                 cb.lower(senderJoin.get("email")),
                 fromTerm
         );
-
+        System.out.println("from search succeeded: ");
         predicates.add(predicate);
     }
 }
