@@ -22,7 +22,8 @@
       </div>
 
       <!-- Sort Dropdown (Native) -->
-      <select [(ngModel)]="sortBy" class="sort-select" (change)="priorityChanged()">
+       @if(viewMode() === 'default')
+     { <select [(ngModel)]="sortBy" class="sort-select" (change)="priorityChanged()">
         <option selected value="DATE_DESC">DATE_DESC</option>
         <option value="DATE_ASC">DATE_ASC</option>
         <option value="PRIORITY">PRIORITY</option>
@@ -30,7 +31,7 @@
         <option value="UNREAD_FIRST">UNREAD_FIRST</option>
         <option value="SUBJECT">SUBJECT</option>
         <option value="BODY">BODY</option>
-      </select>
+      </select>}
 
       <!-- Refresh Button -->
       <button
@@ -43,12 +44,13 @@
         <lucide-icon [img]="icons.RefreshCw" [class.spin]="isRefreshing()"></lucide-icon>
       </button>
 
+      @if(isInbox()) {
       <!-- View Mode Toggle -->
       <div class="view-toggle">
         <button
           class="toggle-btn"
           [class.active]="viewMode() === 'default'"
-          (click)="viewMode.set('default')"
+          (click)="setViewMode('default')"
           title="Default View"
         >
           <lucide-icon [img]="icons.LayoutList" size="16"></lucide-icon>
@@ -56,12 +58,13 @@
         <button
           class="toggle-btn"
           [class.active]="viewMode() === 'priority'"
-          (click)="viewMode.set('priority')"
+          (click)="setViewMode('priority')"
           title="Priority View"
         >
           <lucide-icon [img]="icons.LayoutGrid" size="16"></lucide-icon>
         </button>
       </div>
+      }
     </div>
 
     <!-- Bulk Actions (Conditional) -->
