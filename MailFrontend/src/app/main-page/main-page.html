@@ -1,6 +1,10 @@
 <div class="app-container">
   <!-- The left side bar-->
-  <app-email-sidebar (contactsClick)="isContactsOpen.set(true)"></app-email-sidebar>
+  <app-email-sidebar 
+    [isContactsOpen]="isContactsOpen()"
+    (contactsClick)="isContactsOpen.set(true)"
+    (folderClick)="isContactsOpen.set(false)"
+  ></app-email-sidebar>
 
   <main class="main-content">
     <app-email-list [style.display]="emailList?.selectedEmailId() !== null || isContactsOpen() ? 'none' : 'block'"></app-email-list>

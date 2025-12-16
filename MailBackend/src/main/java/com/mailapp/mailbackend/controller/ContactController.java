@@ -18,8 +18,11 @@ public class ContactController {
 
 
     @GetMapping
-    public List<ContactDTO> getContacts(@RequestParam Long userId) {
-        return contactService.getContacts(userId);
+    public List<ContactDTO> getContacts(
+            @RequestParam Long userId,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder) {
+        return contactService.getContacts(userId, sortBy, sortOrder);
     }
 
 

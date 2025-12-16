@@ -19,10 +19,19 @@
           class="search-input"
         />
       </div>
-      <!-- <button app-button (click)="searchContacts()">
-        <lucide-icon [img]="icons.Search" class="mr-2"></lucide-icon>
-        Search
-      </button> -->
+
+      <!-- Sort Dropdown -->
+      <div class="sort-controls">
+        <select [(ngModel)]="sortBy" class="sort-select" (change)="onSortChange()">
+          <option value="name">Sort by Name</option>
+          <option value="email">Sort by Email</option>
+        </select>
+        <select [(ngModel)]="sortOrder" class="sort-select" (change)="onSortChange()">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+
       <button app-button (click)="openModal()">
         <lucide-icon [img]="icons.Plus" class="mr-2"></lucide-icon>
         Add Contact

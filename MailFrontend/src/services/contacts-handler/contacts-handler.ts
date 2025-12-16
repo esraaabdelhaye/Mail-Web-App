@@ -21,13 +21,24 @@ export class ContactsHandler {
   // UI State for Search (keep it here or in component, up to you)
   readonly searchQuery = signal('');
 
+  // Store current sort settings
+  private currentSortBy: string = 'name';
+  private currentSortOrder: string = 'asc';
+
   // --- ACTIONS ---
 
-  loadContacts() {
+  loadContacts(sortBy: string = 'name', sortOrder: string = 'asc') {
     console.log('Loading contacts...');
     const userId = this.auth.getCurrentUserId();
 
-    const params = new HttpParams().set('userId', userId!);
+    // Store the current sort settings
+    this.currentSortBy = sortBy;
+    this.currentSortOrder = sortOrder;
+
+    let params = new HttpParams()
+      .set('userId', userId!)
+      .set('sortBy', sortBy)
+      .set('sortOrder', sortOrder);
 
     this.http.get<Contact[]>(this.baseURL, { params }).subscribe({
       next: (data) => this.contacts.set(data),
@@ -51,7 +62,8 @@ export class ContactsHandler {
 
     this.http.post<Contact>(this.baseURL, dto, { params }).subscribe({
       next: (newContact) => {
-        this.contacts.update((list) => [...list, newContact]);
+        // Reload contacts with current sort settings instead of just appending
+        this.loadContacts(this.currentSortBy, this.currentSortOrder);
       },
       error: (err) => console.error(err),
     });
@@ -69,9 +81,8 @@ export class ContactsHandler {
 
     this.http.put<Contact>(this.baseURL + `/${contact.id}`, dto, { params }).subscribe({
       next: (updatedContact) => {
-        this.contacts.update((list) =>
-          list.map((c) => (c.id === updatedContact.id ? updatedContact : c))
-        );
+        // Reload contacts with current sort settings to maintain sort order
+        this.loadContacts(this.currentSortBy, this.currentSortOrder);
       },
       error: (err) => console.error(err),
     });

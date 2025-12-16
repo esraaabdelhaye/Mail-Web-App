@@ -25,8 +25,8 @@
       @for (folder of defaultFolders(); track folder.folderID) {
       <button
         class="nav-item"
-        [class.active]="emailHandler.currentFolderName() === folder.folderName.toString()"
-        (click)="emailHandler.selectFolder(folder.folderName.toString())"
+        [class.active]="!isContactsOpen && emailHandler.currentFolderName() === folder.folderName.toString()"
+        (click)="selectFolder(folder.folderName.toString())"
       >
         <lucide-icon
           [img]="getIconForFolder(folder.folderName.toString())"
@@ -35,7 +35,7 @@
         <span class="nav-label">{{ folder.folderName }}</span>
 
         @if (getFolderCount(folder.folderID) > 0) {
-           <span class="badge" [class.active-badge]="emailHandler.currentFolderName() === folder.folderName.toString()">
+           <span class="badge" [class.active-badge]="!isContactsOpen && emailHandler.currentFolderName() === folder.folderName.toString()">
              {{ getFolderCount(folder.folderID) }}
            </span>
         }
@@ -87,14 +87,14 @@
 
           <button
             class="nav-item"
-            [class.active]="emailHandler.currentFolderName() === folder.folderName.toString()"
-            (click)="emailHandler.selectFolder(folder.folderName.toString())"
+            [class.active]="!isContactsOpen && emailHandler.currentFolderName() === folder.folderName.toString()"
+            (click)="selectFolder(folder.folderName.toString())"
           >
             <lucide-icon [img]="icons.Folder" class="nav-icon"></lucide-icon>
             <span class="nav-label">{{ folder.folderName }}</span>
             
             @if (getFolderCount(folder.folderID) > 0) {
-              <span class="badge" [class.active-badge]="emailHandler.currentFolderName() === folder.folderName.toString()">
+              <span class="badge" [class.active-badge]="!isContactsOpen && emailHandler.currentFolderName() === folder.folderName.toString()">
                 {{ getFolderCount(folder.folderID) }}
               </span>
             }
@@ -160,7 +160,7 @@
 
     <!-- Contacts Link -->
     <div class="contacts-section">
-      <button class="nav-item" (click)="contactsClick.emit()">
+      <button class="nav-item" [class.active]="isContactsOpen" (click)="contactsClick.emit()">
         <lucide-icon [img]="icons.Users" class="nav-icon"></lucide-icon>
         <span>Contacts</span>
       </button>

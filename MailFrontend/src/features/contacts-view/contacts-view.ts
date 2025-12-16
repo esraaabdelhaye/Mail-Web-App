@@ -11,6 +11,7 @@ import {
   User,
   Mail,
   ArrowLeft,
+  ArrowUpDown,
 } from 'lucide-angular';
 import { Contact } from '../../app/models/ContactDTO';
 import { ButtonComponent } from '../../shared/button/button';
@@ -27,11 +28,15 @@ export class ContactsComponent implements OnInit {
   protected contactsHandler = inject(ContactsHandler);
 
   ngOnInit(): void {
-    this.contactsHandler.loadContacts();
+    this.contactsHandler.loadContacts(this.sortBy, this.sortOrder);
   }
 
   // Outputs
   @Output() back = new EventEmitter<void>();
+
+  // Sorting State
+  sortBy: string = 'name';
+  sortOrder: string = 'asc';
 
   // Note: For Add/Edit/Delete, you might want to call a Service directly
   // if you want to avoid @Output, just like we discussed for Folders.
@@ -48,11 +53,15 @@ export class ContactsComponent implements OnInit {
   emails: string[] = [];
   emailInput = '';
 
-  readonly icons = { Search, Plus, Pencil, Trash2, X, User, Mail, ArrowLeft };
+  readonly icons = { Search, Plus, Pencil, Trash2, X, User, Mail, ArrowLeft, ArrowUpDown };
 
   onSearchChange(query: string) {
     query = query.toLowerCase();
     this.contactsHandler.search(query).subscribe();
+  }
+
+  onSortChange() {
+    this.contactsHandler.loadContacts(this.sortBy, this.sortOrder);
   }
 
   // Computed Filter

@@ -29,6 +29,7 @@
 .toolbar {
   display: flex;
   gap: 0.75rem;
+  align-items: center;
 }
 
 /* Search */
@@ -36,6 +37,29 @@
   position: relative;
   flex: 1;
   max-width: 400px;
+}
+
+/* Sort Controls */
+.sort-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-select {
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid hsl(var(--input));
+  border-radius: 0.375rem;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.sort-select:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 .search-icon {

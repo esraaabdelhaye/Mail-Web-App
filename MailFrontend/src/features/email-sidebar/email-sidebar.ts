@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, inject, computed, OnInit, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -31,6 +31,8 @@ import { AuthService } from '../../services/auth/auth-service';
 })
 export class EmailSidebarComponent implements OnInit {
   @Output() contactsClick = new EventEmitter<void>(); // Used to open the contacts-view from the main-page
+  @Output() folderClick = new EventEmitter<void>(); // Used to close contacts-view when navigating to a folder
+  @Input() isContactsOpen: boolean = false; // Track if contacts view is open
 
   protected emailHandler = inject(EmailHandler);
   protected notificationService = inject(NotificationService);
@@ -137,5 +139,10 @@ export class EmailSidebarComponent implements OnInit {
     event.stopPropagation();
     this.editingFolderId = folder.folderID.toString();
     this.editingFolderName = folder.folderName;
+  }
+
+  selectFolder(folderName: string) {
+    this.emailHandler.selectFolder(folderName);
+    this.folderClick.emit(); // Notify main page to close contacts view
   }
 }
