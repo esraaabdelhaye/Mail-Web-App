@@ -1,6 +1,8 @@
 package com.mailapp.mailbackend.repository;
 
 import com.mailapp.mailbackend.dto.SearchCriteria;
+import com.mailapp.mailbackend.entity.Mail;
+import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.entity.UserMail;
 import com.mailapp.mailbackend.service.search.handlers.SearchHandler;
 import jakarta.persistence.EntityManager;
@@ -33,6 +35,7 @@ public class EmailSearchRepository {
         CriteriaQuery<UserMail> query = cb.createQuery(UserMail.class); // Our Query Object
         Root<UserMail> root = query.from(UserMail.class); // Used to make the query sepecific to a certain user
 
+
         // These are our criteria like which folder it belongs to, does the email has attachments or not,...
         List<Predicate> predicates = new ArrayList<>();
 
@@ -48,18 +51,44 @@ public class EmailSearchRepository {
         }
 
         // Apply sorting from Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                if (order.isAscending()) {
-                    orders.add(cb.asc(root.get(order.getProperty())));
-                } else {
-                    orders.add(cb.desc(root.get(order.getProperty())));
-                }
-            });
-            query.orderBy(orders);
+        Join<UserMail, Mail> mailJoin = root.join("mail", JoinType.LEFT);
+        Join<UserMail, User> userJoin = root.join("user", JoinType.LEFT);
+
+
+        // Combine all predicates with AND
+        if (!predicates.isEmpty()) {
+            query.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
+        // Replace your snippet with this logic
+        if (pageable.getSort().isSorted()) {
+            List<Order> jpaOrders = new ArrayList<>();
+
+            pageable.getSort().forEach(order -> {
+                String property = order.getProperty();
+                Path<?> path;
+
+                // Manually resolve nested paths like "mail.subject"
+                if (property.contains(".")) {
+                    String[] parts = property.split("\\.");
+                    path = root.get(parts[0]);
+                    for (int i = 1; i < parts.length; i++) {
+                        path = path.get(parts[i]);
+                    }
+                } else {
+                    path = root.get(property);
+                }
+
+                // Convert Spring Order to JPA Order
+                if (order.isAscending()) {
+                    jpaOrders.add(cb.asc(path));
+                } else {
+                    jpaOrders.add(cb.desc(path));
+                }
+            });
+
+            query.orderBy(jpaOrders);
+        }
         // Execute query with pagination
         TypedQuery<UserMail> typedQuery = entityManager.createQuery(query);
         typedQuery.setFirstResult((int) pageable.getOffset());
