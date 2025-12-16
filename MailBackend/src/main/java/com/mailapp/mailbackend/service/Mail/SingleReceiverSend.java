@@ -29,6 +29,7 @@ public class SingleReceiverSend implements SendStrategy{
         try {
 //            mailReceiverService.save(mail, entry);
             userMailService.saveReceiverMail(mail, entry);
+            userMailService.saveSentMail(mail);
         }
         catch (Exception e){
             throw new RuntimeException("Failed to send mail: " + e.getMessage(), e);
