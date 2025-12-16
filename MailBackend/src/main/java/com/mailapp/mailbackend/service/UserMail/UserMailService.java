@@ -74,7 +74,7 @@ public class UserMailService {
     public void updateDraftInUserMail(Mail mail, int priority) {
         UserMail userMail = userMailRepo.findUserMailByMail(mail)
                 .orElseThrow(() -> new RuntimeException("usermail not found"));
-
+        System.out.println(Priority.fromValue(priority));
         userMail.setImportance(Priority.fromValue(priority));
         userMailRepo.save(userMail);
     }

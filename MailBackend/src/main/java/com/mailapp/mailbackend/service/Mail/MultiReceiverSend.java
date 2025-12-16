@@ -34,13 +34,21 @@ public class MultiReceiverSend implements SendStrategy{
         
         // Track unique recipients to avoid duplicate inbox entries
         Set<String> processedEmails = new HashSet<>();
+        // Track unique (email, type) pairs to avoid duplicate MailReceiver records
+        Set<String> processedReceiverEntries = new HashSet<>();
         
         // Process each recipient individually
         while (!queue.isEmpty()){
             ReceiverEntry entry = queue.poll();
             try {
-                // Always store recipient type (TO/CC/BCC) in MailReceiver table for display
-                mailReceiverService.save(mail, entry);
+                // Create unique key for this (email, type) combination
+                String receiverKey = entry.getReceiverEmail() + ":" + entry.getReceiverType();
+                
+                // Only store if this (email, type) pair hasn't been saved yet
+                if (!processedReceiverEntries.contains(receiverKey)) {
+                    mailReceiverService.save(mail, entry);
+                    processedReceiverEntries.add(receiverKey);
+                }
                 
                 // Only create inbox entry once per unique email address
                 if (!processedEmails.contains(entry.getReceiverEmail())) {

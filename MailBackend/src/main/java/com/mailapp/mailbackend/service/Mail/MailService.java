@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Sort;
 
@@ -100,24 +101,24 @@ public class MailService {
      * @return MailDetailsDTO containing all content and attachments.
      */
     public MailDetailsDTO getMailDetails(Long userId, Long mailId) {
-        // 1. Find the UserMail entry based on the row ID (mailId from the controller)
+        // Find the UserMail entry based on the row ID (mailId from the controller)
         UserMail userMail = userMailRepo.findById(mailId)
                 .orElseThrow(() -> new RuntimeException("Email not found for ID: " + mailId));
 
-        // 2. Optional: Security check to ensure the mail belongs to the requesting user
+        // Security check to ensure the mail belongs to the requesting user
         if (!userMail.getUser().getId().equals(userId)) {
             throw new RuntimeException("Access denied: Email does not belong to user.");
         }
 
-        // 3. Mark the email as read (synchronous update)
+        // Mark the email as read (synchronous update)
         if (userMail.getIsRead() == null || !userMail.getIsRead()) {
             userMail.setIsRead(true);
             userMailRepo.save(userMail);
         }
 
-        // 4. Map the full Mail entity to the MailDetailsDTO
-        // MapStruct should be configured to handle the nested mappings (Mail -> DTO, Attachment -> DTO).
-        MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail);
+        // Map the full Mail entity to the MailDetailsDTO
+        // Pass userId to hide BCC from recipients (only sender can see BCC)
+        MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail, userId);
 
         return dto;
     }
@@ -243,6 +244,7 @@ public class MailService {
         userMailRepo.save(userMail);
     }
 
+    @Transactional
     public void permanentlyDeleteEmails(Long userId, List<Long> userMailIds) {
         for (Long userMailId : userMailIds) {
             UserMail userMail = userMailRepo.findById(userMailId)

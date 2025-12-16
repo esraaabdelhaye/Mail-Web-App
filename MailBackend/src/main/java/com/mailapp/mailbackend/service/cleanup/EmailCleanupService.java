@@ -31,7 +31,7 @@ public class EmailCleanupService {
         log.info("Starting scheduled cleanup of old trash emails...");
 
         Calendar calendar = Calendar.getInstance();
-//        calendar.add(Calendar.MINUTE, -1);
+        //calendar.add(Calendar.MINUTE, -1);
         calendar.add(Calendar.DAY_OF_MONTH, 30);
         Date cutoffDate = calendar.getTime();
 

@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-16T14:53:56+0200",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 24.0.2 (Oracle Corporation)"
+    date = "2025-12-16T14:32:52+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 23.0.2 (Oracle Corporation)"
 )
 @Component
 public class MainMapperImpl extends MainMapper {
@@ -89,27 +89,28 @@ public class MainMapperImpl extends MainMapper {
     }
 
     @Override
-    public MailDetailsDTO toDetailedEmailDTO(UserMail userMail) {
-        if ( userMail == null ) {
+    public MailDetailsDTO toDetailedEmailDTO(UserMail userMail, Long userId) {
+        if ( userMail == null && userId == null ) {
             return null;
         }
 
         MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
 
-        mailDetailsDTO.id = userMail.getId();
-        mailDetailsDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
-        mailDetailsDTO.subject = userMailMailSubject( userMail );
-        mailDetailsDTO.body = userMailMailBody( userMail );
-        if ( userMail.getIsRead() != null ) {
-            mailDetailsDTO.isRead = userMail.getIsRead();
+        if ( userMail != null ) {
+            mailDetailsDTO.id = userMail.getId();
+            mailDetailsDTO.sender = toSenderDTO( userMailMailSender( userMail ) );
+            mailDetailsDTO.subject = userMailMailSubject( userMail );
+            mailDetailsDTO.body = userMailMailBody( userMail );
+            if ( userMail.getIsRead() != null ) {
+                mailDetailsDTO.isRead = userMail.getIsRead();
+            }
+            mailDetailsDTO.priority = map( userMail.getImportance() );
+            mailDetailsDTO.folder = userMailFolderFolderName( userMail );
         }
-        mailDetailsDTO.priority = map( userMail.getImportance() );
-        mailDetailsDTO.folder = userMailFolderFolderName( userMail );
-
         mailDetailsDTO.sentAt = userMail.getSentAt() != null ? userMail.getSentAt() : userMail.getMail().getUpdatedAt();
         mailDetailsDTO.to = mapReceivers(userMail.getMail());
         mailDetailsDTO.cc = mapCcReceivers(userMail.getMail());
-        mailDetailsDTO.bcc = mapBccReceivers(userMail.getMail());
+        mailDetailsDTO.bcc = mapBccReceivers(userMail.getMail(), userId);
         mailDetailsDTO.attachments = mapAttachments(userMail.getMail());
 
         return mailDetailsDTO;
