@@ -10,6 +10,7 @@
           type="text"
           placeholder="Search emails..."
           [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
           class="search-input"
         />
 
@@ -213,8 +214,8 @@
 </div>
 
 @if (emailHandler.isComposeOpen()) {
-  <app-compose-email
-    [draft]="emailHandler.composeDraft()"
-    (close)="emailHandler.isComposeOpen.set(false)"
-  ></app-compose-email>
+<app-compose-email
+  [draft]="emailHandler.composeDraft()"
+  (close)="emailHandler.isComposeOpen.set(false)"
+></app-compose-email>
 }

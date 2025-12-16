@@ -1,5 +1,4 @@
 <div class="contacts-container">
-
   <!-- Header -->
   <div class="header">
     <div class="top-row">
@@ -15,9 +14,15 @@
         <input
           type="text"
           [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
           placeholder="Search contacts..."
-          class="search-input">
+          class="search-input"
+        />
       </div>
+      <!-- <button app-button (click)="searchContacts()">
+        <lucide-icon [img]="icons.Search" class="mr-2"></lucide-icon>
+        Search
+      </button> -->
       <button app-button (click)="openModal()">
         <lucide-icon [img]="icons.Plus" class="mr-2"></lucide-icon>
         Add Contact
@@ -27,100 +32,101 @@
 
   <!-- Contact List -->
   <div class="list-area">
-
     @if (filteredContacts.length === 0) {
-      <div class="empty-state">
-        <lucide-icon [img]="icons.User" size="48" class="empty-icon"></lucide-icon>
-        <h3>No contacts found</h3>
-        <p>Add a new contact to get started</p>
-      </div>
+    <div class="empty-state">
+      <lucide-icon [img]="icons.User" size="48" class="empty-icon"></lucide-icon>
+      <h3>No contacts found</h3>
+      <p>Add a new contact to get started</p>
+    </div>
     } @else {
-      <div class="contact-list">
-        @for (contact of filteredContacts; track contact.id) {
-          <div class="contact-card group">
+    <div class="contact-list">
+      @for (contact of filteredContacts; track contact.id) {
+      <div class="contact-card group">
+        <!-- Avatar -->
+        <div class="avatar">
+          {{ contact.name.charAt(0) }}
+        </div>
 
-            <!-- Avatar -->
-            <div class="avatar">
-              {{ contact.name.charAt(0) }}
-            </div>
-
-            <!-- Info -->
-            <div class="info">
-              <div class="name">{{ contact.name }}</div>
-              <div class="emails">
-                @for (email of contact.emails; track email) {
-                  <span class="email-badge">
-                    <lucide-icon [img]="icons.Mail" size="12" class="mr-1"></lucide-icon>
-                    {{ email }}
-                  </span>
-                }
-              </div>
-            </div>
-
-            <!-- Actions (Show on Hover) -->
-            <div class="actions">
-              <button app-button variant="ghost" size="icon" (click)="openModal(contact)">
-                <lucide-icon [img]="icons.Pencil"></lucide-icon>
-              </button>
-              <button app-button variant="ghost" size="icon" class="delete-btn" (click)="this.contactsHandler.deleteContact(contact.id)">
-                <lucide-icon [img]="icons.Trash2"></lucide-icon>
-              </button>
-            </div>
-
+        <!-- Info -->
+        <div class="info">
+          <div class="name">{{ contact.name }}</div>
+          <div class="emails">
+            @for (email of contact.emails; track email) {
+            <span class="email-badge">
+              <lucide-icon [img]="icons.Mail" size="12" class="mr-1"></lucide-icon>
+              {{ email }}
+            </span>
+            }
           </div>
-        }
+        </div>
+
+        <!-- Actions (Show on Hover) -->
+        <div class="actions">
+          <button app-button variant="ghost" size="icon" (click)="openModal(contact)">
+            <lucide-icon [img]="icons.Pencil"></lucide-icon>
+          </button>
+          <button
+            app-button
+            variant="ghost"
+            size="icon"
+            class="delete-btn"
+            (click)="this.contactsHandler.deleteContact(contact.id)"
+          >
+            <lucide-icon [img]="icons.Trash2"></lucide-icon>
+          </button>
+        </div>
       </div>
+      }
+    </div>
     }
   </div>
 
   <!-- Modal Overlay -->
   @if (isModalOpen) {
-    <div class="modal-overlay" (click)="closeModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingContact ? 'Edit Contact' : 'Add Contact' }}</h3>
+      </div>
 
-        <div class="modal-header">
-          <h3>{{ editingContact ? 'Edit Contact' : 'Add Contact' }}</h3>
+      <div class="modal-body">
+        <!-- Name Input -->
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="name" placeholder="Enter name..." class="form-input" />
         </div>
 
-        <div class="modal-body">
-          <!-- Name Input -->
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" [(ngModel)]="name" placeholder="Enter name..." class="form-input">
+        <!-- Emails Input -->
+        <div class="form-group">
+          <label>Email Addresses</label>
+          <div class="emails-input-container">
+            @for (email of emails; track email) {
+            <span class="email-chip">
+              {{ email }}
+              <button (click)="removeEmail(email)" class="remove-chip">
+                <lucide-icon [img]="icons.X" size="12"></lucide-icon>
+              </button>
+            </span>
+            }
+            <input
+              type="email"
+              [(ngModel)]="emailInput"
+              (keydown)="addEmail($event)"
+              placeholder="Add email..."
+              class="invisible-input"
+            />
           </div>
-
-          <!-- Emails Input -->
-          <div class="form-group">
-            <label>Email Addresses</label>
-            <div class="emails-input-container">
-              @for (email of emails; track email) {
-                <span class="email-chip">
-                  {{ email }}
-                  <button (click)="removeEmail(email)" class="remove-chip">
-                    <lucide-icon [img]="icons.X" size="12"></lucide-icon>
-                  </button>
-                </span>
-              }
-              <input
-                type="email"
-                [(ngModel)]="emailInput"
-                (keydown)="addEmail($event)"
-                placeholder="Add email..."
-                class="invisible-input">
-            </div>
-            <p class="hint">Press Enter to add multiple emails</p>
-          </div>
+          <p class="hint">Press Enter to add multiple emails</p>
         </div>
+      </div>
 
-        <div class="modal-footer">
-          <button app-button variant="outline" (click)="closeModal()">Cancel</button>
-          <button app-button (click)="save()" [disabled]="!name.trim() || emails.length === 0">
-            {{ editingContact ? 'Save Changes' : 'Add Contact' }}
-          </button>
-        </div>
-
+      <div class="modal-footer">
+        <button app-button variant="outline" (click)="closeModal()">Cancel</button>
+        <button app-button (click)="save()" [disabled]="!name.trim() || emails.length === 0">
+          {{ editingContact ? 'Save Changes' : 'Add Contact' }}
+        </button>
       </div>
     </div>
+  </div>
   }
-
 </div>

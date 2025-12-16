@@ -56,20 +56,17 @@ export class EmailHandler {
 
   getDraftForCompose(draftId: number): Observable<ComposeDraftDTO> {
     const userId = this.auth.getCurrentUserId();
-    if (!userId) throw new Error("User not logged in");
+    if (!userId) throw new Error('User not logged in');
 
     // let params = new HttpParams().set('userId', userId);
 
-    return this.http.get<ComposeDraftDTO>(
-      `${this.apiUrl}/email/draft/compose/${draftId}`
-    );
+    return this.http.get<ComposeDraftDTO>(`${this.apiUrl}/email/draft/compose/${draftId}`);
   }
 
   openComposeWithDraft(draft: ComposeDraftDTO) {
-  this.composeDraft.set(draft);
+    this.composeDraft.set(draft);
     this.isComposeOpen.set(true);
-}
-
+  }
 
   doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
     let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);
@@ -141,9 +138,6 @@ export class EmailHandler {
   //   return this.emails().filter((e) => e.folder === folderId);
   // });
 
-
-
-
   // Attachment actions
   uploadAttachment(mailId: number, file: File): Observable<any> {
     const formData = new FormData();
@@ -162,8 +156,9 @@ export class EmailHandler {
   }
 
   deleteAttachment(attachmentId: number): Observable<string> {
-    return this.http.delete<string>(`${this.apiUrl}/attachments/${attachmentId}`,
-      { responseType: 'text' as 'json' });
+    return this.http.delete<string>(`${this.apiUrl}/attachments/${attachmentId}`, {
+      responseType: 'text' as 'json',
+    });
   }
 
   // --------------------- Folder actions ----------------------
@@ -222,6 +217,7 @@ export class EmailHandler {
 
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
+    this.auth.setCurrentFolder(folderName);
     if (this.emailListComp != null) {
       this.emailListComp.fetchMail();
     }
@@ -317,7 +313,22 @@ export class EmailHandler {
     });
   }
 
-  //   // markAsRead(id: string) {
-  //   //   this.emails.update((list) => list.map((e) => (e.id === id ? { ...e, isRead: true } : e)));
-  //   // }
+  /// quick search
+
+  getQuickSearchResults(request: PaginationRequest, query: string): Observable<EmailPageDTO> {
+    // 1. Construct HttpParams from the request object
+    let params = new HttpParams()
+      .set('userId', request.userId)
+      .set('q', query)
+      .set('folderName', request.folderName)
+      .set('page', request.page.toString())
+      .set('size', request.size.toString());
+
+    if (request.sortBy) {
+      params = params.set('sortBy', `${request.sortBy}`);
+    }
+    console.log(params);
+
+    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
+  }
 }

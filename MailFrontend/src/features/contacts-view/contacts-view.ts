@@ -1,22 +1,30 @@
-import {Component, EventEmitter, inject, Input, OnInit, Output, signal} from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, Plus, Pencil, Trash2, X, User, Mail, ArrowLeft } from 'lucide-angular';
-import {Contact} from '../../app/models/ContactDTO';
-import {ButtonComponent} from '../../shared/button/button';
-import {ContactsHandler} from '../../services/contacts-handler/contacts-handler';
-
+import {
+  LucideAngularModule,
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  User,
+  Mail,
+  ArrowLeft,
+} from 'lucide-angular';
+import { Contact } from '../../app/models/ContactDTO';
+import { ButtonComponent } from '../../shared/button/button';
+import { ContactsHandler } from '../../services/contacts-handler/contacts-handler';
 
 @Component({
   selector: 'app-contacts',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent],
   templateUrl: './contacts-view.html',
-  styleUrls: ['./contacts-view.css']
+  styleUrls: ['./contacts-view.css'],
 })
-export class ContactsComponent implements OnInit{
+export class ContactsComponent implements OnInit {
   protected contactsHandler = inject(ContactsHandler);
-
 
   ngOnInit(): void {
     this.contactsHandler.loadContacts();
@@ -30,7 +38,6 @@ export class ContactsComponent implements OnInit{
   // For now, I will keep them as Outputs to match your request "unless needed",
   // but feel free to inject ContactService here!
 
-
   // State
   searchQuery = '';
   isModalOpen = false;
@@ -43,16 +50,15 @@ export class ContactsComponent implements OnInit{
 
   readonly icons = { Search, Plus, Pencil, Trash2, X, User, Mail, ArrowLeft };
 
-  // Computed Filter
-  get filteredContacts(): Contact[] {
-    const query = this.searchQuery.toLowerCase();
-    return this.contactsHandler.contacts().filter(contact =>
-      contact.name.toLowerCase().includes(query) ||
-      contact.emails.some(e => e.toLowerCase().includes(query))
-    );
+  onSearchChange(query: string) {
+    query = query.toLowerCase();
+    this.contactsHandler.search(query).subscribe();
   }
 
-  // --- Modal Actions ---
+  // Computed Filter
+  get filteredContacts(): Contact[] {
+    return this.contactsHandler.contacts();
+  }
 
   openModal(contact?: Contact) {
     // When editing a contact
@@ -80,7 +86,6 @@ export class ContactsComponent implements OnInit{
 
   // --- Form Actions ---
 
-
   // This probably still needs validation before accepting the email
   addEmail(event: Event) {
     const e = event as KeyboardEvent;
@@ -96,7 +101,7 @@ export class ContactsComponent implements OnInit{
   }
 
   removeEmail(email: string) {
-    this.emails = this.emails.filter(e => e !== email);
+    this.emails = this.emails.filter((e) => e !== email);
   }
 
   save() {
@@ -105,10 +110,14 @@ export class ContactsComponent implements OnInit{
     const contactData = { name: this.name.trim(), emails: this.emails };
 
     if (this.editingContact) {
-      this.contactsHandler.editContact( {...this.editingContact, emails: this.emails}, this.name );
+      this.contactsHandler.editContact({ ...this.editingContact, emails: this.emails }, this.name);
     } else {
       this.contactsHandler.addContact(contactData.name, contactData.emails);
     }
     this.closeModal();
+  }
+
+  searchContacts() {
+    this.contactsHandler.search(this.searchQuery);
   }
 }

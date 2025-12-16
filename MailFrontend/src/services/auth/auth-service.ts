@@ -13,6 +13,7 @@ export class AuthService {
   private readonly USER_ID_KEY = 'current_user_id';
   private readonly USER_NAME_KEY = 'current_user_name';
   private readonly USER_EMAIL_KEY = 'current_user_email';
+  private readonly CURRENT_FOLDER_NAME = 'current_folder_name';
 
   constructor() {
     // Attempt to load user data/ID from storage on service creation
@@ -43,6 +44,7 @@ export class AuthService {
     sessionStorage.removeItem(this.USER_ID_KEY);
     sessionStorage.removeItem(this.USER_EMAIL_KEY);
     sessionStorage.removeItem(this.USER_NAME_KEY);
+    sessionStorage.removeItem(this.CURRENT_FOLDER_NAME);
   }
 
   // Called by other services (like MailService) to get the necessary ID
@@ -64,5 +66,13 @@ export class AuthService {
 
   public isAuthenticated(): boolean {
     return !!sessionStorage.getItem(this.TOKEN_KEY);
+  }
+
+  public setCurrentFolder(folderName: string) {
+    sessionStorage.setItem(this.CURRENT_FOLDER_NAME, folderName);
+  }
+
+  public getCurrentFolderName() {
+    return sessionStorage.getItem(this.CURRENT_FOLDER_NAME);
   }
 }

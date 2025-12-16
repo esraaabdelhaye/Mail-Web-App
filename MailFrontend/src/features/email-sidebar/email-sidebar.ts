@@ -77,17 +77,6 @@ export class EmailSidebarComponent implements OnInit {
     return this.emailHandler.folderCounts()[folderId] || 0;
   }
 
-  private readonly USER_AVATAR_KEY = 'current_user_avatar_url';
-
-  // ... in saveAuthData()
-  public saveAuthData(loginResponse: any): void {
-    // ... existing code ...
-    sessionStorage.setItem(
-      this.USER_AVATAR_KEY,
-      loginResponse.avatarUrl || 'assets/default-avatar.png'
-    ); // <-- Save the URL
-  }
-
   // Helper to map system IDs to Icons
   getIconForFolder(id: string): any {
     switch (id) {

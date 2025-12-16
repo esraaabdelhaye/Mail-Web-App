@@ -29,18 +29,16 @@ import { SearchOptionsModalComponent } from '../search-options-modal/search-opti
 import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
 import { ComposeEmail } from './../compose-email/compose-email';
 
-
-
 @Component({
   selector: 'app-email-list',
   standalone: true,
   imports: [
-  CommonModule,
+    CommonModule,
     LucideAngularModule,
     FormsModule,
     ButtonComponent,
     SearchOptionsModalComponent,
-    ComposeEmail
+    ComposeEmail,
   ],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
@@ -93,10 +91,10 @@ export class EmailListComponent implements OnInit {
     if (this.isDraftsFolder()) {
       // this.selectedEmailId.set(emailId);
       console.log(emailId);
-      
-    this.openDraftInCompose(emailId);
-    return;
-  }
+
+      this.openDraftInCompose(emailId);
+      return;
+    }
     this.selectedEmailId.set(emailId);
     const userId = this.authService.getCurrentUserId();
     this.emailHandler.getMailDetails(Number(userId), emailId).subscribe({
@@ -114,23 +112,21 @@ export class EmailListComponent implements OnInit {
   }
 
   private openDraftInCompose(emailId: number): void {
-  const userId = this.authService.getCurrentUserId();
+    const userId = this.authService.getCurrentUserId();
 
-  this.emailHandler.getDraftForCompose(emailId).subscribe({
-    next: (draft) => {
-      this.emailHandler.openComposeWithDraft(draft);
-    },
-    error: (err) => {
-      console.log('failed to open draft', err);
-    },
-  });
-}
-
+    this.emailHandler.getDraftForCompose(emailId).subscribe({
+      next: (draft) => {
+        this.emailHandler.openComposeWithDraft(draft);
+      },
+      error: (err) => {
+        console.log('failed to open draft', err);
+      },
+    });
+  }
 
   private isDraftsFolder(): boolean {
-  return this.emailHandler.currentFolderName() === 'Drafts';
-}
-
+    return this.emailHandler.currentFolderName() === 'Drafts';
+  }
 
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);
@@ -290,6 +286,40 @@ export class EmailListComponent implements OnInit {
         );
       }
     }
+  }
+
+  // Quick Search
+  onSearchChange(query: string) {
+    const apiPage = this.currentPage() - 1;
+    const userId = this.authService.getCurrentUserId();
+
+    const request: PaginationRequest = {
+      userId: Number(userId),
+      folderName: this.emailHandler.currentFolderName(),
+      page: apiPage,
+      size: this.itemsPerPage(),
+      sortBy: this.sortBy(),
+    };
+
+    this.emailHandler.getQuickSearchResults(request, query).subscribe({
+      next: (data) => {
+        this.emailPage.set(data);
+        console.log('here are the search results ', data.content);
+        this.paginatedEmails.set(data.content);
+
+        this.currentPage.set(data.currentPage + 1);
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
+
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to search emails:', err);
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
+      },
+    });
   }
 
   // --- UTILITIES (Referenced in HTML) ---
