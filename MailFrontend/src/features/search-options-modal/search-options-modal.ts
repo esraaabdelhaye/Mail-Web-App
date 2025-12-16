@@ -55,7 +55,7 @@ export class SearchOptionsModalComponent {
     if (payload.folder != null) {
       this.emailHandler.selectFolder(payload.folder);
     }
-
+    this.handleReset();
     this.isOpen = false;
   }
 
