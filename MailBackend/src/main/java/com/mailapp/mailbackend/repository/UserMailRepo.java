@@ -16,6 +16,8 @@ import java.util.Optional;
 
 public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     Page<UserMail> findByUserAndFolder(User user, Folder folder, Pageable pageable);
+    List<UserMail> findByUserAndFolder(User user,Folder folder);
+
     UserMail findByUserAndId(User user, Long mailId);
     List<UserMail> findByFolder(Folder folder);
 

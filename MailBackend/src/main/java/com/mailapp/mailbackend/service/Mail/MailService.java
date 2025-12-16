@@ -52,6 +52,9 @@ public class MailService {
     @Autowired
     private SortStrategyFactory sortStrategyFactory;
 
+    @Autowired
+    private PriorityMailService priorityMailService;
+
 
     public List<MailDetailsDTO> getEmails(String folderId) {
         // Fetch from DB
@@ -65,6 +68,13 @@ public class MailService {
                                         int page, int size, String sortBy) {
         User user = userRepo.getReferenceById(userId);
         Folder folder = folderRepo.findByUserAndFolderName(user, folderName);
+
+        if ("PRIORITY_MODE".equals(sortBy) && "Inbox".equals(folderName)) {
+            System.out.println("here we are in priority mode");
+            Pageable pageable = PageRequest.of(page, size);
+            Page<UserMail> mailPage = priorityMailService.getPriorityInboxPage(user, folder, pageable);
+            return getPageDTO(mailPage);
+        }
 
         SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy, folderName);
         Sort sort = sortStrategy.getSort();

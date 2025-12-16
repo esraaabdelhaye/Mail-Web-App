@@ -224,6 +224,11 @@ export class EmailHandler {
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
     this.auth.setCurrentFolder(folderName);
+
+    if (this.emailListComp && folderName !== 'Inbox') {
+    this.emailListComp.viewMode.set('default');
+  }
+
     if (this.emailListComp != null) {
       this.fetchMail();
     }

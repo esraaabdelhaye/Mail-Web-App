@@ -138,6 +138,11 @@ export class EmailListComponent implements OnInit {
     return this.emailHandler.currentFolderName() === 'Drafts';
   }
 
+   isInbox(): boolean {
+  return this.emailHandler.currentFolderName() === 'Inbox';
+}
+
+
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);
     this.currentlyOpened.set(null);
@@ -185,12 +190,18 @@ export class EmailListComponent implements OnInit {
 
     const apiPage = this.currentPage() - 1;
     const userId = this.authService.getCurrentUserId();
+
+    const effectiveSort =
+    this.isInbox() && this.viewMode() === 'priority'
+      ? 'PRIORITY_MODE'
+      : this.sortBy();
+
     const request: PaginationRequest = {
       userId: Number(userId),
       folderName: this.emailHandler.currentFolderName(),
       page: apiPage,
       size: this.itemsPerPage(),
-      sortBy: this.sortBy(),
+      sortBy: effectiveSort,
       // sortDirection: 'desc',
     };
 
@@ -217,6 +228,13 @@ export class EmailListComponent implements OnInit {
       },
     });
   }
+
+  setViewMode(mode: 'default' | 'priority') {
+  this.viewMode.set(mode);
+  this.currentPage.set(1);
+  this.fetchMail();
+}
+
 
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
@@ -353,7 +371,7 @@ export class EmailListComponent implements OnInit {
       folderName: this.emailHandler.currentFolderName(),
       page: apiPage,
       size: this.itemsPerPage(),
-      sortBy: this.sortBy(),
+      sortBy: this.viewMode() ? "PRIORITY" : this.sortBy(),
     };
 
     this.emailHandler.getQuickSearchResults(request, query).subscribe({
