@@ -12,6 +12,7 @@ public class FolderSearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("FolderSearchHandler");
         return criteria.getFolder() != null && !criteria.getFolder().trim().isEmpty();
     }
 

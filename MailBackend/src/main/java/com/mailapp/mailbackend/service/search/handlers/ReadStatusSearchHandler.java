@@ -14,6 +14,7 @@ public class ReadStatusSearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("ReadStatusSearchHandler");
         return criteria.getIsRead() != null;
     }
 

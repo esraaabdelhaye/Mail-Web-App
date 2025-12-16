@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, signal, OnInit, OnDestroy, computed } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  signal,
+  OnInit,
+  OnDestroy,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
@@ -44,7 +51,7 @@ import { ComposeEmail } from './../compose-email/compose-email';
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmailListComponent implements OnInit, OnDestroy {
+export class EmailListComponent implements OnInit {
   // --- Icons for Template ---
   readonly icons = {
     Search,
@@ -85,6 +92,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
 
   private pollingInterval: any;
+  public isSearchMode = signal(false);
 
   public onRefresh(): void {
     this.fetchMail(true);
@@ -152,17 +160,17 @@ export class EmailListComponent implements OnInit, OnDestroy {
     this.fetchMail();
 
     // Set up polling to refresh emails every 10 seconds
-    this.pollingInterval = setInterval(() => {
-      this.fetchMail();
-    }, 10000); // 10 seconds
+    // this.pollingInterval = setInterval(() => {
+    //   this.fetchMail();
+    // }, 10000); // 10 seconds
   }
 
-  ngOnDestroy(): void {
-    // Clean up the interval when component is destroyed
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
-  }
+  // ngOnDestroy(): void {
+  //   // Clean up the interval when component is destroyed
+  //   if (this.pollingInterval) {
+  //     clearInterval(this.pollingInterval);
+  //   }
+  // }
 
   priorityChanged() {
     if (this.searchQuery() == '') {
@@ -173,6 +181,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
   public fetchMail(isRefresh: boolean = false): void {
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
+
+    // Clear selections when navigating (but not when refreshing)
+    // Adding this here helps clear selections during navigation, like navigating to a folder for example
+    if (!isRefresh) {
+      this.selectedIds.set(new Set());
+    }
 
     const apiPage = this.currentPage() - 1;
     const userId = this.authService.getCurrentUserId();
@@ -227,6 +241,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
     if (newPage >= 1 && newPage <= this.totalPages()) {
       this.currentPage.set(newPage);
+      this.selectedIds.set(new Set()); // Clear selections when changing pages
       this.fetchMail();
     }
   }
@@ -265,22 +280,20 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   handleAdvancedSearch(request: SearchRequestDTO) {
+    this.isLoading.set(true);
+    this.paginatedEmails.set([]);
+    this.isSearchMode;
+
     this.emailHandler.doAdvancedSearch(request).subscribe({
       next: (data) => {
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
-
-        // Reset Pagination
         this.currentPage.set(1);
-
-        // this.currentFolder.set('Search Results');
-
         this.isLoading.set(false);
-        console.log('Search result: ', data);
       },
       error: (err) => {
-        console.log('Advanced search failed, Error: ');
-        console.log(err);
+        console.error('Failed to perform advanced search:', err);
+        this.isLoading.set(false);
       },
     });
   }
@@ -336,6 +349,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   // Quick Search
   onSearchChange(query: string) {
+    if (this.isSearchMode()) return;
     const apiPage = this.currentPage() - 1;
     const userId = this.authService.getCurrentUserId();
 

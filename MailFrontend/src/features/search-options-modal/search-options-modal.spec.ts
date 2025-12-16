@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SearchOptionsModal } from './search-options-modal';
+import { SearchOptionsModalComponent } from './search-options-modal';
 
 describe('SearchOptionsModal', () => {
-  let component: SearchOptionsModal;
-  let fixture: ComponentFixture<SearchOptionsModal>;
+  let component: SearchOptionsModalComponent;
+  let fixture: ComponentFixture<SearchOptionsModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SearchOptionsModal]
-    })
-    .compileComponents();
+      imports: [SearchOptionsModalComponent],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(SearchOptionsModal);
+    fixture = TestBed.createComponent(SearchOptionsModalComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -111,8 +111,8 @@
       <div class="list-header-right">
         <span class="page-info">
           {{ (currentPage() - 1) * itemsPerPage() + 1 }} -
-          {{ math.min(currentPage() * itemsPerPage(), processedEmails().length) }} of
-          {{ processedEmails().length }}
+          {{ math.min(currentPage() * itemsPerPage(), totalEmails()) }} of
+          {{ totalEmails() }}
         </span>
 
         <div class="pagination-buttons">
