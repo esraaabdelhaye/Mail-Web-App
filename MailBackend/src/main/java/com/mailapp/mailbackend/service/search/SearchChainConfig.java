@@ -31,6 +31,8 @@ public class SearchChainConfig {
 
     @Autowired
     private ReadStatusSearchHandler readStatusSearchHandler;
+    @Autowired
+    private AttachmentSearchHandler attachmentSearchHandler;
 
     @Bean
     public SearchHandler searchHandlerChain() {
@@ -42,6 +44,7 @@ public class SearchChainConfig {
         folderSearchHandler.setNext(prioritySearchHandler);
         prioritySearchHandler.setNext(dateRangeSearchHandler);
         dateRangeSearchHandler.setNext(readStatusSearchHandler);
+        dateRangeSearchHandler.setNext(attachmentSearchHandler);
 
         return globalSearchHandler; // Return head of chain
     }
