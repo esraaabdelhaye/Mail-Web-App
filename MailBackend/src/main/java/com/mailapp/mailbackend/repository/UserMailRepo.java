@@ -19,7 +19,10 @@ public interface UserMailRepo extends JpaRepository<UserMail, Long> {
     UserMail findByUserAndId(User user, Long mailId);
     List<UserMail> findByFolder(Folder folder);
 
-    @Query("SELECT um FROM UserMail um WHERE um.folder.folderName = 'Trash' " +
+    @Query("SELECT um FROM UserMail um " +
+            "JOIN FETCH um.folder f " +
+            "JOIN FETCH um.user u " +
+            "WHERE f.folderName = 'Trash' " +
             "AND um.movedAt < :cutoffDate")
     List<UserMail> findOldTrashEmails(@Param("cutoffDate") Date cutoffDate);
 
