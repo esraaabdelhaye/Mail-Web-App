@@ -66,26 +66,29 @@ public class EmailSearchService {
 
 
     private MailPageDTO search(
-            Long userId,
-            SearchCriteria criteria,
-            int page, int size, String sortBy
+                Long userId,
+                SearchCriteria criteria,
+        int page, int size, String sortBy
     ) {
-        System.out.println("start search");
-        SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy, criteria.getFolder());
-        Sort sort = sortStrategy.getSort();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        System.out.println("from quickSearch: " + criteria.getFolder());
-        // Execute search using repository
-        Page<UserMail> mailPage = emailSearchRepository.search(
-                userId,
-                criteria,
-                pageable,
-                searchHandlerChain
-        );
+            System.out.println("start search");
+            SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy, criteria.getFolder());
+            Sort sort = sortStrategy.getSort();
 
-        System.out.println("end of search");
+            Pageable pageable = PageRequest.of(page, size, sort);
 
-       return mailService.getPageDTO(mailPage);
+            // Execute search using repository
+            Page<UserMail> mailPage = emailSearchRepository.search(
+                    userId,
+                    criteria,
+                    pageable,
+                    searchHandlerChain
+            );
+
+
+
+            System.out.println("end of search");
+
+            return mailService.getPageDTO(mailPage);
     }
 }
 
