@@ -107,8 +107,11 @@ export class ContactsHandler {
     console.log('Searching contacts...');
     const userId = this.auth.getCurrentUserId();
 
-    let params = new HttpParams().set('userId', userId!.toString());
-    params = params.set('searchTerm', query);
+    let params = new HttpParams()
+      .set('userId', userId!.toString())
+      .set('searchTerm', query)
+      .set('sortBy', this.currentSortBy)
+      .set('sortOrder', this.currentSortOrder);
 
     return this.http.get<Contact[]>(`${this.baseURL}/search`, { params }).pipe(
       tap((data: Contact[]) => {

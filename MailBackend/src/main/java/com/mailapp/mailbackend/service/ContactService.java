@@ -170,7 +170,7 @@ public class ContactService {
         contactRepo.deleteById(contactId);
     }
 
-    public List<ContactDTO> searchContacts(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContacts(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByNameOrEmail(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -179,11 +179,11 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 
-    public List<ContactDTO> searchContactsByName(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContactsByName(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByName(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -192,12 +192,12 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 
 
-    public List<ContactDTO> searchContactsByEmail(Long userId, String searchTerm) {
+    public List<ContactDTO> searchContactsByEmail(Long userId, String searchTerm, String sortBy, String sortOrder) {
         List<ContactDTO> contactDtos = new ArrayList<>();
         List<Contact> contacts = contactRepo.searchByEmail(userId, searchTerm);
         for (Contact contact : contacts) {
@@ -206,7 +206,7 @@ public class ContactService {
                     .collect(Collectors.toList());
             contactDtos.add(new ContactDTO(contact.getId().toString(), contact.getName(), emailList));
         }
-        return contactDtos;
+        return sortContacts(contactDtos, sortBy, sortOrder);
 
     }
 }
