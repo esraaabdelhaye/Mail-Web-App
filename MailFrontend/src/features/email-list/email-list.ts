@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, OnInit, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
@@ -44,7 +44,7 @@ import { ComposeEmail } from './../compose-email/compose-email';
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmailListComponent implements OnInit {
+export class EmailListComponent implements OnInit, OnDestroy {
   // --- Icons for Template ---
   readonly icons = {
     Search,
@@ -83,6 +83,8 @@ export class EmailListComponent implements OnInit {
 
   public totalPages = computed(() => this.emailPage()?.totalPages || 1);
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
+
+  private pollingInterval: any;
 
   public onRefresh(): void {
     this.fetchMail(true);
@@ -143,6 +145,24 @@ export class EmailListComponent implements OnInit {
     this.emailHandler.regList(this);
     // this.sortBy.set('DATE_DESC');
     this.fetchMail();
+
+    // Set up polling to refresh emails every 10 seconds
+    this.pollingInterval = setInterval(() => {
+      this.fetchMail();
+    }, 10000); // 10 seconds
+  }
+
+  ngOnDestroy(): void {
+    // Clean up the interval when component is destroyed
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
+
+  priorityChanged() {
+    if (this.searchQuery() == '') {
+      this.fetchMail();
+    } else this.onSearchChange(this.searchQuery());
   }
 
   public fetchMail(isRefresh: boolean = false): void {

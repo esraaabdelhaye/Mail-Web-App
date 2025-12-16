@@ -12,8 +12,10 @@ import com.mailapp.mailbackend.service.UserMail.UserMailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 @Service
 public class MultiReceiverSend implements SendStrategy{
@@ -26,11 +28,33 @@ public class MultiReceiverSend implements SendStrategy{
 
     public void sendMail(Mail mail, EmailRequest req){
         Queue<ReceiverEntry> queue = getReceiversQueue(req);
+        
+        // Save once in sender's Sent folder regardless of number of recipients
+        userMailService.saveSentMail(mail);
+        
+        // Track unique recipients to avoid duplicate inbox entries
+        Set<String> processedEmails = new HashSet<>();
+        // Track unique (email, type) pairs to avoid duplicate MailReceiver records
+        Set<String> processedReceiverEntries = new HashSet<>();
+        
+        // Process each recipient individually
         while (!queue.isEmpty()){
             ReceiverEntry entry = queue.poll();
             try {
-//                mailReceiverService.save(mail, entry);
-                userMailService.save(mail, entry);
+                // Create unique key for this (email, type) combination
+                String receiverKey = entry.getReceiverEmail() + ":" + entry.getReceiverType();
+                
+                // Only store if this (email, type) pair hasn't been saved yet
+                if (!processedReceiverEntries.contains(receiverKey)) {
+                    mailReceiverService.save(mail, entry);
+                    processedReceiverEntries.add(receiverKey);
+                }
+                
+                // Only create inbox entry once per unique email address
+                if (!processedEmails.contains(entry.getReceiverEmail())) {
+                    userMailService.saveReceiverMail(mail, entry);
+                    processedEmails.add(entry.getReceiverEmail());
+                }
             }
             catch (Exception e)
             {

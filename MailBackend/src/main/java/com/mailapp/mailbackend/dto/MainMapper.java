@@ -59,6 +59,7 @@ package com.mailapp.mailbackend.dto;
 
 import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.enums.Priority;
+import com.mailapp.mailbackend.enums.ReceiverType;
 import com.mailapp.mailbackend.repository.AttachmentRepo;
 import com.mailapp.mailbackend.repository.MailReceiverRepo;
 import org.mapstruct.*;
@@ -127,8 +128,10 @@ public abstract class MainMapper {
     @Mapping(source = "userMail.importance", target = "priority")
     @Mapping(source = "userMail.folder.folderName", target = "folder")
     @Mapping(target = "to", expression = "java(mapReceivers(userMail.getMail()))")
+    @Mapping(target = "cc", expression = "java(mapCcReceivers(userMail.getMail()))")
+    @Mapping(target = "bcc", expression = "java(mapBccReceivers(userMail.getMail(), userId))")
     @Mapping(target = "attachments", expression = "java(mapAttachments(userMail.getMail()))")
-    public abstract MailDetailsDTO toDetailedEmailDTO(UserMail userMail);
+    public abstract MailDetailsDTO toDetailedEmailDTO(UserMail userMail, Long userId);
 
 
     @Mapping(source = "fullName", target = "name")
@@ -141,11 +144,48 @@ public abstract class MainMapper {
             return List.of();
         }
 
-        // Fetch receivers from database
         List<MailReceiver> receivers = mailReceiverRepo.findByMailId(mail.getId());
 
+        // Filter only TO recipients (exclude CC and BCC)
         return receivers.stream()
+                .filter(mr -> mr.getReceiverType() == ReceiverType.TO)
                 .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    protected List<String> mapCcReceivers(Mail mail) {
+        if (mail == null) {
+            return List.of();
+        }
+
+        List<MailReceiver> receivers = mailReceiverRepo.findByMailId(mail.getId());
+
+        // Extract CC recipients only
+        return receivers.stream()
+                .filter(mr -> mr.getReceiverType() == ReceiverType.CC)
+                .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    protected List<String> mapBccReceivers(Mail mail, Long userId) {
+        if (mail == null) {
+            return List.of();
+        }
+
+        // BCC should only be visible to the sender, not recipients
+        if (!mail.getSender().getId().equals(userId)) {
+            return List.of();
+        }
+
+        List<MailReceiver> receivers = mailReceiverRepo.findByMailId(mail.getId());
+
+        // Extract BCC recipients only
+        return receivers.stream()
+                .filter(mr -> mr.getReceiverType() == ReceiverType.BCC)
+                .map(mr -> mr.getReceiver().getEmail())
+                .distinct()
                 .collect(Collectors.toList());
     }
 

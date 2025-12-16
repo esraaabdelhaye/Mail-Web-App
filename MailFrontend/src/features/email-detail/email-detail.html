@@ -37,6 +37,12 @@
     </div>
 
     <div class="to-line">To: {{ mailDetail.to.join(', ') }}</div>
+    @if (mailDetail.cc && mailDetail.cc.length > 0) {
+    <div class="to-line">Cc: {{ mailDetail.cc.join(', ') }}</div>
+    }
+    @if (mailDetail.bcc && mailDetail.bcc.length > 0) {
+    <div class="to-line">Bcc: {{ mailDetail.bcc.join(', ') }}</div>
+    }
   </div>
 
   <!-- Content Section (Scrollable) -->
