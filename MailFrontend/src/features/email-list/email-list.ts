@@ -240,6 +240,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
     });
   }
 
+  isAllSelected(): boolean {
+    const emails = this.paginatedEmails();
+    if (emails.length === 0) return false;
+    return emails.every((email) => this.selectedIds().has(email.id));
+  }
+
   handleAdvancedSearch(request: SearchRequestDTO) {
     this.emailHandler.doAdvancedSearch(request).subscribe({
       next: (data) => {

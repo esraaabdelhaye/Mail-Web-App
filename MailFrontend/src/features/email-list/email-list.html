@@ -101,7 +101,7 @@
     <!-- List Header (Select All) -->
     <div class="list-header">
       <div class="list-header-left">
-        <input type="checkbox" (change)="toggleSelectAll($event)" />
+        <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)" />
         <span>Select all</span>
       </div>
 
