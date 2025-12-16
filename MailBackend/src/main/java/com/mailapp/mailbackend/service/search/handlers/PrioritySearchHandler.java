@@ -14,6 +14,7 @@ public class PrioritySearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("PrioritySearchHandler");
         return criteria.getPriority() != null;
     }
 

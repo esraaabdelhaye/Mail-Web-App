@@ -13,6 +13,7 @@ public class FromSearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("FromSearchHandler");
         return criteria.getFrom() != null && !criteria.getFrom().trim().isEmpty();
     }
 

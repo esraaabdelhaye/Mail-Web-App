@@ -21,6 +21,7 @@ public class DateRangeSearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("DateRangeSearchHandler");
         return criteria.getStartDate() != null && criteria.getEndDate() != null;
     }
 

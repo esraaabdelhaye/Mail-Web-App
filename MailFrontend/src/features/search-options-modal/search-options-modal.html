@@ -6,109 +6,106 @@
 <!-- Modal Overlay -->
 @if (isOpen) {
 
-  <div class="backdrop-click-catcher" (click)="isOpen = false"></div>
+<div class="backdrop-click-catcher" (click)="isOpen = false"></div>
 
-  <div class="modal-overlay" (click)="isOpen = false">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (click)="isOpen = false">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h3>Advanced Search</h3>
+      <button app-button variant="ghost" size="icon" (click)="isOpen = false">
+        <lucide-icon [img]="icons.X" size="16"></lucide-icon>
+      </button>
+    </div>
 
-      <!-- Header -->
-      <div class="modal-header">
-        <h3>Advanced Search</h3>
-        <button app-button variant="ghost" size="icon" (click)="isOpen = false">
-          <lucide-icon [img]="icons.X" size="16"></lucide-icon>
-        </button>
+    <!-- Body -->
+    <div class="modal-body">
+      <!-- From -->
+      <div class="grid-row">
+        <label>From</label>
+        <input type="text" [(ngModel)]="options.from" class="form-input" />
       </div>
 
-      <!-- Body -->
-      <div class="modal-body">
-
-        <!-- From -->
-        <div class="grid-row">
-          <label>From</label>
-          <input type="text" [(ngModel)]="options.from" class="form-input">
-        </div>
-
-        <!-- To -->
-        <div class="grid-row">
-          <label>To</label>
-          <input type="text" [(ngModel)]="options.to" class="form-input">
-        </div>
-
-        <!-- Subject -->
-        <div class="grid-row">
-          <label>Subject</label>
-          <input type="text" [(ngModel)]="options.subject" class="form-input">
-        </div>
-
-        <!-- Body Text (Previously 'Includes Words') -->
-        <div class="grid-row">
-          <label>Body text</label>
-          <input type="text" [(ngModel)]="options.body" class="form-input">
-        </div>
-
-        <!-- Priority -->
-        <div class="grid-row">
-          <label>Priority</label>
-          <select [(ngModel)]="options.priority" class="form-select">
-            <option value="1">Highest (Urgent)</option>
-            <option value="2">High</option>
-            <option value="3">Normal</option>
-            <option value="4">Low</option>
-          </select>
-        </div>
-
-        <!-- START & END DATE (Simplified) -->
-        <div class="grid-row">
-          <label>Start Date</label>
-          <div class="relative-input">
-            <!-- Binds directly to options.startDate -->
-            <input type="date" [(ngModel)]="options.startDate" class="form-input">
-          </div>
-        </div>
-
-        <div class="grid-row">
-          <label>End Date</label>
-          <div class="relative-input">
-            <!-- Binds directly to options.endDate -->
-            <input type="date" [(ngModel)]="options.endDate" class="form-input">
-          </div>
-        </div>
-
-        <!-- Search In -->
-        <div class="grid-row">
-          <label>Search</label>
-          <select [(ngModel)]="options.folder" class="form-select">
-            <option value="all">All Mail</option>
-            @for (folder of folders; track folder.folderID) {
-              <option [value]="folder.folderName">{{ folder.folderName }}</option>
-            }
-          </select>
-        </div>
-
-        <!-- Attachment Name -->
-<!--        <div class="grid-row">-->
-<!--          <label>File Name</label>-->
-<!--          &lt;!&ndash; Using 'attachmentName' from your DTO &ndash;&gt;-->
-<!--          <input type="text" [(ngModel)]="options.attachmentName" class="form-input">-->
-<!--        </div>-->
-
-        <!-- Has Attachment -->
-        <div class="grid-row checkbox-row">
-          <label></label> <!-- Spacer -->
-          <div class="checkbox-group">
-            <input type="checkbox" id="hasAttach" [(ngModel)]="options.hasAttachment">
-            <label for="hasAttach">Has attachment</label>
-          </div>
-        </div>
-
+      <!-- To -->
+      <div class="grid-row">
+        <label>To</label>
+        <input type="text" [(ngModel)]="options.to" class="form-input" />
       </div>
 
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button app-button variant="ghost" (click)="handleReset()">Reset</button>
-        <button app-button (click)="handleSearch()">Search</button>
+      <!-- Subject -->
+      <div class="grid-row">
+        <label>Subject</label>
+        <input type="text" [(ngModel)]="options.subject" class="form-input" />
       </div>
 
+      <!-- Body Text (Previously 'Includes Words') -->
+      <div class="grid-row">
+        <label>Body text</label>
+        <input type="text" [(ngModel)]="options.body" class="form-input" />
+      </div>
+
+      <!-- Priority -->
+      <div class="grid-row">
+        <label>Priority</label>
+        <select [(ngModel)]="options.priority" class="form-select">
+          <option value="1">Highest (Urgent)</option>
+          <option value="2">High</option>
+          <option value="3">Normal</option>
+          <option value="4">Low</option>
+        </select>
+      </div>
+
+      <!-- START & END DATE (Simplified) -->
+      <div class="grid-row">
+        <label>Start Date</label>
+        <div class="relative-input">
+          <!-- Binds directly to options.startDate -->
+          <input type="date" [(ngModel)]="options.startDate" class="form-input" />
+        </div>
+      </div>
+
+      <div class="grid-row">
+        <label>End Date</label>
+        <div class="relative-input">
+          <!-- Binds directly to options.endDate -->
+          <input type="date" [(ngModel)]="options.endDate" class="form-input" />
+        </div>
+      </div>
+
+      <!-- Search In -->
+      <div class="grid-row">
+        <label>Search</label>
+        <select [(ngModel)]="options.folder" class="form-select">
+          <option value="all">All Mail</option>
+          @for (folder of folders; track folder.folderID) {
+          <option [value]="folder.folderName">{{ folder.folderName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Attachment Name -->
+      <!--        <div class="grid-row">-->
+      <!--          <label>File Name</label>-->
+      <!--          &lt;!&ndash; Using 'attachmentName' from your DTO &ndash;&gt;-->
+      <!--          <input type="text" [(ngModel)]="options.attachmentName" class="form-input">-->
+      <!--        </div>-->
+
+      <!-- Has Attachment -->
+      <div class="grid-row checkbox-row">
+        <label></label>
+        <!-- Spacer -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="hasAttach" [(ngModel)]="options.hasAttachment" />
+          <label for="hasAttach">Has attachment</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button app-button variant="ghost" (click)="handleReset()">Reset</button>
+      <button app-button type="button" app-button (click)="handleSearch()">Search</button>
     </div>
   </div>
+</div>
 }

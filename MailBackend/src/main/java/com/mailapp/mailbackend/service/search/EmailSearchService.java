@@ -71,6 +71,7 @@ public class EmailSearchService {
         int page, int size, String sortBy
     ) {
             System.out.println("start search");
+        System.out.println(criteria);
             SortStrategy sortStrategy = sortStrategyFactory.getStrategy(sortBy, criteria.getFolder());
             Sort sort = sortStrategy.getSort();
 

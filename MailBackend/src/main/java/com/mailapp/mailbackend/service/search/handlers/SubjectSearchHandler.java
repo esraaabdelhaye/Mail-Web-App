@@ -12,6 +12,7 @@ public class SubjectSearchHandler extends SearchHandler {
 
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
+        System.out.println("SubjectSearchHandler");
         return criteria.getSubject() != null && !criteria.getSubject().trim().isEmpty();
     }
 

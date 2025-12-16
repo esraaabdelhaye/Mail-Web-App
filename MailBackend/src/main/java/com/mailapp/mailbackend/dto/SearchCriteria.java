@@ -4,12 +4,14 @@ import com.mailapp.mailbackend.enums.Priority;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class SearchCriteria {
     private String query;              // Global search string
     private String from;
