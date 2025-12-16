@@ -22,7 +22,7 @@
       </div>
 
       <!-- Sort Dropdown (Native) -->
-      <select [(ngModel)]="sortBy" class="sort-select" (change)="fetchMail()">
+      <select [(ngModel)]="sortBy" class="sort-select" (change)="priorityChanged()">
         <option selected value="DATE_DESC">DATE_DESC</option>
         <option value="DATE_ASC">DATE_ASC</option>
         <option value="PRIORITY">PRIORITY</option>

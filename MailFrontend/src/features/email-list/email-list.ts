@@ -145,6 +145,12 @@ export class EmailListComponent implements OnInit {
     this.fetchMail();
   }
 
+  priorityChanged() {
+    if (this.searchQuery() == '') {
+      this.fetchMail();
+    } else this.onSearchChange(this.searchQuery());
+  }
+
   public fetchMail(isRefresh: boolean = false): void {
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
