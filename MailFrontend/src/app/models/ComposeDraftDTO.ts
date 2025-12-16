@@ -1,6 +1,5 @@
-import { AttachmentDTO, Recipient } from "../../features/compose-email/compose-email";
-
-
+import { Recipient } from "../../features/compose-email/compose-email";
+import { AttachmentDTO } from "./DetailedMail";
 
 export interface ComposeDraftDTO {
   draftId: number;

@@ -316,13 +316,38 @@
           <div class="attachment-list-container">
             @for (file of attachments; track $index; let i = $index) {
             <div class="attachment-item">
-              <span class="attachment-name">{{ file.name }}</span>
+              <span class="attachment-name">{{ getAttachmentName(i) }}</span>
               <div class="attachment-info">
-                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                <span class="file-size">{{ getAttachmentSize(i) }}</span>
+                @if (canDownloadAttachment(i)) {
+                <button
+                  type="button"
+                  (click)="downloadAttachment(i)"
+                  class="download-attachment-button"
+                  title="Download attachment"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" x2="12" y1="15" y2="3" />
+                  </svg>
+                </button>
+                }
                 <button
                   type="button"
                   (click)="handleRemoveAttachment(i)"
                   class="remove-attachment-button"
+                  title="Remove attachment"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
