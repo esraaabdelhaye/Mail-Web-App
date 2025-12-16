@@ -177,6 +177,12 @@ export class EmailListComponent implements OnInit {
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
 
+    // Clear selections when navigating (but not when refreshing)
+    // Adding this here helps clear selections during navigation, like navigating to a folder for example
+    if (!isRefresh) {
+      this.selectedIds.set(new Set());
+    }
+
     const apiPage = this.currentPage() - 1;
     const userId = this.authService.getCurrentUserId();
     const request: PaginationRequest = {
@@ -214,11 +220,11 @@ export class EmailListComponent implements OnInit {
 
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
-    if (!this.isSearchMode()) {
-      if (newPage >= 1 && newPage <= this.totalPages()) {
-        this.currentPage.set(newPage);
-        this.fetchMail();
-      }
+
+    if (newPage >= 1 && newPage <= this.totalPages()) {
+      this.currentPage.set(newPage);
+      this.selectedIds.set(new Set()); // Clear selections when changing pages
+      this.fetchMail();
     }
   }
 
