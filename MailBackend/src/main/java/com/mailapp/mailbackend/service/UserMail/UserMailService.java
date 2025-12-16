@@ -32,15 +32,20 @@ public class UserMailService {
     private FolderService folderService;
 
 
-    public void save(Mail mail, ReceiverEntry entry) {
+    // Creates a single entry in sender's Sent folder
+    public void saveSentMail(Mail mail) {
         User sender = mail.getSender();
         Folder senderFolder = folderService.getSent(sender);
         save(mail, sender, senderFolder, true);
 
+        // Clean up draft after sending
         Folder draftFolder = folderService.getDrafts(sender);
         Optional<UserMail> draftEntry = userMailRepo.findByMailAndUserAndFolder(mail, sender, draftFolder);
         draftEntry.ifPresent(userMailRepo::delete);
-
+    }
+    
+    // Creates an entry in recipient's Inbox folder
+    public void saveReceiverMail(Mail mail, ReceiverEntry entry) {
         User receiver = userRepo.findByEmail(entry.getReceiverEmail());
         Folder receiverFolder = folderService.getInbox(receiver);
         save(mail, receiver, receiverFolder, false);

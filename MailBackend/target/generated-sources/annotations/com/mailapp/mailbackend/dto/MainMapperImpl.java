@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-12-15T23:45:55+0200",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 23.0.2 (Oracle Corporation)"
+    date = "2025-12-16T11:19:10+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25 (Oracle Corporation)"
 )
 @Component
 public class MainMapperImpl extends MainMapper {
@@ -108,6 +108,8 @@ public class MainMapperImpl extends MainMapper {
 
         mailDetailsDTO.sentAt = userMail.getSentAt() != null ? userMail.getSentAt() : userMail.getMail().getUpdatedAt();
         mailDetailsDTO.to = mapReceivers(userMail.getMail());
+        mailDetailsDTO.cc = mapCcReceivers(userMail.getMail());
+        mailDetailsDTO.bcc = mapBccReceivers(userMail.getMail());
         mailDetailsDTO.attachments = mapAttachments(userMail.getMail());
 
         return mailDetailsDTO;

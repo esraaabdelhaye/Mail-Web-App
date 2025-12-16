@@ -12,8 +12,10 @@ import com.mailapp.mailbackend.service.UserMail.UserMailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 @Service
 public class MultiReceiverSend implements SendStrategy{
@@ -26,11 +28,25 @@ public class MultiReceiverSend implements SendStrategy{
 
     public void sendMail(Mail mail, EmailRequest req){
         Queue<ReceiverEntry> queue = getReceiversQueue(req);
+        
+        // Save once in sender's Sent folder regardless of number of recipients
+        userMailService.saveSentMail(mail);
+        
+        // Track unique recipients to avoid duplicate inbox entries
+        Set<String> processedEmails = new HashSet<>();
+        
+        // Process each recipient individually
         while (!queue.isEmpty()){
             ReceiverEntry entry = queue.poll();
             try {
-//                mailReceiverService.save(mail, entry);
-                userMailService.save(mail, entry);
+                // Always store recipient type (TO/CC/BCC) in MailReceiver table for display
+                mailReceiverService.save(mail, entry);
+                
+                // Only create inbox entry once per unique email address
+                if (!processedEmails.contains(entry.getReceiverEmail())) {
+                    userMailService.saveReceiverMail(mail, entry);
+                    processedEmails.add(entry.getReceiverEmail());
+                }
             }
             catch (Exception e)
             {

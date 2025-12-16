@@ -12,6 +12,8 @@ export interface MailDetailsDTO {
 
   // Java List<String> maps to string array
   to: string[];
+  cc: string[];
+  bcc: string[];
 
   subject: string;
   body: string;

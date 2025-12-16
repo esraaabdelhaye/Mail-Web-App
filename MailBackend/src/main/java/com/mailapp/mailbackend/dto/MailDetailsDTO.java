@@ -10,7 +10,11 @@ public class MailDetailsDTO {
     // Nested object for { name, email }
     public SenderDTO sender;
 
+    // Recipient email lists separated by type
     public List<String> to;
+    public List<String> cc;
+    public List<String> bcc;
+    
     public String subject;
     public String body;
 
