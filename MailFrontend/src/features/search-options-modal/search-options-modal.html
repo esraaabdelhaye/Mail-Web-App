@@ -48,6 +48,8 @@
       <div class="grid-row">
         <label>Priority</label>
         <select [(ngModel)]="options.priority" class="form-select">
+          <!-- Default option allows searching across all priority levels -->
+          <option value="">Any Priority</option>
           <option value="1">Highest (Urgent)</option>
           <option value="2">High</option>
           <option value="3">Normal</option>

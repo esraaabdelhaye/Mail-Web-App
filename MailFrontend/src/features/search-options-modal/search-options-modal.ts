@@ -25,6 +25,7 @@ export class SearchOptionsModalComponent {
   private emailHandler = inject(EmailHandler);
 
   // Initial State (Matches DTO)
+  // Empty strings for optional fields mean "don't filter by this criteria"
   readonly defaultOptions: SearchOptions = {
     query: '',
     from: '',
@@ -33,7 +34,7 @@ export class SearchOptionsModalComponent {
     body: '',
     hasAttachment: false,
     folder: '',
-    priority: '',
+    priority: '',  // Empty string means search all priority levels
     isRead: false,
     endDate: '',
     startDate: '',
@@ -47,15 +48,28 @@ export class SearchOptionsModalComponent {
   }
 
   handleSearch() {
+    // Create a copy of the search options to modify for submission
     const payload = { ...this.options };
+    
+    // Convert 'all' folder selection to empty string (search across all folders)
     if (payload.folder === 'all') payload.folder = '';
+    
+    // Convert empty/falsy priority to null so backend doesn't filter by priority
+    // This handles empty string (""), undefined, or any falsy value
     if (!payload.priority) payload.priority = null;
+    
+    // Emit the search request to parent component
     this.search.emit(payload);
 
+    // If a specific folder was selected, update the active folder in the UI
     if (payload.folder != null) {
       this.emailHandler.selectFolder(payload.folder);
     }
+    
+    // Reset the form to default values after search
     this.handleReset();
+    
+    // Close the modal
     this.isOpen = false;
   }
 
