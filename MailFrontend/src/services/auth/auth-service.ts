@@ -18,6 +18,12 @@ export class AuthService {
   constructor() {
     // Attempt to load user data/ID from storage on service creation
     this.loadInitialState();
+    
+    // Clear session when user navigates away from the site
+    // This ensures they need to login again when returning
+    window.addEventListener('beforeunload', () => {
+      this.clearAuthData();
+    });
   }
 
   private loadInitialState(): void {
