@@ -2,13 +2,13 @@ package com.mailapp.mailbackend.controller;
 
 
 import com.mailapp.mailbackend.dto.UserFolderDTO;
-import com.mailapp.mailbackend.entity.User;
-import com.mailapp.mailbackend.service.User.Folder.FolderService;
+import com.mailapp.mailbackend.service.Folder.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/folders")
@@ -38,5 +38,10 @@ public class FolderController {
     public ResponseEntity<Void> deleteFolder(@PathVariable Long id){
         folderService.deleteFolder(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/counts")
+    public ResponseEntity<Map<Long, Long>> getFolderCounts(@RequestParam Long userId) {
+        return ResponseEntity.ok(folderService.getFolderCounts(userId));
     }
 }

@@ -11,8 +11,9 @@ import {
   File,
   Loader2,
 } from 'lucide-angular';
-import { Attachment, Email } from '../../app/models/email.model';
+import { AttachmentDTO, MailDetailsDTO } from '../../app/models/DetailedMail';
 import { ButtonComponent } from '../../shared/button/button';
+import { EmailHandler } from '../../services/emails-handler/email-handler';
 
 @Component({
   selector: 'app-email-detail',
@@ -22,33 +23,38 @@ import { ButtonComponent } from '../../shared/button/button';
   styleUrls: ['./email-detail.css'],
 })
 export class EmailDetailComponent {
-  @Input({ required: true }) email!: Email;
+  @Input({ required: true }) mailDetail!: MailDetailsDTO;
   @Output() back = new EventEmitter<void>();
   @Output() deleteAttachment = new EventEmitter<string>();
+
+  private emailHandler = inject(EmailHandler);
 
   // --- State ---
   isSummarizing = signal(false);
   summary = signal<string | null>(null);
-
+  mailDetails = signal<MailDetailsDTO | null>(null);
   readonly icons = { ArrowLeft, Sparkles, Download, Trash2, FileText, ImageIcon, File, Loader2 };
 
   // --- Actions ---
 
-  downloadAttachment(file: Attachment) {}
+  downloadAttachment(file: AttachmentDTO) {
+    this.emailHandler.downloadAttachment(file.id);
+  }
 
-  async handleSummarize() {
+  handleSummarize() {
     this.isSummarizing.set(true);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const text =
-      `This email from ${this.email.sender.name} discusses ${this.email.subject.toLowerCase()}. ` +
-      `Key points include action items that require attention. ` +
-      `The sender is requesting a response or follow-up.`;
-
-    this.summary.set(text);
-    this.isSummarizing.set(false);
+    
+    this.emailHandler.summarizeEmail(this.mailDetail.id).subscribe({
+      next: (summaryText) => {
+        this.summary.set(summaryText);
+        this.isSummarizing.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to summarize email:', err);
+        this.summary.set('Failed to generate summary. Please try again.');
+        this.isSummarizing.set(false);
+      }
+    });
   }
 
   // --- Helpers ---
@@ -72,7 +78,7 @@ export class EmailDetailComponent {
 
   // Helper to split body into paragraphs
   get paragraphs(): string[] {
-    return this.email.body.split('\n');
+    return this.mailDetail.body.split('\n');
   }
 
   // Creates a downloadable link

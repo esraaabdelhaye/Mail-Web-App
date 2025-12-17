@@ -12,6 +12,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "user_mails")
 public class UserMail {
 
@@ -43,4 +44,10 @@ public class UserMail {
 
     @Column(name = "is_archived")
     private Boolean isArchived;
+
+    @Column(name = "moved_at")
+    private Date movedAt;
+
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
 }

@@ -1,0 +1,468 @@
+<div class="dialog-overlay" (click)="onOverlayClick($event)">
+  <div class="compose-dialog-container" [class.minimized]="isMinimized">
+    <div class="dialog-header">
+      <h2 class="dialog-title">New Message</h2>
+      <div class="header-actions">
+        <button (click)="isMinimized = !isMinimized" class="icon-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="5" x2="19" y1="12" y2="12"></line>
+          </svg>
+        </button>
+        <button (click)="resetForm()" class="icon-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    @if (!isMinimized) {
+    <div class="dialog-body">
+      <form (submit)="handleSend()">
+        <div class="form-group">
+          <label for="to-input">To</label>
+          <div class="recipient-input-container">
+            @for (recipient of to; track $index) {
+            <span class="recipient-badge">
+              {{ recipient.email }}
+              <button type="button" (click)="handleRemoveRecipient(recipient)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </span>
+            }
+            <input
+              id="to-input"
+              type="email"
+              [(ngModel)]="toInput"
+              name="toInput"
+              (keydown)="handleAddRecipient($event, to, 'toInput', 'to')"
+              [placeholder]="to.length === 0 ? 'Add recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+
+          <div class="cc-bcc-controls">
+            @if (!isCcOpen) {
+            <button type="button" class="cc-bcc-button" (click)="isCcOpen = true">Cc</button>
+            } @if (!isBccOpen) {
+            <button type="button" class="cc-bcc-button" (click)="isBccOpen = true">Bcc</button>
+            }
+          </div>
+        </div>
+
+        @if (isCcOpen) {
+        <div class="form-group cc-open">
+          <label class="cc-label" for="cc-input">Cc</label>
+          <div class="recipient-input-container">
+            @for (recipient of cc; track $index) {
+            <span class="recipient-badge">
+              {{ recipient.email }}
+              <button type="button" (click)="handleRemoveRecipient(recipient)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </span>
+            }
+            <input
+              id="cc-input"
+              type="email"
+              [(ngModel)]="ccInput"
+              name="ccInput"
+              (keydown)="handleAddRecipient($event, cc, 'ccInput', 'cc')"
+              [placeholder]="to.length === 0 ? 'Add recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+        </div>
+        } @if (isBccOpen) {
+        <div class="form-group bcc-open">
+          <label class="bcc-label" for="bcc-input">Bcc</label>
+          <div class="recipient-input-container">
+            @for (recipient of bcc; track $index) {
+            <span class="recipient-badge">
+              {{ recipient.email }}
+              <button type="button" (click)="handleRemoveRecipient(recipient)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </span>
+            }
+            <input
+              id="bcc-input"
+              type="email"
+              [(ngModel)]="bccInput"
+              name="bccInput"
+              (keydown)="handleAddRecipient($event, bcc, 'bccInput', 'bcc')"
+              [placeholder]="to.length === 0 ? 'Add recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+        </div>
+        }
+
+        <!-- <div class="form-group">
+          <label>To</label>
+          <div class="recipient-input-container">
+            @for (email of to; track $index) {
+            <span class="recipient-badge">
+              {{ email }}
+              <button type="button" (click)="handleRemoveRecipient(email)">
+                  <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+              </button>
+            </span>
+            }
+
+            <input
+              type="email"
+              [(ngModel)]="toInput"
+              name="toInput"
+              (keydown)="handleAddRecipient($event, to, 'toInput')"
+              [placeholder]="to.length === 0 ? 'Add recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+        </div> -->
+        <!-- <div class="form-group">
+          <label>Cc</label>
+          <div class="recipient-input-container">
+            @for (email of cc; track $index) {
+            <span class="recipient-badge">
+              {{ email }}
+              <button type="button" (click)="handleRemoveRecipient(email)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </span>
+            }
+
+            <input
+              type="email"
+              [(ngModel)]="ccInput"
+              name="ccInput"
+              (keydown)="handleAddRecipient($event, cc, ccInput)"
+              [placeholder]="to.length === 0 ? 'Add CC recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Bcc</label>
+          <div class="recipient-input-container">
+            @for (email of bcc; track $index) {
+            <span class="recipient-badge">
+              {{ email }}
+              <button type="button" (click)="handleRemoveRecipient(email)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </span>
+            }
+
+            <input
+              type="email"
+              [(ngModel)]="bccInput"
+              name="bccInput"
+              (keydown)="handleAddRecipient($event, bcc, bccInput)"
+              [placeholder]="to.length === 0 ? 'Add BCC recipients...' : ''"
+              class="recipient-input"
+            />
+          </div>
+        </div> -->
+
+        <div class="flex-row">
+          <div class="form-group flex-grow">
+            <label>Subject</label>
+            <input
+              type="text"
+              [(ngModel)]="subject"
+              name="subject"
+              placeholder="Enter subject..."
+              class="text-input"
+            />
+          </div>
+          <div class="form-group priority-select">
+            <label>Priority</label>
+
+            <select
+              [(ngModel)]="priority"
+              name="priority"
+              class="select-input"
+              [style.color]="getPriorityOption(priority).color"
+            >
+              @for (level of priorityLevels; track level.value) {
+              <option [value]="level.value" [style.color]="level.color">
+                {{ level.label }}
+              </option>
+              }
+            </select>
+
+            <!-- <select [(ngModel)]="priority" name="priority" class="select-input">
+              <option value="1">{{ getPriorityLabel('1') }}</option>
+              <option value="2">{{ getPriorityLabel('2') }}</option>
+              <option value="3">{{ getPriorityLabel('3') }}</option>
+              <option value="4">{{ getPriorityLabel('4') }}</option>
+            </select> -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Message</label>
+          <textarea
+            [(ngModel)]="body"
+            name="body"
+            placeholder="Write your message..."
+            class="textarea-input"
+          ></textarea>
+        </div>
+
+        @if (attachments.length > 0) {
+        <div class="form-group flex-row">
+          <label>Attachments</label>
+          <div class="attachment-list-container">
+            @for (file of attachments; track $index; let i = $index) {
+            <div class="attachment-item">
+              <span class="attachment-name">{{ getAttachmentName(i) }}</span>
+              <div class="attachment-info">
+                <span class="file-size">{{ getAttachmentSize(i) }}</span>
+                @if (canDownloadAttachment(i)) {
+                <button
+                  type="button"
+                  (click)="downloadAttachment(i)"
+                  class="download-attachment-button"
+                  title="Download attachment"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" x2="12" y1="15" y2="3" />
+                  </svg>
+                </button>
+                }
+                <button
+                  type="button"
+                  (click)="handleRemoveAttachment(i)"
+                  class="remove-attachment-button"
+                  title="Remove attachment"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <div class="popup-container">
+          @for (msg of duplicateMessages; track $index) {
+          <div class="popup-message {{msg.type}}" >
+            {{ msg.text }}
+          </div>
+          }
+        </div>
+
+        <div class="dialog-footer">
+          <div>
+            <input
+              type="file"
+              id="attachments-input"
+              multiple
+              (change)="handleFileChange($event)"
+              style="display: none"
+              #fileInput
+            />
+            <button
+              type="button"
+              (click)="fileInput.click()"
+              class="action-button-outline"
+              #fileInput
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.2"
+                />
+              </svg>
+              Attach
+            </button>
+          </div>
+          <div class="footer-buttons">
+            <button type="button" (click)="handleSaveDraft()" class="action-button-outline">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <path d="M17 21v-8H7v8" />
+                <path d="M7 3v4h4" />
+              </svg>
+              Save Draft
+            </button>
+            <button
+              app-button
+              type="submit"
+              [disabled]="(to.length === 0 && cc.length === 0 && bcc.length === 0) || !subject"
+              class="compose-btn shadow-hover"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="22" x2="11" y1="2" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+              Send
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+    }
+  </div>
+
+</div>
+
+
+
+

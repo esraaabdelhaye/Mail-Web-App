@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { Component, inject, computed, OnInit, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,23 +16,31 @@ import {
   Mail,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-import { FolderDTO as FolderModel } from '../../app/models/FolderDTO';
+import { FolderDTO } from '../../app/models/FolderDTO';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
-import {ComposeModalComponent} from '../compose-model/compose-model';
+import { ComposeEmail } from '../compose-email/compose-email';
+import { NotificationService } from '../../services/notification/notification-service';
+import { AuthService } from '../../services/auth/auth-service';
 
 @Component({
   selector: 'app-email-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ComposeModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ComposeEmail],
   templateUrl: './email-sidebar.html',
   styleUrls: ['./email-sidebar.css'],
 })
-export class EmailSidebarComponent implements OnInit{
-  protected emailHandler = inject(EmailHandler);
+export class EmailSidebarComponent implements OnInit {
+  @Output() contactsClick = new EventEmitter<void>(); // Used to open the contacts-view from the main-page
+  @Output() folderClick = new EventEmitter<void>(); // Used to close contacts-view when navigating to a folder
+  @Input() isContactsOpen: boolean = false; // Track if contacts view is open
 
-  // Runs when the component is loaded
-  ngOnInit(): void {
-      this.emailHandler.loadFolders(); // We load the folders
+  protected emailHandler = inject(EmailHandler);
+  protected notificationService = inject(NotificationService);
+  protected authService = inject(AuthService);
+  showComposeEmailDialog = false;
+
+  ngOnInit() {
+    this.emailHandler.loadFolders();
   }
 
   // --- State ---
@@ -41,7 +49,8 @@ export class EmailSidebarComponent implements OnInit{
   editingFolderId: string | null = null;
   editingFolderName = '';
   isFoldersOpen = true;
-  isComposeOpen = false;
+  showDraftSavedToast: boolean = false;
+  userMessage = '';
 
   // --- Icons ---
   readonly icons = {
@@ -58,30 +67,28 @@ export class EmailSidebarComponent implements OnInit{
     Mail,
   };
 
-  // default folders are the system default folders (not custom)
-  get defaultFolders(): FolderModel[] {
-    return this.emailHandler.folders()!.filter(f => !f.isCustom);
-  }
+  public readonly defaultFolders = computed(() => {
+    return this.emailHandler.folders().filter((f) => !f.isCustom);
+  });
 
-  // // Custom folders are the non default folders (user created, i.e. custom)
-  get customFolders(): FolderModel[] {
-    return this.emailHandler.folders()!.filter(f => f.isCustom);
-  }
+  public readonly customFolders = computed(() => {
+    return this.emailHandler.folders().filter((f) => f.isCustom);
+  });
 
-  // getFolderCount(folderId: string){
-  //   return this.emailHandler.folderCounts()[folderId] || 0;
-  // }
+  getFolderCount(folderId: number): number {
+    return this.emailHandler.folderCounts()[folderId] || 0;
+  }
 
   // Helper to map system IDs to Icons
   getIconForFolder(id: string): any {
     switch (id) {
-      case 'inbox':
+      case 'Inbox':
         return this.icons.Inbox;
-      case 'sent':
+      case 'Sent':
         return this.icons.Send;
-      case 'drafts':
+      case 'Drafts':
         return this.icons.FileText;
-      case 'trash':
+      case 'Trash':
         return this.icons.Trash2;
       default:
         return this.icons.Folder;
@@ -90,28 +97,52 @@ export class EmailSidebarComponent implements OnInit{
 
   // --- Actions ---
   handleAddFolder() {
-    if (this.newFolderName.trim()) {
-      this.emailHandler.addFolder(this.newFolderName.trim());
+    let name = this.newFolderName.trim();
+    if (!name) this.notificationService.showError("Can't have an empty name!");
+    else {
+      this.emailHandler.addFolder(name);
+
       this.newFolderName = '';
       this.isAddingFolder = false;
     }
   }
 
-  handleEditFolder(id: string) {
-    if (this.editingFolderName.trim()) {
-      this.emailHandler.editFolder(id, this.editingFolderName);
+  handleEditFolder(id: string, oldName: string) {
+    let newName = this.editingFolderName.trim();
+    if (newName == oldName) this.notificationService.showError('Same Name');
+    else if (!newName) this.notificationService.showError("Can't have an empty name");
+    else {
+      this.emailHandler.editFolder(id, newName);
       this.editingFolderId = null;
       this.editingFolderName = '';
     }
   }
 
-  openComposeEmailModal() {
-    this.isComposeOpen = true;
+  openComposeEmailDialog() {
+    this.showComposeEmailDialog = true;
   }
 
-  startEditing(folder: FolderModel, event: Event) {
+  closeComposeEmailDialog() {
+    this.showComposeEmailDialog = false;
+  }
+
+  onDraftSaved() {
+    // Here you can also call backend to save the draft
+    this.showDraftSavedToast = true;
+
+    setTimeout(() => {
+      this.showDraftSavedToast = false;
+    }, 2000);
+  }
+
+  startEditing(folder: FolderDTO, event: Event) {
     event.stopPropagation();
-    this.editingFolderId = folder.folderID;
+    this.editingFolderId = folder.folderID.toString();
     this.editingFolderName = folder.folderName;
+  }
+
+  selectFolder(folderName: string) {
+    this.emailHandler.selectFolder(folderName);
+    this.folderClick.emit(); // Notify main page to close contacts view
   }
 }

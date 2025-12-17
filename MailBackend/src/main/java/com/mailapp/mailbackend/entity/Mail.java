@@ -1,12 +1,11 @@
 package com.mailapp.mailbackend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter; // <-- Import Lombok Getter
-import lombok.Setter; // <-- Import Lombok Setter
-import lombok.NoArgsConstructor; // Recommended for JPA
-import lombok.AllArgsConstructor; // Recommended for JPA
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "mails")
@@ -14,6 +13,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Mail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +28,14 @@ public class Mail {
     private String subject;
 
 
-    @Lob
-    @Column(name = "body")
+    @Column(name = "body",  columnDefinition = "TEXT")
     private String body;
 
     @Column(name = "sent_at")
     private Date sentAt;
+
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     @Column(name = "is_draft")
     private Boolean isDraft;
@@ -44,4 +46,9 @@ public class Mail {
     @Column(name = "deleted_at")
     private Date deletedAt;
 
+    @Column(name = "priority")
+    private int priority;
+
+    @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attachment> attachments = new ArrayList<>();
 }

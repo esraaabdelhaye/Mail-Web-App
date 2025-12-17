@@ -1,7 +1,6 @@
-import { Email } from './email.model';
-
+import { MailSummaryDTO } from './MailSummaryDTO';
 export interface EmailPageDTO {
-  content: Email[];
+  content: MailSummaryDTO[];
   totalPages: number;
   totalElements: number;
   currentPage: number;

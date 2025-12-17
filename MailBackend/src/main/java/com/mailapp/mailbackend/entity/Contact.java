@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "contacts")
 @Getter
@@ -30,4 +32,7 @@ public class Contact {
     private String primaryEmail;
 
 
+    // Adding this eases out the retrival of all the emails of the contact
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ContactEmail> emails;
 }

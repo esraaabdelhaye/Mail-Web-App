@@ -1,3 +1,15 @@
+*{
+  box-sizing: border-box;
+}
+
+:host {
+  /* Priority Colors */
+  --color-priority-urgent: #ef4444; /* Red */
+  --color-priority-high: #f59e0b; /* Amber */
+  --color-priority-low: #3b82f6; /* Blue */
+  --color-priority-normal: rgb(0, 146, 0);
+}
+
 .list-container {
   display: flex;
   flex-direction: column;
@@ -8,8 +20,8 @@
 /* Toolbar */
 .toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  /* flex-direction: column; */
+  gap: 2rem;
   padding: 1rem;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -17,7 +29,7 @@
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   flex-wrap: nowrap;
   width: 100%;
 }
@@ -32,11 +44,22 @@
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   color: hsl(var(--muted-foreground));
   width: 1rem;
   height: 1rem;
+}
+
+.search-options-icon {
+  position: absolute;
+  right: 0.5rem;
+  top: 40%;
+  /*transform: translateY(-50%);*/
+  color: hsl(var(--muted-foreground));
+  width: 1rem;
+  height: 1rem;
+  margin-right: 15px;
 }
 
 .search-input {
@@ -57,7 +80,8 @@
 }
 
 /* Selects */
-.sort-select, .action-select {
+.sort-select,
+.action-select {
   height: 2.5rem;
   padding: 0 0.75rem;
   border: 1px solid hsl(var(--input));
@@ -137,28 +161,31 @@
   gap: 1rem;
 }
 
-
+/* Email Rows - Professional Styling */
 .email-row {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  padding: 1rem 1rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
   cursor: pointer;
-  transition: background-color 0.1s;
+  transition: all 0.15s ease;
+  background-color: hsl(var(--background));
 }
 
 .email-row:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: hsl(var(--accent) / 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .email-row.unread {
-  background-color: rgba(105, 105, 105, 0.21);
-  font-weight: 600;
+  background-color: hsl(var(--primary) / 0.03);
+  border-left: 3px solid hsl(var(--primary));
 }
 
 .email-row.selected {
-  background-color: hsl(var(--accent));
+  background-color: hsl(var(--accent) / 0.5);
   border-left: 3px solid hsl(var(--primary));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .row-checkbox {
@@ -171,14 +198,28 @@
   justify-content: center;
 }
 
-.priority-high { color: hsl(var(--destructive)); width: 1rem}
-.priority-medium { color: #f59e0b; width: 1rem}
-.priority-low { color: #3b82f6; width: 1rem}
+.row-priority .priority-urgent {
+  color: var(--color-priority-urgent);
+}
+.row-priority .priority-high {
+  color: var(--color-priority-high);
+}
+.row-priority .priority-low {
+  color: var(--color-priority-low);
+}
 
+.row-priority .priority-normal {
+  color: var(--color-priority-normal);
+}
+
+/* Row Content - Improved Typography */
 .row-content {
   flex: 1;
   margin-left: 0.75rem;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .row-top {
@@ -188,29 +229,49 @@
 }
 
 .sender-name {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: hsl(var(--foreground));
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .subject-line {
   font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+/* Preview Line Styling (for when uncommented) */
+.preview-line {
+  font-size: 0.8125rem;
   color: hsl(var(--muted-foreground));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.4;
+  margin-top: 0.125rem;
 }
 
-.email-row.unread .sender-name,
-.email-row.unread .subject-line {
+.email-row.unread .sender-name {
   color: hsl(var(--foreground));
   font-weight: 600;
 }
 
+.email-row.unread .subject-line {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
 .row-date {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: hsl(var(--muted-foreground));
   margin-left: 1rem;
   white-space: nowrap;
+  font-weight: 400;
+  min-width: fit-content;
 }
 
 /* Pagination */
@@ -248,5 +309,11 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

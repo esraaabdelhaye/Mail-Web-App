@@ -16,9 +16,9 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { PopupMessage } from '../../shared/popup-message/popup-message';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth-service';
+import { NotificationService } from '../../services/notification/notification-service';
 
 interface LoginFormGroup {
   email: FormControl<string>;
@@ -35,7 +35,7 @@ interface SignupFormGroup {
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, PopupMessage],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './login-page.html',
   styleUrls: ['./login-page.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,12 +45,11 @@ export class LoginPage {
   public isLoading = signal(false);
   public userService: UserService = inject(UserService);
   public authService: AuthService = inject(AuthService);
+  public notificationService: NotificationService = inject(NotificationService);
   public validLogin: boolean = false;
   public validSignUp: boolean = false;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
-
-  @ViewChild(PopupMessage) popupMessage!: PopupMessage;
 
   public loginForm = new FormGroup<LoginFormGroup>({
     email: new FormControl('', {
@@ -100,14 +99,6 @@ export class LoginPage {
     }
   }
 
-  private displayError(message: string): void {
-    this.popupMessage.setMessageAndTimeout(message, false);
-  }
-
-  private displaySuccess(message: string): void {
-    this.popupMessage.setMessageAndTimeout(message, true);
-  }
-
   handleLogin(event: Event): void {
     event.preventDefault();
 
@@ -131,7 +122,7 @@ export class LoginPage {
     this.userService.login(oldUser).subscribe({
       next: (response) => {
         console.log(response);
-        if (response.reqState) this.loginVerified(response.reqMessage, response.id);
+        if (response.reqState) this.loginVerified(response);
         else this.loginFailed(response.reqMessage);
       },
       error: (err) => {
@@ -184,25 +175,24 @@ export class LoginPage {
     this.isLoading.set(false);
     this.validSignUp = true;
     const message = 'User Registered Successfully: ' + mess;
-    this.displaySuccess(message);
+    this.notificationService.showSuccess(message);
     this.switchTab('login');
   }
 
   private signUpFailed(mess: any | 'SignUp failed. Please check your credentials.') {
     this.isLoading.set(false);
     const message = 'Registration failed: ' + mess;
-    this.displayError(message);
-    console.error(message);
+    this.notificationService.showError(message);
     this.validSignUp = false;
   }
 
-  private loginVerified(mess: any | '', id: any) {
+  private loginVerified(response: any) {
     this.isLoading.set(false);
     this.validLogin = true;
-    const message = 'User Logged In Successfully: ' + mess;
-    this.displaySuccess(message);
+    const message = 'User Logged In Successfully: ' + response.reqMessage;
+    this.notificationService.showSuccess(message);
 
-    this.authService.saveAuthData(id);
+    this.authService.saveAuthData(response);
 
     // 2. Navigate away from the login page to the application dashboard
     this.router.navigate(['/home']);
@@ -212,7 +202,7 @@ export class LoginPage {
     this.isLoading.set(false);
     this.validLogin = false;
     const message = 'Login failed: ' + mess;
-    this.displayError(message);
+    this.notificationService.showError(message);
     console.error(message);
   }
 }

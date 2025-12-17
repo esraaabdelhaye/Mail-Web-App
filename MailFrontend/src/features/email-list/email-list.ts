@@ -1,10 +1,16 @@
-import { Component, ChangeDetectionStrategy, signal, OnInit, computed } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  signal,
+  OnInit,
+  OnDestroy,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailHandler } from '../../services/emails-handler/email-handler';
 import { AuthService } from '../../services/auth/auth-service';
 import { EmailPageDTO } from '../../app/models/EmailPageDTO';
-import { Email } from '../../app/models/email.model';
 import { Observable, Subscription } from 'rxjs';
 import { PaginationRequest } from '../../app/models/PaginationRequest';
 import {
@@ -24,28 +30,23 @@ import {
   LayoutGrid,
 } from 'lucide-angular';
 import { ButtonComponent } from '../../shared/button/button';
-
-enum Priority {
-  HIGH = 1,
-  MEDIUM = 2,
-  LOW = 3,
-  NONE = 4,
-}
-
-interface Sender {
-  name: string;
-  email: string;
-}
-
-interface CustomFolder {
-  id: number;
-  name: string;
-}
+import { MailSummaryDTO } from '../../app/models/MailSummaryDTO';
+import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import { SearchOptionsModalComponent } from '../search-options-modal/search-options-modal';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
+import { ComposeEmail } from './../compose-email/compose-email';
 
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, ButtonComponent],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    FormsModule,
+    ButtonComponent,
+    SearchOptionsModalComponent,
+    ComposeEmail,
+  ],
   templateUrl: './email-list.html',
   styleUrls: ['./email-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,38 +70,83 @@ export class EmailListComponent implements OnInit {
   };
 
   public emailPage = signal<EmailPageDTO | null>(null);
-  public paginatedEmails = signal<Email[]>([]);
-  public processedEmails = signal<Email[]>([]);
+  public paginatedEmails = signal<MailSummaryDTO[]>([]);
+  public processedEmails = signal<MailSummaryDTO[]>([]);
 
   public searchQuery = signal('');
-  public sortBy = signal('sentAt');
+  public sortBy = signal('DATE_DESC');
   public viewMode = signal<'default' | 'priority'>('default');
 
-  public selectedIds = signal(new Set<Number>());
-  public currentFolder = signal('Inbox');
+  public selectedIds = signal(new Set<number>());
   public isLoading = signal(false);
   public isRefreshing = signal<boolean>(false);
   public selectedEmailId = signal<number | null>(null);
-  public currentlyOpened = signal<Email | null>(null);
+  public currentlyOpened = signal<MailDetailsDTO | null>(null);
 
   public currentPage = signal(1);
   public itemsPerPage = signal(10);
+  public isFirst = signal<boolean>(true);
+  public isLast = signal<boolean>(true);
 
   public totalPages = computed(() => this.emailPage()?.totalPages || 1);
   public totalEmails = computed(() => this.emailPage()?.totalElements || 0);
 
-  public customFolders: CustomFolder[] = [
-    { id: 101, name: 'Work' },
-    { id: 102, name: 'Personal' },
-  ];
+  private pollingInterval: any;
+  public isSearchMode = signal(false);
+
+  // Store advanced search criteria for pagination
+  private advancedSearchCriteria = signal<SearchRequestDTO | null>(null);
 
   public onRefresh(): void {
+    console.log('REFRESH');
+
     this.fetchMail(true);
   }
-  public openEmail(email: any): void {
-    this.selectedEmailId = email.id;
-    this.currentlyOpened = email;
+  public openEmail(emailId: number): void {
+    if (this.isDraftsFolder()) {
+      // this.selectedEmailId.set(emailId);
+      console.log(emailId);
+
+      this.openDraftInCompose(emailId);
+      return;
+    }
+    this.selectedEmailId.set(emailId);
+    const userId = this.authService.getCurrentUserId();
+    this.emailHandler.getMailDetails(Number(userId), emailId).subscribe({
+      next: (data) => {
+        this.currentlyOpened.set(data);
+        console.log('Email details received:', data);
+        console.log('Attachments:', data.attachments);
+        console.log('Attachments length:', data.attachments?.length);
+        console.log('from email List: ', this.currentlyOpened);
+      },
+      error: (err) => {
+        console.log('failed to open email', err);
+      },
+    });
   }
+
+  private openDraftInCompose(emailId: number): void {
+    const userId = this.authService.getCurrentUserId();
+
+    this.emailHandler.getDraftForCompose(emailId).subscribe({
+      next: (draft) => {
+        this.emailHandler.openComposeWithDraft(draft);
+      },
+      error: (err) => {
+        console.log('failed to open draft', err);
+      },
+    });
+  }
+
+  private isDraftsFolder(): boolean {
+    return this.emailHandler.currentFolderName() === 'Drafts';
+  }
+
+  isInbox(): boolean {
+    return this.emailHandler.currentFolderName() === 'Inbox';
+  }
+
 
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);
@@ -109,37 +155,82 @@ export class EmailListComponent implements OnInit {
 
   public math = Math;
 
-  constructor(private emailHandler: EmailHandler, private authService: AuthService) {}
+  constructor(protected emailHandler: EmailHandler, private authService: AuthService) {}
 
   ngOnInit(): void {
+    // this is very very very very very very very very very very bad design, this should be changed but i'll leave it cause I only want to test the concept
+    // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
+    this.emailHandler.regList(this);
+    console.log('From ngOnInit');
+
+    // this.sortBy.set('DATE_DESC');
+    this.fetchMail();
+
+    // Set up polling to refresh emails every 10 seconds
+    // this.pollingInterval = setInterval(() => {
+    //   this.fetchMail();
+    // }, 10000); // 10 seconds
+  }
+
+  // ngOnDestroy(): void {
+  //   // Clean up the interval when component is destroyed
+  //   if (this.pollingInterval) {
+  //     clearInterval(this.pollingInterval);
+  //   }
+  // }
+
+  priorityChanged() {
+    this.currentPage.set(1);
+    console.log('Priority Changed');
+
     this.fetchMail();
   }
 
-  fetchMail(isRefresh: boolean = false): void {
+  public fetchMail(isRefresh: boolean = false): void {
+    console.log('FetchMail was called');
+
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
 
+    // Clear selections when navigating (but not when refreshing)
+    // Adding this here helps clear selections during navigation, like navigating to a folder for example
+    if (!isRefresh) {
+      this.selectedIds.set(new Set());
+      // Clear advanced search criteria when switching to normal folder browsing
+      this.advancedSearchCriteria.set(null);
+    }
+
     const apiPage = this.currentPage() - 1;
     const userId = this.authService.getCurrentUserId();
+
+    const effectiveSort =
+      this.isInbox() && this.viewMode() === 'priority' ? 'PRIORITY_MODE' : this.sortBy();
+
     const request: PaginationRequest = {
       userId: Number(userId),
-      folderName: this.currentFolder(),
+      folderName: this.emailHandler.currentFolderName(),
       page: apiPage,
       size: this.itemsPerPage(),
-      sortBy: this.sortBy(),
-      sortDirection: 'desc',
+      sortBy: effectiveSort,
+      // sortDirection: 'desc',
     };
 
-    this.emailHandler.getMailPage(request).subscribe({
+    const observable = this.isSearchMode()
+    ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
+    : this.emailHandler.getMailPage(request);
+
+    observable.subscribe({
       next: (data) => {
-        // Set the main page data
         this.emailPage.set(data);
-        console.log('emails size: ', data.content.length);
         this.paginatedEmails.set(data.content);
         this.currentPage.set(data.currentPage + 1);
-
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
         this.isLoading.set(false);
         this.isRefreshing.set(false);
+        console.log('Paginated Mails After Fetch: ', this.paginatedEmails());
+
+        this.emailHandler.loadFolderCounts();
       },
       error: (err) => {
         console.error('Failed to load emails:', err);
@@ -149,16 +240,52 @@ export class EmailListComponent implements OnInit {
     });
   }
 
+  setViewMode(mode: 'default' | 'priority') {
+    console.log('Set View Mode');
+
+    this.viewMode.set(mode);
+    this.currentPage.set(1);
+    this.fetchMail();
+  }
+
+
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
+    console.log('Change Page');
 
     if (newPage >= 1 && newPage <= this.totalPages()) {
       this.currentPage.set(newPage);
-      this.fetchMail();
+      this.selectedIds.set(new Set()); // Clear selections when changing pages
+
+      // If we're in advanced search mode, fetch the next page of search results
+      // Otherwise, fetch the next page of folder emails
+      const searchCriteria = this.advancedSearchCriteria();
+
+      if (searchCriteria) {
+        this.isLoading.set(true);
+        const apiPage = newPage - 1; // Convert to 0-indexed
+
+        this.emailHandler.doAdvancedSearch(searchCriteria, apiPage, this.itemsPerPage(), this.sortBy()).subscribe({
+          next: (data) => {
+            this.emailPage.set(data);
+            this.paginatedEmails.set(data.content);
+            this.currentPage.set(data.currentPage + 1);
+            this.isFirst.set(data.isFirst);
+            this.isLast.set(data.isLast);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load search results page:', err);
+            this.isLoading.set(false);
+          },
+        });
+      } else {
+        this.fetchMail();
+      }
     }
   }
 
-  toggleEmailSelection(id: Number, event: Event): void {
+  toggleEmailSelection(id: number, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.selectedIds.update((set) => {
       if (isChecked) {
@@ -185,21 +312,130 @@ export class EmailListComponent implements OnInit {
     });
   }
 
+  isAllSelected(): boolean {
+    const emails = this.paginatedEmails();
+    if (emails.length === 0) return false;
+    return emails.every((email) => this.selectedIds().has(email.id));
+  }
+
+  handleAdvancedSearch(request: SearchRequestDTO) {
+    this.isLoading.set(true);
+    this.paginatedEmails.set([]);
+
+    // Enable search mode to indicate we're showing search results, not folder contents
+    this.isSearchMode.set(true);
+
+    // Store the search criteria for pagination
+    this.advancedSearchCriteria.set(request);
+
+    // Reset to page 1 for new search
+    this.currentPage.set(1);
+
+    this.emailHandler.doAdvancedSearch(request).subscribe({
+      next: (data) => {
+        // Update all pagination state from the response (same as fetchMail)
+        this.emailPage.set(data);
+        this.paginatedEmails.set(data.content);
+        this.currentPage.set(data.currentPage + 1); // Convert from 0-indexed to 1-indexed
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
+        this.isLoading.set(false);
+        console.log('Advanced Search Results: ', data);
+      },
+      error: (err) => {
+        console.error('Failed to perform advanced search:', err);
+        this.isLoading.set(false);
+      },
+    });
+  }
+
   // --- BULK ACTION HANDLERS ---
 
-  handleMove(folderId: number): void {
-    console.log(`Moving ${this.selectedIds().size} emails to folder ID: ${folderId}`);
-    this.selectedIds.set(new Set());
-    this.fetchMail();
+  handleMove(targetFolderName: string): void {
+    const mailIds = Array.from(this.selectedIds());
+
+    console.log(`Moving ${mailIds.length} emails to folder: ${targetFolderName}`);
+    this.emailHandler.moveEmailsToFolder(
+      mailIds,
+      targetFolderName,
+      'Emails moved successfully',
+      () => {
+        this.selectedIds.set(new Set());
+        // Only reset to page 1 if current page will be empty
+        const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+        if (remainingOnPage <= 0) {
+          this.currentPage.set(1);
+        }
+        this.fetchMail();
+      }
+    );
   }
 
   handleDelete(): void {
-    if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
-      console.log(`Deleting ${this.selectedIds().size} emails...`);
-      this.selectedIds.set(new Set());
-      this.fetchMail();
+    const mailIds = Array.from(this.selectedIds());
+
+    if (this.emailHandler.currentFolderName() == 'Trash') {
+      if (
+        confirm(`Are you sure you want to PERMANENTLY delete ${this.selectedIds().size} emails?`)
+      ) {
+        this.emailHandler.permanentlyDeleteEmails(mailIds, () => {
+          this.selectedIds.set(new Set());
+          // Only reset to page 1 if current page will be empty
+          const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+          if (remainingOnPage <= 0) {
+            this.currentPage.set(1);
+          }
+          this.fetchMail();
+        });
+      }
+    } else {
+      if (confirm(`Are you sure you want to delete ${this.selectedIds().size} emails?`)) {
+        // console.log(`Deleting ${this.selectedIds().size} emails...`);
+        // this.selectedIds.set(new Set());
+        // this.fetchMail();
+        this.emailHandler.moveEmailsToFolder(
+          mailIds,
+          'Trash',
+          'Emails deleted to Trash successfully',
+          () => {
+            this.selectedIds.set(new Set());
+            // Only reset to page 1 if current page will be empty
+            const remainingOnPage = this.paginatedEmails().length - mailIds.length;
+            if (remainingOnPage <= 0) {
+              this.currentPage.set(1);
+            }
+            this.fetchMail();
+          }
+        );
+      }
     }
   }
+
+  // Quick Search
+  onSearchChange(query: string) {
+    this.searchQuery.set(query);
+
+  }
+
+  onSearchEnter() {
+    console.log('On search enter was called');
+    const query = this.searchQuery().trim();
+
+    // If search box is empty → exit search mode
+    if (!query) {
+      this.isSearchMode.set(false);
+      this.currentPage.set(1);
+      this.fetchMail();
+      return;
+    }
+
+    // Enter search mode
+    this.isSearchMode.set(true);
+    this.currentPage.set(1);
+
+    this.fetchMail(); // pagination-safe
+  }
+
 
   // --- UTILITIES (Referenced in HTML) ---
 

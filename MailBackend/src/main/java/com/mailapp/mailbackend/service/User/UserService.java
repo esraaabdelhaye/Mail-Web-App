@@ -5,7 +5,7 @@ import com.mailapp.mailbackend.dto.UserDTO;
 import com.mailapp.mailbackend.entity.User;
 import com.mailapp.mailbackend.enums.ChainType;
 import com.mailapp.mailbackend.repository.UserRepo;
-import com.mailapp.mailbackend.service.User.Folder.FolderService;
+import com.mailapp.mailbackend.service.Folder.FolderService;
 import com.mailapp.mailbackend.service.User.auth.ChainFactory;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,7 @@ public class UserService {
         if(chainFactory.getChain(ChainType.Login).handle(userDTO)) {
             User user = userRepo.findByEmail(userDTO.email);
             userDTO.id = user.getId();
+            userDTO.fullName = user.getFullName();
             return userDTO;
         }
         return userDTO;

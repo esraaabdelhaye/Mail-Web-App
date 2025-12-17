@@ -1,0 +1,421 @@
+.dialog-overlay{
+position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 200ms ease;
+}
+
+
+/* General form group and layout */
+.form-group {
+  display: flex; 
+  border-bottom: 1px solid #ddd; /* Light separator line */
+  padding: 8px 0;
+  align-items: center; /* Vertically centers content */
+}
+
+/* Style for the "To", "Cc", "Bcc" labels */
+.form-group label {
+  color: #5f6368; /* Gmail's standard gray text */
+  font-size: 0.875rem; 
+  font-weight: 500;
+  width: 50px; /* Fixed width for alignment */
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 15px;
+  cursor: default;
+}
+
+/* Container for all recipient badges and the text input */
+.recipient-input-container {
+  display: flex;
+  flex-wrap: wrap; 
+  align-items: center;
+  flex-grow: 1; 
+  /* min-height: 24px; */
+}
+
+/* The badge that wraps each recipient email */
+.recipient-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e8f0fe; /* Light blue background for the badge */
+  color: #202124; 
+  border-radius: 16px; 
+  padding: 4px 8px; 
+  margin: 2px 4px 2px 0; 
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* The remove button within the badge (the 'X') */
+.recipient-badge button, .remove-attachment-button, .download-attachment-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 6px;
+  line-height: 1;
+  color: #5f6368; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.1s ease-in-out;
+}
+
+.recipient-badge button:hover, .remove-attachment-button:hover, .download-attachment-button:hover {
+  color: #202124; 
+}
+
+.download-attachment-button {
+  margin-left: 4px;
+}
+
+.download-attachment-button:hover {
+  color: #1a73e8; /* Blue color on hover for download */
+}
+
+/* The actual text input field */
+.recipient-input {
+  border: 1px solid #ccc;
+  padding: 4px 0; 
+  /* margin: 2px 0; */
+  font-size: 0.875rem;
+  /* line-height: 1.5; */
+  color: #202124;
+  flex-grow: 1; 
+  min-width: 150px; 
+}
+
+.recipient-input-container:focus-within {
+    border-color: hsl(var(--primary)); 
+    box-shadow: 0 0 0 1px hsl(var(--primary)); 
+    transition: all 0.2s ease;
+}
+
+.recipient-input::placeholder {
+  color: #9aa0a6;
+}
+
+/* --- Styles for CC/BCC on the Side --- */
+
+.cc-bcc-controls {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* Pushes the controls to the right */
+  padding-left: 10px; 
+  flex-shrink: 0;
+}
+
+.cc-bcc-button {
+  background: none;
+  border: none;
+  color: #4c5056; /* Gmail's blue color for links/buttons */
+  font-size: 0.875rem;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: opacity 0.1s ease-in-out;
+}
+
+.cc-bcc-button:hover {
+  opacity: 0.8;
+}
+
+/* Placeholder for basic structure */
+.compose-dialog-container {
+  /* Mimics a fixed dialog position */
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* width: 600px; */
+  transition: width 0.3s;
+  max-height: 100vh; /* Example: 80% of the viewport height */
+  /* This is the key fix: It adds a vertical scrollbar when content exceeds the max-height */
+  overflow-y: auto; 
+  /* Prevent horizontal scrolling unless absolutely necessary */
+  overflow-x: hidden;
+  width: 800px; /* Example: This is a common comfortable width */
+
+  /* Set a minimum width to ensure it never shrinks too small */
+  min-width: 600px;
+}
+
+.compose-dialog-container.minimized {
+  width: 300px; /* Smaller width for minimized state */
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.dialog-title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dialog-body {
+  padding: 16px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.recipient-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 1px solid #ccc;
+  /* padding: 8px; */
+  border-radius: 4px;
+}
+
+.recipient-badge {
+  display: flex;
+  align-items: center;
+  background-color: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+}
+
+.recipient-badge button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+
+}
+
+.recipient-badge button:hover {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #666;
+  
+}
+
+.recipient-badge button mat-icon{
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+.recipient-input, .text-input, .textarea-input, .select-input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  width: 100%;
+}
+
+.recipient-input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+}
+
+.textarea-input {
+  min-height: 200px;
+  max-height: fit-content;
+  resize: none;
+  font-family: Arial, sans-serif;
+}
+
+.flex-row {
+  display: flex;
+  gap: 25px;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.priority-select {
+  /* width: 120px; */
+}
+
+.attachment-list-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px; /* Space between each attachment item */
+}
+
+
+
+.attachment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 5px;
+  background-color: #fafafa;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: 1px solid #eee;
+}
+
+.attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.popup-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* space between messages */
+  z-index: 1000;
+}
+
+.popup-message {
+  /* background-color: #ffcccc;
+  border: 1px solid #ff0000; */
+  border-radius: 5px;
+  padding: 10px 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  animation: fadeInOut 0.3s;
+}
+
+.success {
+  background-color: rgb(133, 231, 133);
+  border: 1px solid green;
+}
+
+.error {
+  background-color: #ffcccc;
+  border: 1px solid #ff0000;
+}
+
+@keyframes fadeInOut {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+.dialog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button-primary, .action-button-outline, .action-button-ghost{
+  padding: 8px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+
+.action-button-primary:hover{
+  background-color: hsl(var(--primary))
+}
+.action-button-outline {
+  background-color: white;
+  /* color: hsl(var(--primary)); */
+  border: 1px solid #666;
+  transition: all 0.3s;
+}
+.action-button-outline:hover{
+  background-color: hsl(var(--primary));
+  color: #fafafa;
+}
+
+.action-button-ghost {
+  background: none;
+  border: none;
+  color: #666;
+}
+
+.action-button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.text-input:focus, 
+.textarea-input:focus, 
+.select-input:focus {
+    /* Remove default outline and apply a custom focused border */
+    outline: none; 
+    border-color: hsl(var(--primary)); /* Use your primary color variable */
+    box-shadow: 0 0 0 1px hsl(var(--primary)); /* Add the focus ring effect */
+    transition: all 0.2s ease;
+}
+
+.recipient-input::placeholder,
+.text-input::placeholder,
+.textarea-input::placeholder,
+.select-input::placeholder {
+    color: #9aa0a6; /* A neutral gray color (like Gmail's standard) */
+    opacity: 1; /* Ensures the color is consistent across browsers */
+}
+
+/* Standard Inputs (text and select) */
+.text-input, .select-input {
+    /* Standardize padding to match the effective vertical space of the recipient container */
+    padding: 8px; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    /* Ensure height consistency by setting a baseline font size/line height */
+    font-size: 0.875rem;
+}
+
+/* Fix for priority select misalignment */
+.flex-row .form-group {
+    /* Ensure label and input are vertically centered in this smaller group */
+    align-items: center;
+}
+
+
+
+

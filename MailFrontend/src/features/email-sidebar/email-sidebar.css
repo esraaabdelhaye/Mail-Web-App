@@ -1,6 +1,6 @@
 /* Main Layout */
 .sidebar {
-  width: 260px;
+  width: 240px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -9,31 +9,66 @@
 }
 
 /* Logo */
-.logo-section {
-  padding: 1rem;
-  border-bottom: 1px solid hsl(var(--border));
+/* --- PRIMARY CONTAINER: Sets the avatar beside the text block --- */
+.user-profile-section-horizontal {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: row; /* Arrange items side-by-side */
+  align-items: center; /* Vertically align the avatar and text block */
+  gap: 12px; /* Space between the avatar and the text */
+  padding: 8px; /* Optional padding around the whole profile section */
+  padding-top: 15px;
 }
 
-.logo-box {
-  width: 2rem;
-  height: 2rem;
-  background-color: hsl(var(--primary)); /* Uses Global Primary */
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: hsl(var(--primary-foreground));
+.avatar-box {
+  /* Style for the avatar image container */
+  width: 40px; /* Smaller, more typical size for a sidebar profile */
+  height: 40px;
+  min-width: 40px; /* Ensure it doesn't shrink */
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url('../../assets/cat.png');
 }
 
-.app-name {
+/* --- TEXT CONTAINER: Stacks the name and email vertically --- */
+.user-text-info-vertical {
+  display: flex;
+  flex-direction: column; /* Stack the name and email */
+  /* Note: We typically align items to the start (left) in a vertical stack */
+  align-items: flex-start;
+  overflow: hidden; /* Ensures long names/emails don't break the layout */
+}
+
+.user-name {
+  /* Styles for the Name */
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 1.125rem;
-  color: hsl(var(--foreground));
+  color: var(--text-color-dark, #333); /* Use CSS custom property or fallback */
+  white-space: nowrap; /* Prevents wrapping if name is short */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Truncate if too long */
+  text-transform: capitalize;
 }
 
+.user-email {
+  /* Styles for the Email */
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-color-muted, #777);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-separator {
+  border: none;
+  height: 1px; /* Thickness of the line */
+  background-color: #ddd; /* Light gray color */
+  margin: 10px 0; /* Space above and below the line */
+  width: 100%; /* Ensure it spans the full width */
+}
 /* Compose */
 .compose-section {
   padding: 1rem;
@@ -42,12 +77,27 @@
 .compose-btn {
   width: 100%;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s;
 }
 
+.compose-dialog .mat-dialog-container {
+  padding: 0 !important;
+  margin: 0 !important;
+
+  /* Fix horizontal scrollbar */
+  overflow: visible !important;
+
+  /* Allow the compose UI to expand naturally */
+  width: auto !important;
+  max-width: none !important;
+
+  /* Optional: remove Material shadow/padding */
+  border-radius: 0;
+}
+
 .shadow-hover:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Navigation */
@@ -64,7 +114,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   padding: 0.6rem 0.75rem;
   border-radius: 0.5rem;
   background: transparent;
@@ -76,15 +126,26 @@
   text-align: left;
 }
 
+.nav-item lucide-icon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px; /* prevents shifting */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nav-item:hover {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
 }
 
 .nav-item.active {
   background-color: hsl(var(--secondary));
   color: hsl(var(--secondary-foreground));
   font-weight: 500;
+  filter: brightness(0.8);
+  /* Gives it a slightly darker background color */
 }
 
 .nav-icon {
@@ -93,7 +154,9 @@
 }
 
 .nav-label {
-  flex: 1;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 /* Badges */
@@ -103,6 +166,7 @@
   border-radius: 9999px;
   background-color: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
+  margin-left: auto; /* Push badge to the right */
 }
 
 .badge.active-badge {
@@ -113,6 +177,14 @@
 /* Custom Folders Header */
 .custom-folders-section {
   margin-top: 1.5rem;
+}
+
+.folder-actions lucide-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .section-header {
@@ -138,6 +210,12 @@
 .chevron {
   width: 1rem;
   height: 1rem;
+  width: 16px;
+  height: 16px;
+  min-width: 16px; /* prevents shifting */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.2s;
 }
 
@@ -146,16 +224,17 @@
 }
 
 /* Folder Actions */
-.folder-row-container {
+.nav-item {
   position: relative;
 }
 
 .folder-actions {
   display: none;
   gap: 0.25rem;
+  margin-left: auto;
 }
 
-.folder-row-container:hover .folder-actions {
+.nav-item:hover .folder-actions {
   display: flex;
 }
 
@@ -183,10 +262,13 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mini-input {
   flex: 1;
+  min-width: 0;
   height: 2rem;
   font-size: 0.875rem;
   padding: 0 0.5rem;
@@ -202,8 +284,10 @@
 }
 
 .mini-btn {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  flex-shrink: 0;
 }
 
 /* Add Folder */
@@ -229,6 +313,48 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  background: #333;
+  color: #fff;
+
+  padding: 12px 18px;
+  border-radius: 8px;
+
+  font-size: 14px;
+  z-index: 999999; /* <-- IMPORTANT */
+  opacity: 0.95;
+
+  animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }

@@ -17,7 +17,7 @@
 }
 
 /* Ensure the list component fills the main-content */
-app-email-list {
+app-email-list, app-contacts {
   flex: 1;
   height: 100%;
   overflow: hidden;

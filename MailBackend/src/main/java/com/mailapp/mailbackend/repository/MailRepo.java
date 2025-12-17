@@ -9,4 +9,5 @@ public interface MailRepo extends JpaRepository<Mail, Long> {
     // Find emails where folder matches (assuming you have a folder logic or column)
     // If folder is complex, you might just fetch all for now or filter by user
     List<Mail> findBySenderId(Long userId);
+    List<Mail> findAll();
 }

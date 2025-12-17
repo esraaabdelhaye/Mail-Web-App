@@ -1,0 +1,23 @@
+### Move single email to Another folder
+PUT http://localhost:8080/email/move?userId=3&mailId=2&targetFolder=Karim
+
+### Move single email to Trash folder
+PUT http://localhost:8080/email/move?userId=3&mailId=3&targetFolder=Trash
+
+### Move multiple emails to Archive folder
+PUT http://localhost:8080/email/move?userId=3&mailId=2&mailId=3&targetFolder=Trash
+
+### Move multiple emails to Custom folder
+PUT http://localhost:8080/email/move?userId=2&mailId=10&mailId=11&mailId=12&targetFolder=Work
+
+### Move email back to Inbox
+PUT http://localhost:8080/email/move?userId=3&mailId=3&targetFolder=Inbox
+
+### Test with non-existent folder (should fail)
+PUT http://localhost:8080/email/move?userId=3&mailId=5&targetFolder=NonExistentFolder
+
+### Test with non-existent email (should fail)
+PUT http://localhost:8080/email/move?userId=3&mailId=99999&targetFolder=Archive
+
+### Test with wrong user (should fail - access denied)
+PUT http://localhost:8080/email/move?userId=999&mailId=5&targetFolder=Archive

@@ -9,18 +9,30 @@
         <input
           type="text"
           placeholder="Search emails..."
-          [(ngModel)]="searchQuery"
+          [ngModel]="searchQuery()"
+  (ngModelChange)="onSearchChange($event)"
+  (keydown.enter)="onSearchEnter()"
           class="search-input"
+        />
+
+        <app-search-options-modal
+          [folders]="emailHandler.folders()"
+          (search)="handleAdvancedSearch($event)"
+          class="search-options-icon"
         />
       </div>
 
       <!-- Sort Dropdown (Native) -->
-      <select [(ngModel)]="sortBy" class="sort-select">
-        <option value="date">Date</option>
-        <option value="sender">Sender</option>
-        <option value="importance">Importance</option>
-        <option value="subject">Subject</option>
-      </select>
+       @if(viewMode() === 'default')
+     { <select [(ngModel)]="sortBy" class="sort-select" (change)="priorityChanged()">
+        <option selected value="DATE_DESC">DATE_DESC</option>
+        <option value="DATE_ASC">DATE_ASC</option>
+        <option value="PRIORITY">PRIORITY</option>
+        <option value="SENDER">SENDER</option>
+        <option value="UNREAD_FIRST">UNREAD_FIRST</option>
+        <option value="SUBJECT">SUBJECT</option>
+        <option value="BODY">BODY</option>
+      </select>}
 
       <!-- Refresh Button -->
       <button
@@ -33,12 +45,13 @@
         <lucide-icon [img]="icons.RefreshCw" [class.spin]="isRefreshing()"></lucide-icon>
       </button>
 
+      @if(isInbox()) {
       <!-- View Mode Toggle -->
       <div class="view-toggle">
         <button
           class="toggle-btn"
           [class.active]="viewMode() === 'default'"
-          (click)="viewMode.set('default')"
+          (click)="setViewMode('default')"
           title="Default View"
         >
           <lucide-icon [img]="icons.LayoutList" size="16"></lucide-icon>
@@ -46,12 +59,13 @@
         <button
           class="toggle-btn"
           [class.active]="viewMode() === 'priority'"
-          (click)="viewMode.set('priority')"
+          (click)="setViewMode('priority')"
           title="Priority View"
         >
           <lucide-icon [img]="icons.LayoutGrid" size="16"></lucide-icon>
         </button>
       </div>
+      }
     </div>
 
     <!-- Bulk Actions (Conditional) -->
@@ -65,8 +79,8 @@
         (change)="handleMove($any($event.target).value); $any($event.target).value = ''"
       >
         <option value="" disabled selected>Move to...</option>
-        @for (folder of customFolders; track folder.id) {
-        <option [value]="folder.id">{{ folder.name }}</option>
+        @for (folder of emailHandler.folders(); track folder.folderID) {
+        <option [value]="folder.folderName">{{ folder.folderName }}</option>
         }
       </select>
 
@@ -80,7 +94,7 @@
 
   <!-- Email List Area -->
   <div class="email-scroll-area">
-    @if (paginatedEmails.length === 0) {
+    @if (paginatedEmails().length === 0) {
     <div class="empty-state">
       <lucide-icon [img]="icons.Search" size="48" class="empty-icon"></lucide-icon>
       <h3>No emails found</h3>
@@ -91,15 +105,15 @@
     <!-- List Header (Select All) -->
     <div class="list-header">
       <div class="list-header-left">
-        <input type="checkbox" (change)="toggleSelectAll($event)" />
+        <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)" />
         <span>Select all</span>
       </div>
 
       <div class="list-header-right">
         <span class="page-info">
           {{ (currentPage() - 1) * itemsPerPage() + 1 }} -
-          {{ math.min(currentPage() * itemsPerPage(), processedEmails.length) }} of
-          {{ processedEmails().length }}
+          {{ math.min(currentPage() * itemsPerPage(), totalEmails()) }} of
+          {{ totalEmails() }}
         </span>
 
         <div class="pagination-buttons">
@@ -108,7 +122,7 @@
             variant="ghost"
             size="icon"
             (click)="changePage(-1)"
-            [disabled]="currentPage() === 1"
+            [disabled]="isFirst() === true"
           >
             <lucide-icon [img]="icons.ChevronLeft"></lucide-icon>
           </button>
@@ -117,7 +131,7 @@
             variant="ghost"
             size="icon"
             (click)="changePage(1)"
-            [disabled]="currentPage === totalPages"
+            [disabled]="isLast() === true"
           >
             <lucide-icon [img]="icons.ChevronRight"></lucide-icon>
           </button>
@@ -131,7 +145,7 @@
       class="email-row"
       [class.unread]="!email.isRead"
       [class.selected]="selectedEmailId() === email.id"
-      (click)="openEmail(email)"
+      (click)="openEmail(email.id)"
     >
       <div class="row-checkbox" (click)="$event.stopPropagation()">
         <input
@@ -142,30 +156,34 @@
       </div>
 
       <div class="row-priority">
-        @if (email.priority === 1) {
-        <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
-        <!--              😨-->
-        } @else if (email.priority === 2) {
-        <lucide-icon [img]="icons.ChevronsUp" class="priority-medium"></lucide-icon>
-        <!--              😧-->
+        @if (email.priority === 4) {
+        <!-- URGENT: Red, Strong Up Arrow -->
+        <lucide-icon [img]="icons.ChevronsUp" class="priority-urgent"></lucide-icon>
         } @else if (email.priority === 3) {
+        <!-- HIGH: Orange/Amber, Up Arrow -->
+        <lucide-icon [img]="icons.ChevronsUp" class="priority-high"></lucide-icon>
+        } @else if (email.priority === 2) {
+        <!-- NORMAL: Flag or Neutral Marker (No urgency implied) -->
+        <lucide-icon [img]="icons.Flag" class="priority-normal"></lucide-icon>
+        } @else if (email.priority === 1) {
+        <!-- LOW: Blue/Green, Down Arrow -->
         <lucide-icon [img]="icons.ChevronsDown" class="priority-low"></lucide-icon>
-        <!--              🥱-->
-        } @else if (email.priority === 4) { 😴 }
+        }
       </div>
 
       <div class="row-content">
         <div class="row-top">
           <span class="sender-name">{{ email.sender.name }}</span>
-          @if (email.attachments.length) {
+          @if (email.hasAttachments) {
           <span class="attachment-badge">📎</span>
           }
         </div>
         <div class="subject-line">{{ email.subject }}</div>
+        <div class="preview-line">{{ email.preview }}</div>
       </div>
 
       <div class="row-date">
-        {{ formatDate(email.date.toDateString()) }}
+        {{ formatDate(email.sentAt) }}
       </div>
     </div>
     } }
@@ -198,3 +216,10 @@
   </div>
   }
 </div>
+
+@if (emailHandler.isComposeOpen()) {
+<app-compose-email
+  [draft]="emailHandler.composeDraft()"
+  (close)="emailHandler.isComposeOpen.set(false)"
+></app-compose-email>
+}

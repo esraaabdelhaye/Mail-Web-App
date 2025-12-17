@@ -1,0 +1,168 @@
+/* 1. The Component Host */
+/* Keeps the TRIGGER button inside the search bar */
+:host {
+  position: absolute;
+  right: 0.5rem;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+}
+
+/* 2. The Trigger Button */
+.filter-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+/* 3. The Full-Screen Backdrop (The "Fainted" Effect) */
+.modal-overlay {
+  position: fixed; /* Breaks out of the search bar to cover screen */
+  inset: 0;        /* Top:0, Right:0, Bottom:0, Left:0 */
+
+  background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent */
+  backdrop-filter: blur(2px); /* Nice blur effect */
+
+  display: flex;
+  align-items: center;     /* Center Vertically */
+  justify-content: center; /* Center Horizontally */
+
+  z-index: 9999; /* Sit on top of everything */
+  cursor: default;
+
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 4. The Actual Modal Box */
+.modal-content {
+  width: 600px; /* Wider for the form */
+  max-width: 95vw;
+
+  background-color: white; /* hsl(var(--background)) */
+  border: 1px solid #e5e7eb; /* hsl(var(--border)) */
+  border-radius: 0.75rem; /* More rounded corners */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Deep shadow */
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Remove the old invisible backdrop since .modal-overlay handles clicks now */
+.backdrop-click-catcher {
+  display: none;
+}
+
+/* --- Header --- */
+.modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* --- Body --- */
+.modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; /* More breathing room */
+  background-color: white;
+}
+
+/* Grid Layout */
+.grid-row {
+  display: grid;
+  grid-template-columns: 100px 1fr; /* 100px Label, Rest Input */
+  align-items: center;
+  gap: 1rem;
+  margin-right: 40px;
+}
+
+.grid-row label {
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Inputs */
+.form-input, .form-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #374151;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Flex Group */
+.flex-group {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.w-small { width: 140px; }
+.w-tiny { width: 90px; }
+.flex-1 { flex: 1; }
+
+/* Date Input */
+.relative-input {
+  position: relative;
+  flex: 1;
+}
+
+.pr-icon { padding-right: 2rem; }
+
+/* Checkbox */
+.checkbox-row label { text-align: left; }
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  margin-left: 116px; /* Align with inputs (100px label + 16px gap) */
+}
+
+/* --- Footer --- */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background-color: white;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

@@ -1,22 +1,42 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal, OnInit } from '@angular/core';
 import { FolderDTO } from '../../app/models/FolderDTO';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { EmailPageDTO } from '../../app/models/EmailPageDTO';
 import { PaginationRequest } from '../../app/models/PaginationRequest';
-
-import {AuthService} from '../auth/auth-service';
+import { AuthService } from '../auth/auth-service';
+import { NotificationService } from '../notification/notification-service';
+import { MailDetailsDTO } from '../../app/models/DetailedMail';
+import { SearchRequestDTO } from '../../app/models/SearchRequestDTO';
+import { ComposeDraftDTO } from '../../app/models/ComposeDraftDTO';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EmailHandler {
-  private folderSignal = signal<FolderDTO[]>([])
+  private folderSignal = signal<FolderDTO[]>([]);
   readonly folders = this.folderSignal.asReadonly();
+
+  private folderCountsSignal = signal<Record<number, number>>({}); // {"folderId":"count"}
+  readonly folderCounts = this.folderCountsSignal.asReadonly();
 
   private readonly apiUrl: string = 'http://localhost:8080';
   constructor(private http: HttpClient, private auth: AuthService) {}
-  readonly currentFolderId = signal<string>('inbox');
+  readonly currentFolderName = signal<string>('Inbox');
+  // readonly currentFolderName = signal<string>()
+
+  public opStatus = signal(false);
+  public opMessage = signal('');
+  public notificationService = inject(NotificationService);
+
+  public isComposeOpen = signal(false);
+  public composeDraft = signal<ComposeDraftDTO | null>(null);
+
+  private emailListComp: any;
+
+  fetchMail(){
+    this.emailListComp.fetchMail();
+  }
 
   getMailPage(request: PaginationRequest): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
@@ -26,11 +46,107 @@ export class EmailHandler {
       .set('page', request.page.toString())
       .set('size', request.size.toString());
 
-    if (request.sortBy && request.sortDirection) {
-      params = params.set('sort', `${request.sortBy},${request.sortDirection}`);
+    if (request.sortBy) {
+      params = params.set('sortBy', `${request.sortBy}`);
     }
+    console.log(params);
 
-    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/`, { params });
+    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/page`, { params });
+  }
+
+  getMailDetails(userId: number, mailId: number): Observable<MailDetailsDTO> {
+    let params = new HttpParams().set('userId', userId).set('mailId', mailId);
+
+    return this.http.get<MailDetailsDTO>(`${this.apiUrl}/email/getDetails`, { params });
+  }
+
+  getDraftForCompose(draftId: number): Observable<ComposeDraftDTO> {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) throw new Error('User not logged in');
+
+    // let params = new HttpParams().set('userId', userId);
+
+    return this.http.get<ComposeDraftDTO>(`${this.apiUrl}/email/draft/compose/${draftId}`);
+  }
+
+  openComposeWithDraft(draft: ComposeDraftDTO) {
+    this.composeDraft.set(draft);
+    this.isComposeOpen.set(true);
+  }
+
+  doAdvancedSearch(
+    request: SearchRequestDTO,
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'DATE_DESC'
+  ): Observable<EmailPageDTO> {
+    let params = new HttpParams()
+      .set('userId', this.auth.getCurrentUserId()!)
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy);
+
+    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
+      params,
+    });
+  }
+
+  permanentlyDeleteEmails(mailIds: Number[], onSuccess?: () => void): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams().set('userId', userId!);
+
+    mailIds.forEach((id) => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http
+      .delete<string>(`${this.apiUrl}/email/delete`, { params, responseType: 'text' as 'json' })
+      .subscribe({
+        next: (response) => {
+          this.notificationService.show('Emails permanently deleted', 'success');
+          this.loadFolderCounts();
+          if (onSuccess) onSuccess();
+        },
+        error: (error) => {
+          this.notificationService.show('Failed to permanently delete emails', 'error');
+          console.error('Error deleting emails:', error);
+        },
+      });
+  }
+  moveEmailsToFolder(
+    mailIds: Number[],
+    targetFolderName: string,
+    successMsg?: string,
+    onSuccess?: () => void
+  ): void {
+    const userId = this.auth.getCurrentUserId();
+
+    let params = new HttpParams().set('userId', userId!).set('targetFolder', targetFolderName);
+
+    mailIds.forEach((id) => {
+      params = params.append('mailId', id.toString());
+    });
+
+    this.http
+      .put<string>(`${this.apiUrl}/email/move`, null, { params, responseType: 'text' as 'json' })
+      .subscribe({
+        next: (response) => {
+          this.notificationService.show(successMsg || 'Emails moved successfully', 'success');
+          if (successMsg) {
+            this.opStatus.set(true);
+            this.opMessage.set(successMsg);
+          }
+          this.loadFolderCounts();
+          if (onSuccess) onSuccess();
+        },
+        error: (error) => {
+          this.notificationService.show('Failed to move emails', 'error');
+          this.opStatus.set(false);
+          this.opMessage.set(error.message || 'Failed to move emails');
+          console.error('Error moving emails:', error);
+        },
+      });
   }
 
   // readonly filteredEmails = computed(() => {
@@ -38,89 +154,124 @@ export class EmailHandler {
   //   return this.emails().filter((e) => e.folder === folderId);
   // });
 
-  // readonly folderCounts = computed(() => {
-  //   const counts: Record<string, number> = {};
-  //   const allEmails = this.emails();
+  // Attachment actions
+  uploadAttachment(mailId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('mailId', mailId.toString());
+    formData.append('file', file);
 
-  //   // Inbox counts unread, others count total
-  //   this.folders.forEach((f) => {
-  //     if (f.id === 'inbox') {
-  //       counts[f.id] = allEmails.filter((e) => e.folder === 'inbox' && !e.isRead).length;
-  //     } else {
-  //       counts[f.id] = allEmails.filter((e) => e.folder === f.id).length;
-  //     }
-  //   });
+    return this.http.post(`${this.apiUrl}/attachments/upload`, formData);
+  }
 
-  //   return counts;
-  // });
+  getAttachmentsByMail(mailId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/attachments/mail/${mailId}`);
+  }
 
-  //   onRefresh() {
-  //     console.log('Refreshing...');
-  //   }
+  downloadAttachment(attachmentId: number): void {
+    window.open(`${this.apiUrl}/attachments/download/${attachmentId}`, '_blank');
+  }
 
-  //   openEmail(email: Email) {
-  //     this.openedEmail.set(email);
-  //     this.markAsRead(email.id);
-  //   }
+  deleteAttachment(attachmentId: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/attachments/${attachmentId}`, {
+      responseType: 'text' as 'json',
+    });
+  }
 
-  //   closeEmail() {
-  //     this.openedEmail.set(null);
-  //   }
+  // Summarize email using AI
+  summarizeEmail(mailId: number): Observable<string> {
+    const userId = this.auth.getCurrentUserId();
+    const params = new HttpParams()
+      .set('userId', userId!.toString())
+      .set('mailId', mailId.toString());
 
-  //   moveToFolder() {}
-
-  //   deleteEmails(emailIds: string[]) {
-  //     // This should be used to delete the emails from the backend
-  //   }
-
-  //   composeEmail() {
-  //     console.log('Open compose modal');
-  //   }
+    return this.http.post(`${this.apiUrl}/email/summarize`, null, {
+      params,
+      responseType: 'text'
+    });
+  }
 
   // --------------------- Folder actions ----------------------
 
-  public loadFolders(): void{
-
+  public loadFolders(): void {
     const userId = this.auth.getCurrentUserId();
     if (!userId) {
-      console.error("User not logged in!");
+      console.error('User not logged in!');
       return;
     }
 
-    let params = new HttpParams()
-      .set('userId', userId);
+    let params = new HttpParams().set('userId', userId);
 
-    this.http.get<FolderDTO[]>(`${this.apiUrl}/folders`, { params }).subscribe(
-      {
-        next: (data) => {
-          const mappedFolders: FolderDTO[] = data.map(dto => ({
-            folderID: dto.folderID,
-            folderName: dto.folderName,
-            isCustom: dto.isCustom
-          }));
+    this.http.get<FolderDTO[]>(`${this.apiUrl}/folders`, { params }).subscribe({
+      next: (data) => {
+        console.log('Load Folders Was Called');
 
-          this.folderSignal.set(mappedFolders as FolderDTO[]);
-          console.log("Read folders: " + JSON.stringify(this.folderSignal(), null, 2))
-        },
-        error: (err) => {
-          console.log("Error in retrieving folders: " + err);
-        }
-      }
-    );
+        const mappedFolders: FolderDTO[] = data.map((dto) => ({
+          folderID: dto.folderID,
+          folderName: dto.folderName,
+          isCustom: dto.isCustom,
+        }));
+
+        this.folderSignal.set(mappedFolders as FolderDTO[]);
+        console.log('Read folders: ' + JSON.stringify(this.folderSignal(), null, 2));
+
+        // Load counts after folders are loaded
+        this.loadFolderCounts();
+      },
+      error: (err) => {
+        console.log('Error in retrieving folders: ' + err);
+      },
+    });
   }
 
-  selectFolder(folderId: string) {
-    this.currentFolderId.set(folderId);
-    console.log('Load emails for:', folderId);
+  public loadFolderCounts(): void {
+    console.log('LoadFolderCounts Was Called');
+
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) return;
+
+    let params = new HttpParams().set('userId', userId);
+
+    this.http.get<Record<number, number>>(`${this.apiUrl}/folders/counts`, { params }).subscribe({
+      next: (counts) => {
+        this.folderCountsSignal.set(counts);
+        console.log('Folder counts:', counts);
+      },
+      error: (err) => {
+        console.error('Error loading folder counts:', err);
+      },
+    });
+  }
+
+  regList(component: any) {
+    this.emailListComp = component;
+  }
+
+  selectFolder(folderName: string) {
+    this.currentFolderName.set(folderName);
+    this.auth.setCurrentFolder(folderName);
+
+    this.emailListComp.searchQuery.set('');
+    this.emailListComp.isSearchMode.set(false);
+    this.emailListComp.sortBy.set('DATE_DESC');
+
+
+    if (this.emailListComp && folderName !== 'Inbox') {
+      this.emailListComp.viewMode.set('default');
+    }
+
+    if (this.emailListComp != null) {
+      this.fetchMail();
+    }
+    console.log('Load emails for:', folderName);
     // In real app: this.emailService.loadEmails(folderId);
   }
 
   addFolder(folderName: string) {
     const userId = this.auth.getCurrentUserId();
-    
+
     // 1. Guard: Check if user is logged in
     if (!userId) {
-      console.error("Cannot create folder: User not logged in");
+      console.error('Cannot create folder: User not logged in');
       return;
     }
 
@@ -129,84 +280,100 @@ export class EmailHandler {
     // 2. Prepare Request Data
     // Query Param: ?userId=1
     const params = new HttpParams().set('userId', userId.toString());
-    
-    // Body: { "folderName": "New Folder" } 
+
+    // Body: { "folderName": "New Folder" }
     // (Ensure key matches backend DTO field 'folderName')
-    const body = { folderName: folderName }; 
+    const body = { folderName: folderName };
 
     // 3. Make the HTTP Call directly
     this.http.post<FolderDTO>(`${this.apiUrl}/folders`, body, { params }).subscribe({
       next: (newFolder) => {
-        console.log("Folder created successfully:", newFolder);
-        
-        // 4. Update the Signal (Optimistic UI Update)
-        // We append the new folder to the existing list
-        this.folderSignal.update(currentList => [...currentList, newFolder]);
+        console.log('Folder created successfully:', newFolder);
+
+        this.folderSignal.update((currentList) => [...currentList, newFolder]);
+
+        this.notificationService.showSuccess(`Folder "${folderName}" was added successfully`);
       },
       error: (err) => {
-        console.error("Failed to create folder:", err);
-        // Bonus: You could show a toast notification here
-      }
+        console.error('Failed to create folder:', err);
+        this.notificationService.showError(`Failed to add folder named "${folderName}"!`);
+      },
     });
-
   }
 
   deleteFolder(folderId: string) {
     this.http.delete(`${this.apiUrl}/folders/${folderId}`).subscribe({
-      
       next: () => {
-        console.log("Deleted folder with id: " + folderId);
-        
+        console.log('Deleted folder with id: ' + folderId);
+        this.notificationService.showSuccess(`Successfully Deleted folder`);
         // Refresh the List (Remove it from the screen)
-        this.loadFolders(); 
-      },
-      
-      error: (err) => {
-        console.error("Failed to delete folder:", err);
-      }
-    });
-}
+        this.loadFolders();
 
-  editFolder(folderId:string, newName: string) {
+        // Take him back to the inbox
+        this.currentFolderName.set('Inbox');
+        this.emailListComp.fetchMail(); // Update the email list
+      },
+
+      error: (err) => {
+        console.error('Failed to delete folder:', err);
+        this.notificationService.showError('Failed to delete folder');
+      },
+    });
+  }
+
+  editFolder(folderId: string, newName: string) {
     // 1. Guard: Check if user is logged in
+
     const userId = this.auth.getCurrentUserId();
     if (!userId) {
-      console.error("Cannot edit folder: User not logged in");
+      console.error('Cannot edit folder: User not logged in');
       return;
     }
 
     console.log(`Renaming folder ${folderId} to ${newName}...`);
-
-    // 2. Prepare Request Data
-    // NOTE: Your backend expects the new name in the BODY inside a DTO
-    // DTO field name depends on your backend (likely 'name' or 'folderName')
-    // Based on previous chats, your DTO uses 'name'.
-    const body = { folderName: newName }; 
-
-    // 3. Make the HTTP Call
-    // URL: PUT /api/folders/{id}
+    const body = { folderName: newName };
     this.http.put<void>(`${this.apiUrl}/folders/${folderId}`, body).subscribe({
       next: () => {
-        console.log("Folder renamed successfully");
+        console.log('Folder renamed successfully');
 
         // 4. Update the Signal (Optimistic UI Update)
         // We map over the current list: if ID matches, update name. If not, keep as is.
-        this.folderSignal.update(currentList => 
-          currentList.map(f => 
-            f.folderID === folderId ? { ...f, folderName: newName } : f
+        this.folderSignal.update((currentList) =>
+          currentList.map((f) =>
+            f.folderID.toString() === folderId ? { ...f, folderName: newName } : f
           )
         );
+        this.notificationService.showSuccess(`Folder successfully renamed to "${newName}"!`);
       },
       error: (err) => {
-        console.error("Failed to rename folder:", err);
-        // Bonus: Revert logic or show error message
-      }
+        console.error('Failed to rename folder:', err);
+        this.opStatus.set(true);
+        this.opMessage.set('Failed to Rename Folder');
+        this.notificationService.showError(`Failed to Rename Folder to "${newName}"!`);
+      },
     });
   }
 
-  contactsClick() {}
+  /// quick search
 
-  //   // markAsRead(id: string) {
-  //   //   this.emails.update((list) => list.map((e) => (e.id === id ? { ...e, isRead: true } : e)));
-  //   // }
+  getQuickSearchResults(request: PaginationRequest, query: string): Observable<EmailPageDTO> {
+    // 1. Construct HttpParams from the request object
+    console.log('Quick Search Was Called');
+
+    let params = new HttpParams()
+      .set('userId', request.userId)
+      .set('q', query)
+      .set('folderName', request.folderName)
+      .set('page', request.page.toString())
+      .set('size', request.size.toString());
+
+    if (request.sortBy) {
+      params = params.set('sortBy', `${request.sortBy}`);
+    }
+    console.log(params);
+
+    return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
+  }
+
+
 }
