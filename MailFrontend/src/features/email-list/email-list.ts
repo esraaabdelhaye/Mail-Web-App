@@ -94,6 +94,9 @@ export class EmailListComponent implements OnInit {
   private pollingInterval: any;
   public isSearchMode = signal(false);
 
+  // Store advanced search criteria for pagination
+  private advancedSearchCriteria = signal<SearchRequestDTO | null>(null);
+
   public onRefresh(): void {
     console.log('REFRESH');
 
@@ -144,6 +147,7 @@ export class EmailListComponent implements OnInit {
     return this.emailHandler.currentFolderName() === 'Inbox';
   }
 
+
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);
     this.currentlyOpened.set(null);
@@ -192,6 +196,8 @@ export class EmailListComponent implements OnInit {
     // Adding this here helps clear selections during navigation, like navigating to a folder for example
     if (!isRefresh) {
       this.selectedIds.set(new Set());
+      // Clear advanced search criteria when switching to normal folder browsing
+      this.advancedSearchCriteria.set(null);
     }
 
     const apiPage = this.currentPage() - 1;
@@ -210,8 +216,8 @@ export class EmailListComponent implements OnInit {
     };
 
     const observable = this.isSearchMode()
-      ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
-      : this.emailHandler.getMailPage(request);
+    ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
+    : this.emailHandler.getMailPage(request);
 
     observable.subscribe({
       next: (data) => {
@@ -242,6 +248,7 @@ export class EmailListComponent implements OnInit {
     this.fetchMail();
   }
 
+
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
     console.log('Change Page');
@@ -249,7 +256,32 @@ export class EmailListComponent implements OnInit {
     if (newPage >= 1 && newPage <= this.totalPages()) {
       this.currentPage.set(newPage);
       this.selectedIds.set(new Set()); // Clear selections when changing pages
-      this.fetchMail();
+
+      // If we're in advanced search mode, fetch the next page of search results
+      // Otherwise, fetch the next page of folder emails
+      const searchCriteria = this.advancedSearchCriteria();
+
+      if (searchCriteria) {
+        this.isLoading.set(true);
+        const apiPage = newPage - 1; // Convert to 0-indexed
+
+        this.emailHandler.doAdvancedSearch(searchCriteria, apiPage, this.itemsPerPage(), this.sortBy()).subscribe({
+          next: (data) => {
+            this.emailPage.set(data);
+            this.paginatedEmails.set(data.content);
+            this.currentPage.set(data.currentPage + 1);
+            this.isFirst.set(data.isFirst);
+            this.isLast.set(data.isLast);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load search results page:', err);
+            this.isLoading.set(false);
+          },
+        });
+      } else {
+        this.fetchMail();
+      }
     }
   }
 
@@ -289,33 +321,24 @@ export class EmailListComponent implements OnInit {
   handleAdvancedSearch(request: SearchRequestDTO) {
     this.isLoading.set(true);
     this.paginatedEmails.set([]);
-    // this.isSearchMode.set(true);
 
-    const apiPage = this.currentPage() - 1;
-    const userId = this.authService.getCurrentUserId();
+    // Enable search mode to indicate we're showing search results, not folder contents
+    this.isSearchMode.set(true);
 
-    const effectiveSort =
-      this.isInbox() && this.viewMode() === 'priority' ? 'PRIORITY_MODE' : this.sortBy();
+    // Store the search criteria for pagination
+    this.advancedSearchCriteria.set(request);
 
-    const pageReq: PaginationRequest = {
-      userId: Number(userId),
-      folderName: this.authService.getCurrentFolderName() || '',
-      page: 0,
-      size: this.itemsPerPage(),
-      sortBy: effectiveSort,
-      // sortDirection: 'desc',
-    };
-    console.log('Searching In: ', this.authService.getCurrentFolderName());
-    console.log('search page request: ', pageReq);
+    // Reset to page 1 for new search
+    this.currentPage.set(1);
 
-    this.emailHandler.doAdvancedSearch(request, pageReq).subscribe({
+    this.emailHandler.doAdvancedSearch(request).subscribe({
       next: (data) => {
-        console.log('Start Receiving advanced search results');
-
+        // Update all pagination state from the response (same as fetchMail)
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
-        console.log('After Advanced Search Paginated Mails ', this.paginatedEmails());
-        this.currentPage.set(1);
+        this.currentPage.set(data.currentPage + 1); // Convert from 0-indexed to 1-indexed
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
         this.isLoading.set(false);
         console.log('Advanced Search Results: ', data);
       },
@@ -391,6 +414,7 @@ export class EmailListComponent implements OnInit {
   // Quick Search
   onSearchChange(query: string) {
     this.searchQuery.set(query);
+
   }
 
   onSearchEnter() {
@@ -411,6 +435,7 @@ export class EmailListComponent implements OnInit {
 
     this.fetchMail(); // pagination-safe
   }
+
 
   // --- UTILITIES (Referenced in HTML) ---
 

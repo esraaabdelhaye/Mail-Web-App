@@ -61,10 +61,8 @@ export class SearchOptionsModalComponent {
     // Emit the search request to parent component
     this.search.emit(payload);
 
-    // If a specific folder was selected, update the active folder in the UI
-    if (payload.folder != null) {
-      this.emailHandler.selectFolder(payload.folder);
-    }
+    // Don't call selectFolder for advanced search
+    // The search results will be displayed without changing folder navigation
     
     // Reset the form to default values after search
     this.handleReset();

@@ -34,7 +34,7 @@ export class EmailHandler {
 
   private emailListComp: any;
 
-  fetchMail() {
+  fetchMail(){
     this.emailListComp.fetchMail();
   }
 
@@ -72,6 +72,23 @@ export class EmailHandler {
   openComposeWithDraft(draft: ComposeDraftDTO) {
     this.composeDraft.set(draft);
     this.isComposeOpen.set(true);
+  }
+
+  doAdvancedSearch(
+    request: SearchRequestDTO,
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'DATE_DESC'
+  ): Observable<EmailPageDTO> {
+    let params = new HttpParams()
+      .set('userId', this.auth.getCurrentUserId()!)
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy);
+
+    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
+      params,
+    });
   }
 
   permanentlyDeleteEmails(mailIds: Number[], onSuccess?: () => void): void {
@@ -224,6 +241,7 @@ export class EmailHandler {
     this.emailListComp.isSearchMode.set(false);
     this.emailListComp.sortBy.set('DATE_DESC');
 
+
     if (this.emailListComp && folderName !== 'Inbox') {
       this.emailListComp.viewMode.set('default');
     }
@@ -344,20 +362,5 @@ export class EmailHandler {
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
   }
 
-  doAdvancedSearch(
-    searchCriteria: SearchRequestDTO,
-    request: PaginationRequest
-  ): Observable<EmailPageDTO> {
-    let params = new HttpParams()
-      .set('userId', request.userId.toString())
-      .set('page', request.page.toString())
-      .set('size', request.size.toString())
-      .set('sortBy', request.sortBy || 'DATE_DESC');
 
-    return this.http.post<EmailPageDTO>(
-      `${this.apiUrl}/email/search/advanced`,
-      searchCriteria, // This is the @RequestBody in Java
-      { params } // These are the @RequestParams in Java
-    );
-  }
 }
