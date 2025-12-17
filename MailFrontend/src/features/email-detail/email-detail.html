@@ -11,13 +11,13 @@
       <h1 class="subject">{{ mailDetail.subject }}</h1>
 
       <!-- AI Summarize Button -->
-      <!-- <button app-button (click)="handleSummarize()" [disabled]="isSummarizing()">
+      <button app-button (click)="handleSummarize()" [disabled]="isSummarizing()">
         @if (isSummarizing()) {
         <lucide-icon [img]="icons.Loader2" class="spin mr-2"></lucide-icon>
         Summarizing... } @else {
         <lucide-icon [img]="icons.Sparkles" class="mr-2"></lucide-icon>
         Summarize with AI }
-      </button> -->
+      </button>
     </div>
 
     <!-- Sender Info -->
@@ -48,7 +48,7 @@
   <!-- Content Section (Scrollable) -->
   <div class="content">
     <!-- AI Summary Box (Shows only if summary exists) -->
-    <!-- @if (summary()) {
+    @if (summary()) {
     <div class="summary-box animate-slide-up">
       <div class="summary-header">
         <lucide-icon [img]="icons.Sparkles" class="sparkle-icon"></lucide-icon>
@@ -56,7 +56,7 @@
       </div>
       <p>{{ summary() }}</p>
     </div> 
-    }-->
+    }
 
     <!-- Email Body -->
     <div class="body-text">

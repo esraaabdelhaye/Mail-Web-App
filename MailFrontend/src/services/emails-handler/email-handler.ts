@@ -177,6 +177,19 @@ export class EmailHandler {
     });
   }
 
+  // Summarize email using AI
+  summarizeEmail(mailId: number): Observable<string> {
+    const userId = this.auth.getCurrentUserId();
+    const params = new HttpParams()
+      .set('userId', userId!.toString())
+      .set('mailId', mailId.toString());
+
+    return this.http.post(`${this.apiUrl}/email/summarize`, null, {
+      params,
+      responseType: 'text'
+    });
+  }
+
   // --------------------- Folder actions ----------------------
 
   public loadFolders(): void {

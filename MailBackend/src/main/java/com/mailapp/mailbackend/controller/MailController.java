@@ -44,6 +44,13 @@ public class MailController {
         return ResponseEntity.ok(dto);
     }
 
+    @PostMapping("/summarize")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> summarizeEmail(@RequestParam Long userId, @RequestParam Long mailId) {
+        String summary = mailService.getSummary(userId, mailId);
+        return ResponseEntity.ok(summary);
+    }
+
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> sendEmail(@RequestPart("email") EmailRequest emailRequest,
                                             @RequestPart(value = "files", required = false) List<MultipartFile> files) throws Exception {
