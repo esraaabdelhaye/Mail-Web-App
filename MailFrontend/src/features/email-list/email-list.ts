@@ -95,6 +95,8 @@ export class EmailListComponent implements OnInit {
   public isSearchMode = signal(false);
 
   public onRefresh(): void {
+    console.log('REFRESH');
+
     this.fetchMail(true);
   }
   public openEmail(emailId: number): void {
@@ -138,10 +140,9 @@ export class EmailListComponent implements OnInit {
     return this.emailHandler.currentFolderName() === 'Drafts';
   }
 
-   isInbox(): boolean {
-  return this.emailHandler.currentFolderName() === 'Inbox';
-}
-
+  isInbox(): boolean {
+    return this.emailHandler.currentFolderName() === 'Inbox';
+  }
 
   public closeOpenedEmail() {
     this.selectedEmailId.set(null);
@@ -156,6 +157,8 @@ export class EmailListComponent implements OnInit {
     // this is very very very very very very very very very very bad design, this should be changed but i'll leave it cause I only want to test the concept
     // The problem is due to fetchMail() being in this component only, and I need to call it from emailHandler
     this.emailHandler.regList(this);
+    console.log('From ngOnInit');
+
     // this.sortBy.set('DATE_DESC');
     this.fetchMail();
 
@@ -174,10 +177,12 @@ export class EmailListComponent implements OnInit {
 
   priorityChanged() {
     this.currentPage.set(1);
-  this.fetchMail();
+    this.fetchMail();
   }
 
   public fetchMail(isRefresh: boolean = false): void {
+    console.log('FetchMail was called');
+
     this.isLoading.set(true);
     if (isRefresh) this.isRefreshing.set(true);
 
@@ -191,9 +196,7 @@ export class EmailListComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
 
     const effectiveSort =
-    this.isInbox() && this.viewMode() === 'priority'
-      ? 'PRIORITY_MODE'
-      : this.sortBy();
+      this.isInbox() && this.viewMode() === 'priority' ? 'PRIORITY_MODE' : this.sortBy();
 
     const request: PaginationRequest = {
       userId: Number(userId),
@@ -205,35 +208,34 @@ export class EmailListComponent implements OnInit {
     };
 
     const observable = this.isSearchMode()
-    ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
-    : this.emailHandler.getMailPage(request);
+      ? this.emailHandler.getQuickSearchResults(request, this.searchQuery())
+      : this.emailHandler.getMailPage(request);
 
     observable.subscribe({
-    next: (data) => {
-      this.emailPage.set(data);
-      this.paginatedEmails.set(data.content);
-      this.currentPage.set(data.currentPage + 1);
-      this.isFirst.set(data.isFirst);
-      this.isLast.set(data.isLast);
-      this.isLoading.set(false);
-      this.isRefreshing.set(false);
+      next: (data) => {
+        this.emailPage.set(data);
+        this.paginatedEmails.set(data.content);
+        this.currentPage.set(data.currentPage + 1);
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
 
-      this.emailHandler.loadFolderCounts();
-    },
-    error: (err) => {
-      console.error('Failed to load emails:', err);
-      this.isLoading.set(false);
-      this.isRefreshing.set(false);
-    },
-  });
+        this.emailHandler.loadFolderCounts();
+      },
+      error: (err) => {
+        console.error('Failed to load emails:', err);
+        this.isLoading.set(false);
+        this.isRefreshing.set(false);
+      },
+    });
   }
 
   setViewMode(mode: 'default' | 'priority') {
-  this.viewMode.set(mode);
-  this.currentPage.set(1);
-  this.fetchMail();
-}
-
+    this.viewMode.set(mode);
+    this.currentPage.set(1);
+    this.fetchMail();
+  }
 
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
@@ -283,13 +285,33 @@ export class EmailListComponent implements OnInit {
     this.paginatedEmails.set([]);
     // this.isSearchMode.set(true);
 
+    const apiPage = this.currentPage() - 1;
+    const userId = this.authService.getCurrentUserId();
 
-    this.emailHandler.doAdvancedSearch(request).subscribe({
+    const effectiveSort =
+      this.isInbox() && this.viewMode() === 'priority' ? 'PRIORITY_MODE' : this.sortBy();
+
+    const pageReq: PaginationRequest = {
+      userId: Number(userId),
+      folderName: this.authService.getCurrentFolderName() || '',
+      page: 0,
+      size: this.itemsPerPage(),
+      sortBy: effectiveSort,
+      // sortDirection: 'desc',
+    };
+    console.log('Searching In: ', this.authService.getCurrentFolderName());
+    console.log('search page request: ', pageReq);
+
+    this.emailHandler.doAdvancedSearch(request, pageReq).subscribe({
       next: (data) => {
+        console.log('Start Receiving advanced search results');
+
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
+        console.log('After Advanced Search Paginated Mails ', this.paginatedEmails());
         this.currentPage.set(1);
         this.isLoading.set(false);
+        console.log('Advanced Search Results: ', data);
       },
       error: (err) => {
         console.error('Failed to perform advanced search:', err);
@@ -363,27 +385,25 @@ export class EmailListComponent implements OnInit {
   // Quick Search
   onSearchChange(query: string) {
     this.searchQuery.set(query);
-  
   }
 
   onSearchEnter() {
-  const query = this.searchQuery().trim();
+    const query = this.searchQuery().trim();
 
-  // If search box is empty → exit search mode
-  if (!query) {
-    this.isSearchMode.set(false);
+    // If search box is empty → exit search mode
+    if (!query) {
+      this.isSearchMode.set(false);
+      this.currentPage.set(1);
+      this.fetchMail();
+      return;
+    }
+
+    // Enter search mode
+    this.isSearchMode.set(true);
     this.currentPage.set(1);
-    this.fetchMail();
-    return;
+
+    this.fetchMail(); // pagination-safe
   }
-
-  // Enter search mode
-  this.isSearchMode.set(true);
-  this.currentPage.set(1);
-
-  this.fetchMail(); // pagination-safe
-}
-
 
   // --- UTILITIES (Referenced in HTML) ---
 

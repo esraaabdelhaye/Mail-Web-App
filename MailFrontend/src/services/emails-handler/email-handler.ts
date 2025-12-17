@@ -34,7 +34,7 @@ export class EmailHandler {
 
   private emailListComp: any;
 
-  fetchMail(){
+  fetchMail() {
     this.emailListComp.fetchMail();
   }
 
@@ -72,15 +72,6 @@ export class EmailHandler {
   openComposeWithDraft(draft: ComposeDraftDTO) {
     this.composeDraft.set(draft);
     this.isComposeOpen.set(true);
-  }
-
-  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
-    let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);
-    // .set('criteria', request);
-
-    return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
-      params,
-    });
   }
 
   permanentlyDeleteEmails(mailIds: Number[], onSuccess?: () => void): void {
@@ -182,6 +173,8 @@ export class EmailHandler {
 
     this.http.get<FolderDTO[]>(`${this.apiUrl}/folders`, { params }).subscribe({
       next: (data) => {
+        console.log('Load Folders Was Called');
+
         const mappedFolders: FolderDTO[] = data.map((dto) => ({
           folderID: dto.folderID,
           folderName: dto.folderName,
@@ -201,6 +194,8 @@ export class EmailHandler {
   }
 
   public loadFolderCounts(): void {
+    console.log('LoadFolderCounts Was Called');
+
     const userId = this.auth.getCurrentUserId();
     if (!userId) return;
 
@@ -226,13 +221,12 @@ export class EmailHandler {
     this.auth.setCurrentFolder(folderName);
 
     this.emailListComp.searchQuery.set('');
-  this.emailListComp.isSearchMode.set(false);
-  this.emailListComp.sortBy.set('DATE_DESC');
-
+    this.emailListComp.isSearchMode.set(false);
+    this.emailListComp.sortBy.set('DATE_DESC');
 
     if (this.emailListComp && folderName !== 'Inbox') {
-    this.emailListComp.viewMode.set('default');
-  }
+      this.emailListComp.viewMode.set('default');
+    }
 
     if (this.emailListComp != null) {
       this.fetchMail();
@@ -333,6 +327,8 @@ export class EmailHandler {
 
   getQuickSearchResults(request: PaginationRequest, query: string): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
+    console.log('Quick Search Was Called');
+
     let params = new HttpParams()
       .set('userId', request.userId)
       .set('q', query)
@@ -346,5 +342,22 @@ export class EmailHandler {
     console.log(params);
 
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
+  }
+
+  doAdvancedSearch(
+    searchCriteria: SearchRequestDTO,
+    request: PaginationRequest
+  ): Observable<EmailPageDTO> {
+    let params = new HttpParams()
+      .set('userId', request.userId.toString())
+      .set('page', request.page.toString())
+      .set('size', request.size.toString())
+      .set('sortBy', request.sortBy || 'DATE_DESC');
+
+    return this.http.post<EmailPageDTO>(
+      `${this.apiUrl}/email/search/advanced`,
+      searchCriteria, // This is the @RequestBody in Java
+      { params } // These are the @RequestParams in Java
+    );
   }
 }
