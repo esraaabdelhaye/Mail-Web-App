@@ -47,4 +47,7 @@ public class UserMail {
 
     @Column(name = "moved_at")
     private Date movedAt;
+
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
 }

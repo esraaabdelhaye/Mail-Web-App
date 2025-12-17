@@ -29,10 +29,9 @@ export class EmailDetailComponent {
 
   private emailHandler = inject(EmailHandler);
 
-  // detailedEmail = signal
   // --- State ---
-  // isSummarizing = signal(false);
-  // summary = signal<string | null>(null);
+  isSummarizing = signal(false);
+  summary = signal<string | null>(null);
   mailDetails = signal<MailDetailsDTO | null>(null);
   readonly icons = { ArrowLeft, Sparkles, Download, Trash2, FileText, ImageIcon, File, Loader2 };
 
@@ -42,22 +41,21 @@ export class EmailDetailComponent {
     this.emailHandler.downloadAttachment(file.id);
   }
 
-  // async handleSummarize() {
-  //   this.isSummarizing.set(true);
-
-  //   // Simulate API delay
-  //   await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  //   const text =
-  //     `This email from ${
-  //       this.mailDetails.sender.name
-  //     } discusses ${this.mailDetails.subject.toLowerCase()}. ` +
-  //     `Key points include action items that require attention. ` +
-  //     `The sender is requesting a response or follow-up.`;
-
-  //   this.summary.set(text);
-  //   this.isSummarizing.set(false);
-  // }
+  handleSummarize() {
+    this.isSummarizing.set(true);
+    
+    this.emailHandler.summarizeEmail(this.mailDetail.id).subscribe({
+      next: (summaryText) => {
+        this.summary.set(summaryText);
+        this.isSummarizing.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to summarize email:', err);
+        this.summary.set('Failed to generate summary. Please try again.');
+        this.isSummarizing.set(false);
+      }
+    });
+  }
 
   // --- Helpers ---
 

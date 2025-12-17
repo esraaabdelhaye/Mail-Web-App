@@ -177,6 +177,19 @@ export class EmailHandler {
     });
   }
 
+  // Summarize email using AI
+  summarizeEmail(mailId: number): Observable<string> {
+    const userId = this.auth.getCurrentUserId();
+    const params = new HttpParams()
+      .set('userId', userId!.toString())
+      .set('mailId', mailId.toString());
+
+    return this.http.post(`${this.apiUrl}/email/summarize`, null, {
+      params,
+      responseType: 'text'
+    });
+  }
+
   // --------------------- Folder actions ----------------------
 
   public loadFolders(): void {
@@ -190,8 +203,6 @@ export class EmailHandler {
 
     this.http.get<FolderDTO[]>(`${this.apiUrl}/folders`, { params }).subscribe({
       next: (data) => {
-        console.log('Load Folders Was Called');
-
         const mappedFolders: FolderDTO[] = data.map((dto) => ({
           folderID: dto.folderID,
           folderName: dto.folderName,
@@ -211,8 +222,6 @@ export class EmailHandler {
   }
 
   public loadFolderCounts(): void {
-    console.log('LoadFolderCounts Was Called');
-
     const userId = this.auth.getCurrentUserId();
     if (!userId) return;
 
@@ -236,16 +245,6 @@ export class EmailHandler {
   selectFolder(folderName: string) {
     this.currentFolderName.set(folderName);
     this.auth.setCurrentFolder(folderName);
-
-    this.emailListComp.searchQuery.set('');
-    this.emailListComp.isSearchMode.set(false);
-    this.emailListComp.sortBy.set('DATE_DESC');
-
-
-    if (this.emailListComp && folderName !== 'Inbox') {
-      this.emailListComp.viewMode.set('default');
-    }
-
     if (this.emailListComp != null) {
       this.fetchMail();
     }
@@ -345,8 +344,6 @@ export class EmailHandler {
 
   getQuickSearchResults(request: PaginationRequest, query: string): Observable<EmailPageDTO> {
     // 1. Construct HttpParams from the request object
-    console.log('Quick Search Was Called');
-
     let params = new HttpParams()
       .set('userId', request.userId)
       .set('q', query)
@@ -361,6 +358,4 @@ export class EmailHandler {
 
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
   }
-
-
 }

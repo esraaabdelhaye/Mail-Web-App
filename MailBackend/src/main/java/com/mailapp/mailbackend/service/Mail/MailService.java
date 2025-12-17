@@ -3,6 +3,7 @@ package com.mailapp.mailbackend.service.Mail;
 import com.mailapp.mailbackend.dto.*;
 import com.mailapp.mailbackend.entity.*;
 import com.mailapp.mailbackend.repository.*;
+import com.mailapp.mailbackend.service.AI.AIService;
 import com.mailapp.mailbackend.service.sorting.SortStrategy;
 import com.mailapp.mailbackend.service.sorting.SortStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,9 @@ public class MailService {
 
     @Autowired
     private MultiReceiverSend multiReceiverSend;
+
+    @Autowired
+    private AIService aiService;
 
     @Autowired
     private SortStrategyFactory sortStrategyFactory;
@@ -131,6 +135,32 @@ public class MailService {
         MailDetailsDTO dto = mainMapper.toDetailedEmailDTO(userMail, userId);
 
         return dto;
+    }
+
+    public String getSummary(Long userId, Long mailId) {
+        // Find the UserMail entry
+        UserMail userMail = userMailRepo.findById(mailId)
+                .orElseThrow(() -> new RuntimeException("Email not found for ID: " + mailId));
+
+        // Security check
+        if (!userMail.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: Email does not belong to user.");
+        }
+
+        // Return cached summary if exists
+        if (userMail.getSummary() != null && !userMail.getSummary().isEmpty()) {
+            return userMail.getSummary();
+        }
+
+        // Generate new summary
+        String emailBody = userMail.getMail().getBody();
+        String summary = aiService.summarizeEmail(emailBody);
+
+        // Cache the summary
+        userMail.setSummary(summary);
+        userMailRepo.save(userMail);
+
+        return summary;
     }
 
 
