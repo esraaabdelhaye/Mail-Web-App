@@ -34,6 +34,9 @@ public class SearchChainConfig {
     @Autowired
     private AttachmentSearchHandler attachmentSearchHandler;
 
+    @Autowired
+    private ToSearchHandler toSearchHandler;
+
     @Bean
     public SearchHandler searchHandlerChain() {
         // Build chain
@@ -45,6 +48,7 @@ public class SearchChainConfig {
         prioritySearchHandler.setNext(dateRangeSearchHandler);
         dateRangeSearchHandler.setNext(readStatusSearchHandler);
         dateRangeSearchHandler.setNext(attachmentSearchHandler);
+        attachmentSearchHandler.setNext(toSearchHandler);
 
         return globalSearchHandler; // Return head of chain
     }

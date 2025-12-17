@@ -2,6 +2,7 @@ package com.mailapp.mailbackend.service.search.handlers;
 
 import com.mailapp.mailbackend.dto.SearchCriteria;
 import com.mailapp.mailbackend.entity.UserMail;
+import com.mailapp.mailbackend.enums.Priority;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -15,7 +16,7 @@ public class PrioritySearchHandler extends SearchHandler {
     @Override
     protected boolean shouldHandle(SearchCriteria criteria) {
         System.out.println("PrioritySearchHandler");
-        return criteria.getPriority() != null;
+        return criteria.getPriority() != 0;
     }
 
     @Override
@@ -25,9 +26,10 @@ public class PrioritySearchHandler extends SearchHandler {
             CriteriaBuilder cb,
             List<Predicate> predicates
     ) {
+
         Predicate predicate = cb.equal(
                 root.get("importance"),
-                criteria.getPriority()
+                Priority.fromValue(criteria.getPriority())
         );
 
         predicates.add(predicate);

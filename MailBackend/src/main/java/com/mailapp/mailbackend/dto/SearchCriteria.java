@@ -20,7 +20,7 @@ public class SearchCriteria {
     private String body;
     private String folder;
     private Boolean hasAttachment;
-    private Priority priority;
+    private int priority;
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isRead;
