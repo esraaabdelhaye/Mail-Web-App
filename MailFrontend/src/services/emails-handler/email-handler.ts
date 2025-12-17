@@ -362,20 +362,5 @@ export class EmailHandler {
     return this.http.get<EmailPageDTO>(`${this.apiUrl}/email/search/quick`, { params });
   }
 
-  doAdvancedSearch(
-    searchCriteria: SearchRequestDTO,
-    request: PaginationRequest
-  ): Observable<EmailPageDTO> {
-    let params = new HttpParams()
-      .set('userId', request.userId.toString())
-      .set('page', request.page.toString())
-      .set('size', request.size.toString())
-      .set('sortBy', request.sortBy || 'DATE_DESC');
 
-    return this.http.post<EmailPageDTO>(
-      `${this.apiUrl}/email/search/advanced`,
-      searchCriteria, // This is the @RequestBody in Java
-      { params } // These are the @RequestParams in Java
-    );
-  }
 }
