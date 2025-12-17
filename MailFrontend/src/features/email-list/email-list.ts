@@ -177,6 +177,8 @@ export class EmailListComponent implements OnInit {
 
   priorityChanged() {
     this.currentPage.set(1);
+    console.log('Priority Changed');
+
     this.fetchMail();
   }
 
@@ -220,6 +222,7 @@ export class EmailListComponent implements OnInit {
         this.isLast.set(data.isLast);
         this.isLoading.set(false);
         this.isRefreshing.set(false);
+        console.log('Paginated Mails After Fetch: ', this.paginatedEmails());
 
         this.emailHandler.loadFolderCounts();
       },
@@ -232,6 +235,8 @@ export class EmailListComponent implements OnInit {
   }
 
   setViewMode(mode: 'default' | 'priority') {
+    console.log('Set View Mode');
+
     this.viewMode.set(mode);
     this.currentPage.set(1);
     this.fetchMail();
@@ -239,6 +244,7 @@ export class EmailListComponent implements OnInit {
 
   changePage(delta: number): void {
     const newPage = this.currentPage() + delta;
+    console.log('Change Page');
 
     if (newPage >= 1 && newPage <= this.totalPages()) {
       this.currentPage.set(newPage);
@@ -388,6 +394,7 @@ export class EmailListComponent implements OnInit {
   }
 
   onSearchEnter() {
+    console.log('On search enter was called');
     const query = this.searchQuery().trim();
 
     // If search box is empty → exit search mode
