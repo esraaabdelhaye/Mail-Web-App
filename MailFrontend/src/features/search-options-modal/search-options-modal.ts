@@ -32,10 +32,10 @@ export class SearchOptionsModalComponent {
     to: '',
     subject: '',
     body: '',
-    hasAttachment: false,
-    folder: '',
-    priority: '',  // Empty string means search all priority levels
-    isRead: false,
+    hasAttachment: null,
+    folder: 'Inbox', // Default to searching in Inbox
+    priority: 0, // Empty string means search all priority levels
+    isRead: null,
     endDate: '',
     startDate: '',
   };
@@ -50,23 +50,23 @@ export class SearchOptionsModalComponent {
   handleSearch() {
     // Create a copy of the search options to modify for submission
     const payload = { ...this.options };
-    
+
     // Convert 'all' folder selection to empty string (search across all folders)
     if (payload.folder === 'all') payload.folder = '';
-    
+
     // Convert empty/falsy priority to null so backend doesn't filter by priority
     // This handles empty string (""), undefined, or any falsy value
-    if (!payload.priority) payload.priority = null;
-    
+    if (!payload.priority) payload.priority = 0;
+
     // Emit the search request to parent component
     this.search.emit(payload);
 
     // Don't call selectFolder for advanced search
     // The search results will be displayed without changing folder navigation
-    
+
     // Reset the form to default values after search
     this.handleReset();
-    
+
     // Close the modal
     this.isOpen = false;
   }

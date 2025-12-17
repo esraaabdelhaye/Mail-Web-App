@@ -1,13 +1,13 @@
-export interface SearchRequestDTO{
+export interface SearchRequestDTO {
   query: string;
   from: string;
   to: string;
   subject: string;
-  body: string;           // Maps to 'Includes words'
-  hasAttachment: boolean;
+  body: string; // Maps to 'Includes words'
+  hasAttachment: boolean | null;
   folder: string | null;
-  startDate: string;         // Maps to Date input
+  startDate: string; // Maps to Date input
   endDate: string;
-  priority: string | null;       // Maps to Priority dropdown
-  isRead: boolean;
+  priority: number; // Maps to Priority dropdown
+  isRead: boolean | null;
 }
