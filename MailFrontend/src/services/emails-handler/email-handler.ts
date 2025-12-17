@@ -74,9 +74,17 @@ export class EmailHandler {
     this.isComposeOpen.set(true);
   }
 
-  doAdvancedSearch(request: SearchRequestDTO): Observable<EmailPageDTO> {
-    let params = new HttpParams().set('userId', this.auth.getCurrentUserId()!);
-    // .set('criteria', request);
+  doAdvancedSearch(
+    request: SearchRequestDTO,
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'DATE_DESC'
+  ): Observable<EmailPageDTO> {
+    let params = new HttpParams()
+      .set('userId', this.auth.getCurrentUserId()!)
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy);
 
     return this.http.post<EmailPageDTO>(`${this.apiUrl}/email/search/advanced`, request, {
       params,

@@ -93,6 +93,9 @@ export class EmailListComponent implements OnInit {
 
   private pollingInterval: any;
   public isSearchMode = signal(false);
+  
+  // Store advanced search criteria for pagination
+  private advancedSearchCriteria = signal<SearchRequestDTO | null>(null);
 
   public onRefresh(): void {
     this.fetchMail(true);
@@ -185,6 +188,8 @@ export class EmailListComponent implements OnInit {
     // Adding this here helps clear selections during navigation, like navigating to a folder for example
     if (!isRefresh) {
       this.selectedIds.set(new Set());
+      // Clear advanced search criteria when switching to normal folder browsing
+      this.advancedSearchCriteria.set(null);
     }
 
     const apiPage = this.currentPage() - 1;
@@ -241,7 +246,32 @@ export class EmailListComponent implements OnInit {
     if (newPage >= 1 && newPage <= this.totalPages()) {
       this.currentPage.set(newPage);
       this.selectedIds.set(new Set()); // Clear selections when changing pages
-      this.fetchMail();
+      
+      // If we're in advanced search mode, fetch the next page of search results
+      // Otherwise, fetch the next page of folder emails
+      const searchCriteria = this.advancedSearchCriteria();
+      
+      if (searchCriteria) {
+        this.isLoading.set(true);
+        const apiPage = newPage - 1; // Convert to 0-indexed
+        
+        this.emailHandler.doAdvancedSearch(searchCriteria, apiPage, this.itemsPerPage(), this.sortBy()).subscribe({
+          next: (data) => {
+            this.emailPage.set(data);
+            this.paginatedEmails.set(data.content);
+            this.currentPage.set(data.currentPage + 1);
+            this.isFirst.set(data.isFirst);
+            this.isLast.set(data.isLast);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load search results page:', err);
+            this.isLoading.set(false);
+          },
+        });
+      } else {
+        this.fetchMail();
+      }
     }
   }
 
@@ -281,14 +311,24 @@ export class EmailListComponent implements OnInit {
   handleAdvancedSearch(request: SearchRequestDTO) {
     this.isLoading.set(true);
     this.paginatedEmails.set([]);
-    // this.isSearchMode.set(true);
+    
+    // Enable search mode to indicate we're showing search results, not folder contents
+    this.isSearchMode.set(true);
+    
+    // Store the search criteria for pagination
+    this.advancedSearchCriteria.set(request);
+    
+    // Reset to page 1 for new search
+    this.currentPage.set(1);
 
-
-    this.emailHandler.doAdvancedSearch(request).subscribe({
+    this.emailHandler.doAdvancedSearch(request, 0, this.itemsPerPage(), this.sortBy()).subscribe({
       next: (data) => {
+        // Update all pagination state from the response (same as fetchMail)
         this.emailPage.set(data);
         this.paginatedEmails.set(data.content);
-        this.currentPage.set(1);
+        this.currentPage.set(data.currentPage + 1); // Convert from 0-indexed to 1-indexed
+        this.isFirst.set(data.isFirst);
+        this.isLast.set(data.isLast);
         this.isLoading.set(false);
       },
       error: (err) => {
