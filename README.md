@@ -6,7 +6,7 @@ A full-stack email management system built with **Angular** and **Spring Boot**,
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
-> 📄 **[View Detailed Technical Report](./docs/technical-report.pdf)** - Complete documentation including UML diagrams, design patterns, and implementation details.
+
 ---
 ## 📋 Table of Contents
 
@@ -15,7 +15,6 @@ A full-stack email management system built with **Angular** and **Spring Boot**,
 - [Architecture](#-architecture)
 - [Prerequisites](#-prerequisites)
 - [Installation & Setup](#-installation--setup)
-- [Database Schema](#-database-schema)
 - [API Documentation](#-api-documentation)
 - [Screenshots](#-screenshots)
 - [Team](#-team)
@@ -175,87 +174,21 @@ ng serve --open
 
 ---
 
-## 💾 Database Schema
-
-### Core Tables
-
-**Users**
-- Stores user account information
-- One-to-many relationships with folders, contacts, and mails
-
-**Mails**
-- Contains email content (subject, body, sent date)
-- References sender as foreign key
-
-**UserMails** (Junction Table)
-- Links users to received emails
-- Tracks read status, folder placement, and importance per user
-
-**Folders**
-- Organizes emails (system and custom folders)
-- Each user has their own set of folders
-
-**Contacts**
-- Stores contact information with multiple email addresses support
-
-**Attachments**
-- Manages file attachments (filename, storage path, file type, size)
-
-**MailReceivers**
-- Tracks all recipients (TO, CC, BCC) for each email
-
-**MailFilters**
-- Stores user-defined auto-routing rules
-
----
-
-## 📡 API Documentation
-
-### Authentication Endpoints
-```http
-POST /api/auth/register    - Register new user
-POST /api/auth/login       - User login
-```
-
-### Email Endpoints
-```http
-GET    /api/emails                  - Get paginated emails
-POST   /api/emails                  - Send new email
-GET    /api/emails/{id}             - Get email by ID
-PUT    /api/emails/{id}/read        - Mark as read/unread
-DELETE /api/emails/{id}             - Move to trash
-```
-
-### Folder Endpoints
-```http
-GET    /api/folders           - Get all folders
-POST   /api/folders           - Create custom folder
-PUT    /api/folders/{id}      - Rename folder
-DELETE /api/folders/{id}      - Delete custom folder
-```
-
-### Search & Filter Endpoints
-```http
-POST /api/search/quick        - Quick search
-POST /api/search/advanced     - Advanced search with criteria
-POST /api/filters             - Create auto-routing filter
-```
-
----
-
 ## 📸 Screenshots
 
 ### Inbox View
 Default view with pagination and sorting options
-
-### Priority Inbox
-Intelligent prioritization using PriorityQueue algorithm
+<img width="3820" height="1890" alt="image" src="https://github.com/user-attachments/assets/d4755133-e460-49fd-9ee5-62d3f7fb6ae2" />
 
 ### Advanced Search
 Multi-criteria search interface
+<img width="3818" height="1887" alt="image" src="https://github.com/user-attachments/assets/12f46366-87ff-4880-948d-4e92594e525e" />
 
 ### Email Composition
-Full-featured email editor with attachments and CC/BCC support
+<img width="3818" height="1882" alt="image" src="https://github.com/user-attachments/assets/86fb95c1-898b-4ebd-bc8a-dcbf03456201" />
+
+### Contacts
+<img width="3813" height="1887" alt="image" src="https://github.com/user-attachments/assets/84503e87-6498-4edb-9c59-e319c5ed4315" />
 
 ---
 
@@ -280,7 +213,3 @@ This project is an academic assignment for Alexandria University.
 
 ---
 
-
----
-
-**Made with ❤️ by Team AlexU Engineering**
